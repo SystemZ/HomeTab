@@ -16,7 +16,9 @@ function scan {
 }
 
 function build {
+    mkdir -p builds
     go build
+    tar czvf builds/gotag_0.1.0_Linux-64bit.tar.gz gotag migrations templates
 }
 
 function prod {
