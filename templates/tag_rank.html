@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    {{ template "head" }}
+</head>
+<body>
+
+<div class="pure-g">
+    <div class="pure-u-sm-24-24">
+        {{ template "menu" }}
+
+        <div class="l-box">
+            {{range .}}
+            <li>
+                ({{ .Overall }}) <a href="/files/tag/name/{{ .Name }}/page/1" target="_blank">{{ .Name }}</a>
+            </li>
+            {{ end }}
+        </div>
+    </div>
+</div>
+
+</body>
+</html>
