@@ -16,7 +16,7 @@ Only changes are made in app's folder.
 # packages required to make .webm and .mp4 thumbnails
 apt-get install -y libavutil-dev libavformat-dev libswscale-dev
 ```
-- download binary from [https://github.com/SystemZ/gotag/releases](https://github.com/SystemZ/spree/releases)
+- download binary from [https://github.com/SystemZ/gotag/releases](https://github.com/SystemZ/gotag/releases)
 - run binary to scan dir add add files to gotag.sqlite3 DB located in same directory as app
 ```
 ./gotag scan <your dir with files>
