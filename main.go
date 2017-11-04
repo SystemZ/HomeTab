@@ -4,6 +4,7 @@ import (
 	"flag"
 	"fmt"
 	"os"
+	"strconv"
 )
 
 func main() {
@@ -15,7 +16,8 @@ func main() {
 		}
 		db := dbInit()
 		dir := flag.Arg(1)
-		scan(dir, visit(db))
+		generateThumbs, _ := strconv.ParseBool(flag.Arg(2))
+		scan(dir, visit(db, generateThumbs))
 		os.Exit(0)
 	} else if flag.Arg(0) == "serve" {
 		db := dbInit()

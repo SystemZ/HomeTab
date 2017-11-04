@@ -14,8 +14,8 @@ import (
 
 	"strings"
 
-	"github.com/Soreil/video/mp4"
-	"github.com/Soreil/video/webm"
+	"runtime/debug"
+
 	"github.com/nfnt/resize"
 	"github.com/pilu/traffic"
 	"github.com/unrolled/render"
@@ -48,7 +48,8 @@ func writeImage(w http.ResponseWriter, img *image.Image) {
 func writeCache(key string, r *traffic.Request, w http.ResponseWriter) {
 	e := `"` + key + `"`
 	w.Header().Set("Etag", e)
-	w.Header().Set("Cache-Control", "max-age=2592000") // 30 days
+	//w.Header().Set("Cache-Control", "max-age=2592000") // 30 days
+	w.Header().Set("Cache-Control", "max-age=60") // 1 minute for easier dev
 
 	if match := r.Header.Get("If-None-Match"); match != "" {
 		if strings.Contains(match, e) {
@@ -83,7 +84,7 @@ func writeImageDirect(w http.ResponseWriter, img *image.Image) {
 }
 
 func writeRawFile(w http.ResponseWriter, r *traffic.Request, filePath string, mime string) {
-	writeCache("foobar", r, w)
+	writeCache("foo", r, w)
 
 	imgFile, _ := os.Open(filePath)
 	defer imgFile.Close()
@@ -200,6 +201,26 @@ func server(db *sql.DB) {
 
 	router.Get("/img/thumb/:w/:h/:sha256", func(w traffic.ResponseWriter, req *traffic.Request) {
 		params := req.URL.Query()
+		sha256sum := params.Get("sha256")
+		width64, _ := strconv.ParseUint(params.Get("w"), 10, 32)
+		height64, _ := strconv.ParseUint(params.Get("h"), 10, 32)
+		width := uint(width64)
+		height := uint(height64)
+		_, _, imgPath, mime := dbFindSha256(db, sha256sum)
+
+		// create thumb on disk if needed
+		done := make(chan bool)
+		go createThumb(imgPath, sha256sum, mime, width, height, done)
+		<-done
+		debug.FreeOSMemory()
+
+		// push thumb to browser
+		writeRawFile(w, req, thumbPath(sha256sum, width, height), mime)
+	})
+
+	router.Get("/img/thumbs/:w/:h/:sha256", func(w traffic.ResponseWriter, req *traffic.Request) {
+		//debug.FreeOSMemory()
+		params := req.URL.Query()
 		var img image.Image
 		_, _, lastPath, mime := dbFindSha256(db, params.Get("sha256"))
 
@@ -219,10 +240,10 @@ func server(db *sql.DB) {
 			//TODO config for gif thumbs
 			//img, _ = gif.Decode(imgFile)
 			//gif1, _ := gif.DecodeAll(imgFile)
-		case "video/webm":
-			img, _ = webm.Decode(imgFile)
-		case "video/mp4":
-			img, _ = mp4.Decode(imgFile)
+		//case "video/webm":
+		//	img, _ = webm.Decode(imgFile)
+		//case "video/mp4":
+		//	img, _ = mp4.Decode(imgFile)
 		default:
 			http.Error(w, "This file type is not supported yet, sorry :(", 500)
 			return
@@ -231,6 +252,7 @@ func server(db *sql.DB) {
 		log.Printf("%v", img.ColorModel())
 		//
 		thumb := resize.Thumbnail(uint(width), uint(height), img, resize.Bilinear)
+		//debug.FreeOSMemory()
 		writeImageWithCache(w, req, &thumb)
 	})
 

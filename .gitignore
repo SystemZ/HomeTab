@@ -1,4 +1,10 @@
+# IDE
 .idea
+
+# gotag's generated files
 gotag
 gotag.sqlite3
-builds
+cache/
+
+# build pipeline
+builds/

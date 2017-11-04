@@ -7,10 +7,17 @@ import (
 	"database/sql"
 	"encoding/hex"
 	"fmt"
+	"image"
+	"image/jpeg"
+	"image/png"
 	"io"
+	"log"
 	"net/http"
 	"os"
 	"path/filepath"
+
+	"runtime/debug"
+	"github.com/nfnt/resize"
 )
 
 func scan(dir string, scanFunction filepath.WalkFunc) {
@@ -142,28 +149,132 @@ func getType(filePath string) (string, error) {
 	return returnString, nil
 }
 
-func visit(db *sql.DB) filepath.WalkFunc {
+func thumbDirPath(sha256 string) (path string) {
+	parent := "./cache"
+	lvl1 := string(sha256[0]) + string(sha256[1])
+	lvl2 := string(sha256[2]) + string(sha256[3])
+	lvl3 := string(sha256[4]) + string(sha256[5])
+	path = parent + "/" + lvl1 + "/" + lvl2 + "/" + lvl3 + "/"
+	return path
+}
+
+func thumbPath(sha256 string, width uint, height uint) (path string) {
+	dir := thumbDirPath(sha256)
+	path = dir + sha256 + "_" + string(width) + "_" + string(height)
+	return path
+}
+
+func createThumb(pathToImg string, sha256 string, mime string, maxWidth uint, maxHeight uint, done chan bool) {
+	// don't overwrite current file
+	// TODO check if image is ok then rewrite if needed
+	imgThumbPath := thumbPath(sha256, maxWidth, maxHeight)
+	if _, err := os.Stat(imgThumbPath); !os.IsNotExist(err) {
+		done <- true
+	}
+
+	// open original file to read
+	fileRead, err := os.Open(pathToImg)
+	if err != nil {
+		log.Fatalln(err)
+	}
+	defer fileRead.Close()
+
+	// decide what type of file we are reading (decoding) to prevent creating useless files
+	var img image.Image
+	switch mime {
+	case "image/jpeg":
+		img, _ = jpeg.Decode(fileRead)
+	case "image/png":
+		img, _ = png.Decode(fileRead)
+	//case "video/webm":
+	//	img, _ = webm.Decode(fileRead)
+	//case "video/mp4":
+	//	img, _ = mp4.Decode(fileRead)
+	default:
+		log.Printf("%s", "This file type is not supported yet, sorry :(")
+		done <- true
+		// exit this function if not jpg,png,webm or mp4
+		return
+	}
+
+	// create path for thumb
+	dirPath := thumbDirPath(sha256)
+	os.MkdirAll(dirPath, 0700)
+
+	// open thumb file to write
+	fileWrite, err := os.Create(thumbPath(sha256, maxWidth, maxHeight))
+	if err != nil {
+		log.Fatalln(err)
+	}
+	defer fileWrite.Close()
+
+	// resize original file to something smaller
+	thumb := resize.Thumbnail(maxWidth, maxHeight, img, resize.Bilinear)
+
+	// create thumbnail in jpg
+	err = jpeg.Encode(fileWrite, thumb, nil)
+	if err != nil {
+		log.Fatalln(err)
+	}
+
+	done <- true
+}
+
+func makeThumbs(path string, sha256sum string, mime string) {
+	done1 := make(chan bool)
+	done2 := make(chan bool)
+	go createThumb(path, sha256sum, mime, 300, 250, done1)
+	go createThumb(path, sha256sum, mime, 560, 500, done2)
+	<-done1
+	<-done2
+	debug.FreeOSMemory()
+}
+
+func visit(db *sql.DB, generateThumbs bool) filepath.WalkFunc {
 	return func(path string, info os.FileInfo, err error) error {
-		fmt.Printf("Visited: %s\n", path)
+		fmt.Printf("Visiting: %s\n", path)
+
+		// don't continue if folder
 		info, nil := os.Stat(path)
-		if !info.IsDir() {
-			name := info.Name()
-			fmt.Printf("Name: %s\n", name)
-			size := info.Size()
-			fmt.Printf("Size: %d\n", size)
-			mime, _ := getType(path)
-			fmt.Printf("MIME: %s\n", mime)
-			md5sum, _ := hashFileMd5(path)
-			fmt.Printf("MD5: %s\n", md5sum)
-			sha1sum, _ := hashFileSha1(path)
-			fmt.Printf("SHA1: %s\n", sha1sum)
-			sha256sum, _ := hashFileSha256(path)
-			fmt.Printf("SHA256: %s\n", sha256sum)
-
-			dbFindSert(db, path, size, mime, md5sum, sha1sum, sha256sum)
-
-			fmt.Print("\n")
+		if info.IsDir() {
+			return nil
 		}
+
+		// just create thumbs if specified
+		sha256sum, _ := hashFileSha256(path)
+		fmt.Printf("SHA256: %s\n", sha256sum)
+		alreadyInDb, _, _, mime := dbFindSha256(db, sha256sum)
+
+		// thumbs for files already in DB
+		if generateThumbs && alreadyInDb {
+			makeThumbs(path, sha256sum, mime)
+		}
+
+		// end here for files present in DB
+		if alreadyInDb {
+			return nil
+		}
+
+		// TODO update lastPath even in found in db, use size for fast check
+
+		name := info.Name()
+		fmt.Printf("Name: %s\n", name)
+		size := info.Size()
+		fmt.Printf("Size: %d\n", size)
+		mime, _ = getType(path)
+		fmt.Printf("MIME: %s\n", mime)
+		md5sum, _ := hashFileMd5(path)
+		fmt.Printf("MD5: %s\n", md5sum)
+		sha1sum, _ := hashFileSha1(path)
+		fmt.Printf("SHA1: %s\n", sha1sum)
+
+		fmt.Printf("%s", "Writing to DB...")
+		dbFindSert(db, path, size, mime, md5sum, sha1sum, sha256sum)
+		fmt.Printf("%s", " done\n")
+
+		// thumbs for new files
+		makeThumbs(path, sha256sum, mime)
+
 		return nil
 	}
 }
