@@ -6,7 +6,6 @@ import (
 	"crypto/sha256"
 	"database/sql"
 	"encoding/hex"
-	"fmt"
 	"image"
 	"image/jpeg"
 	"image/png"
@@ -17,6 +16,7 @@ import (
 	"path/filepath"
 
 	"runtime/debug"
+
 	"github.com/nfnt/resize"
 )
 
@@ -232,45 +232,55 @@ func makeThumbs(path string, sha256sum string, mime string) {
 
 func visit(db *sql.DB, generateThumbs bool) filepath.WalkFunc {
 	return func(path string, info os.FileInfo, err error) error {
-		fmt.Printf("Visiting: %s\n", path)
+		log.Printf("Visiting: %s\n", path)
 
 		// don't continue if folder
 		info, nil := os.Stat(path)
 		if info.IsDir() {
+			log.Printf("%s\n", "It's a dir, skipping...")
 			return nil
 		}
 
 		// just create thumbs if specified
+		log.Printf("%s\n", "Calculating SHA256...")
 		sha256sum, _ := hashFileSha256(path)
-		fmt.Printf("SHA256: %s\n", sha256sum)
+		log.Printf("SHA256: %s\n", sha256sum)
 		alreadyInDb, _, _, mime := dbFindSha256(db, sha256sum)
 
 		// thumbs for files already in DB
 		if generateThumbs && alreadyInDb {
+			log.Printf("%s\n", "Creating thumbs for file already in DB...")
 			makeThumbs(path, sha256sum, mime)
+			log.Printf("%s\n", "Thumbs created")
+		} else {
+			log.Printf("%s\n", "Thumb generation not enabled, skipping...")
 		}
 
 		// end here for files present in DB
 		if alreadyInDb {
+			log.Printf("%s\n", "File already in DB, skipping...")
 			return nil
 		}
 
 		// TODO update lastPath even in found in db, use size for fast check
 
+		log.Printf("%s\n", "File not in DB, check info and add to DB!")
 		name := info.Name()
-		fmt.Printf("Name: %s\n", name)
+		log.Printf("Name: %s\n", name)
 		size := info.Size()
-		fmt.Printf("Size: %d\n", size)
+		log.Printf("Size: %d\n", size)
 		mime, _ = getType(path)
-		fmt.Printf("MIME: %s\n", mime)
+		log.Printf("MIME: %s\n", mime)
+		log.Printf("%s\n", "Calculating MD5...")
 		md5sum, _ := hashFileMd5(path)
-		fmt.Printf("MD5: %s\n", md5sum)
+		log.Printf("MD5: %s\n", md5sum)
+		log.Printf("%s\n", "Calculating SHA1...")
 		sha1sum, _ := hashFileSha1(path)
-		fmt.Printf("SHA1: %s\n", sha1sum)
+		log.Printf("SHA1: %s\n", sha1sum)
 
-		fmt.Printf("%s", "Writing to DB...")
+		log.Printf("%s", "Writing to DB...")
 		dbFindSert(db, path, size, mime, md5sum, sha1sum, sha256sum)
-		fmt.Printf("%s", " done\n")
+		log.Printf("%s", "...done\n")
 
 		// thumbs for new files
 		makeThumbs(path, sha256sum, mime)
