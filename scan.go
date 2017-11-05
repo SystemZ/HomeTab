@@ -169,7 +169,11 @@ func createThumb(pathToImg string, sha256 string, mime string, maxWidth uint, ma
 	// TODO check if image is ok then rewrite if needed
 	imgThumbPath := thumbPath(sha256, maxWidth, maxHeight)
 	if _, err := os.Stat(imgThumbPath); !os.IsNotExist(err) {
+		log.Printf("Creating %d x %d thumb is not needed, skipping...\n", maxWidth, maxHeight)
 		done <- true
+		return
+	} else {
+		log.Printf("Creating %d x %d thumb...\n", maxWidth, maxHeight)
 	}
 
 	// open original file to read
@@ -217,6 +221,7 @@ func createThumb(pathToImg string, sha256 string, mime string, maxWidth uint, ma
 		log.Fatalln(err)
 	}
 
+	log.Printf("Creating %d x %d thumb done\n", maxWidth, maxHeight)
 	done <- true
 }
 
@@ -251,7 +256,7 @@ func visit(db *sql.DB, generateThumbs bool) filepath.WalkFunc {
 		if generateThumbs && alreadyInDb {
 			log.Printf("%s\n", "Creating thumbs for file already in DB...")
 			makeThumbs(path, sha256sum, mime)
-			log.Printf("%s\n", "Thumbs created")
+			log.Printf("%s\n", "Thumbs work done")
 		} else {
 			log.Printf("%s\n", "Thumb generation not enabled, skipping...")
 		}
