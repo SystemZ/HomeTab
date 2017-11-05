@@ -14,6 +14,7 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"strconv"
 
 	"runtime/debug"
 
@@ -160,7 +161,7 @@ func thumbDirPath(sha256 string) (path string) {
 
 func thumbPath(sha256 string, width uint, height uint) (path string) {
 	dir := thumbDirPath(sha256)
-	path = dir + sha256 + "_" + string(width) + "_" + string(height)
+	path = dir + sha256 + "_" + strconv.Itoa(int(width)) + "_" + strconv.Itoa(int(height))
 	return path
 }
 
