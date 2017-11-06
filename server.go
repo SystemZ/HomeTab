@@ -119,12 +119,12 @@ func server(db *sql.DB) {
 
 	router.Get("/files/random", func(w traffic.ResponseWriter, req *traffic.Request) {
 		_, files := dbListRandom(db, 1)
-		r.HTML(w, http.StatusOK, "random_files", files)
+		r.HTML(w, http.StatusOK, "results_onepage", FilesView{files, 0, 0})
 	})
 
 	router.Get("/files/random/notag", func(w traffic.ResponseWriter, req *traffic.Request) {
 		_, files := dbFilesWithoutTagsRandom(db, 1)
-		r.HTML(w, http.StatusOK, "random_files", files)
+		r.HTML(w, http.StatusOK, "results_onepage", FilesView{files, 0, 0})
 	})
 
 	router.Get("/files/tag/name/:tag/page/:page", func(w traffic.ResponseWriter, req *traffic.Request) {
@@ -135,7 +135,7 @@ func server(db *sql.DB) {
 		if page == 1 {
 			prevPage = 1
 		}
-		r.HTML(w, http.StatusOK, "files", FilesView{files, prevPage, page + 1})
+		r.HTML(w, http.StatusOK, "results", FilesView{files, prevPage, page + 1})
 	})
 
 	router.Get("/files/page/:page", func(w traffic.ResponseWriter, req *traffic.Request) {
@@ -146,7 +146,7 @@ func server(db *sql.DB) {
 		if page == 1 {
 			prevPage = 1
 		}
-		r.HTML(w, http.StatusOK, "files", FilesView{files, prevPage, page + 1})
+		r.HTML(w, http.StatusOK, "results", FilesView{files, prevPage, page + 1})
 	})
 
 	router.Get("/files/notag/page/:page", func(w traffic.ResponseWriter, req *traffic.Request) {
@@ -157,7 +157,7 @@ func server(db *sql.DB) {
 		if page == 1 {
 			prevPage = 1
 		}
-		r.HTML(w, http.StatusOK, "files", FilesView{files, prevPage, page + 1})
+		r.HTML(w, http.StatusOK, "results", FilesView{files, prevPage, page + 1})
 	})
 
 	router.Get("/file/:sha256", func(w traffic.ResponseWriter, req *traffic.Request) {
