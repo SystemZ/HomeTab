@@ -229,8 +229,8 @@ func createThumb(pathToImg string, sha256 string, mime string, maxWidth uint, ma
 func makeThumbs(path string, sha256sum string, mime string) {
 	done1 := make(chan bool)
 	done2 := make(chan bool)
-	go createThumb(path, sha256sum, mime, 300, 250, done1)
-	go createThumb(path, sha256sum, mime, 560, 500, done2)
+	go createThumb(path, sha256sum, mime, 300, 300, done1)
+	go createThumb(path, sha256sum, mime, 700, 700, done2)
 	<-done1
 	<-done2
 	debug.FreeOSMemory()
