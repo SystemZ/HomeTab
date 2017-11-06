@@ -3,7 +3,7 @@ go:
   - 1.9.x
 script:
   - go test
-  - bash Taskfile.sh build $TRAVIS_COMMIT
+  - bash Taskfile.sh build $TRAVIS_COMMIT $TRAVIS_TAG
 deploy:
   - provider: releases
     api_key:
