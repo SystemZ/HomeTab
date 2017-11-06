@@ -177,6 +177,13 @@ func createThumb(pathToImg string, sha256 string, mime string, maxWidth uint, ma
 		log.Printf("Creating %d x %d thumb...\n", maxWidth, maxHeight)
 	}
 
+	// check if we still have original file on disk, prevent crash
+	if _, err := os.Stat(pathToImg); os.IsNotExist(err) {
+		log.Printf("File %s missing, skipping...\n", pathToImg)
+		done <- true
+		return
+	}
+
 	// open original file to read
 	fileRead, err := os.Open(pathToImg)
 	if err != nil {
