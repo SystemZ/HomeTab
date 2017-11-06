@@ -5,6 +5,8 @@ import (
 
 	"path/filepath"
 
+	"fmt"
+
 	"github.com/DavidHuie/gomigrate"
 	_ "github.com/mattn/go-sqlite3"
 )
@@ -204,5 +206,23 @@ func dbFindSert(db *sql.DB, lastPath string, size int64, mime string, md5 string
 	found, _ := dbFind(db, sha256)
 	if !found {
 		dbInsert(db, lastPath, size, mime, md5, sha1, sha256)
+	}
+}
+
+func dbUpdatePath(db *sql.DB, sha256sum string, newPath string) {
+	trashSQL, err := db.Prepare("UPDATE files SET last_path=? WHERE sha256=?")
+	if err != nil {
+		fmt.Println(err)
+	}
+	tx, err := db.Begin()
+	if err != nil {
+		fmt.Println(err)
+	}
+	_, err = tx.Stmt(trashSQL).Exec(newPath, sha256sum)
+	if err != nil {
+		fmt.Println("Doing rollback")
+		tx.Rollback()
+	} else {
+		tx.Commit()
 	}
 }

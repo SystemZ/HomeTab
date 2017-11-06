@@ -249,6 +249,7 @@ func visit(db *sql.DB, generateThumbs bool) filepath.WalkFunc {
 
 		// just create thumbs if specified
 		log.Printf("%s\n", "Calculating SHA256...")
+		//TODO use size for fast check
 		sha256sum, _ := hashFileSha256(path)
 		log.Printf("SHA256: %s\n", sha256sum)
 		alreadyInDb, _, _, mime := dbFindSha256(db, sha256sum)
@@ -262,13 +263,20 @@ func visit(db *sql.DB, generateThumbs bool) filepath.WalkFunc {
 			log.Printf("%s\n", "Thumb generation not enabled, skipping...")
 		}
 
-		// end here for files present in DB
-		if alreadyInDb {
-			log.Printf("%s\n", "File already in DB, skipping...")
-			return nil
+		_, fileInDb := dbFind(db, sha256sum)
+		if alreadyInDb && fileInDb.Name != path {
+			log.Printf("Updating path from %s to %s ...", fileInDb.Name, path)
+			dbUpdatePath(db, sha256sum, path)
+			log.Printf("%s\n", "Updating path done")
+		} else if alreadyInDb && fileInDb.Name == path {
+			log.Printf("%s\n", "File path is up to date")
 		}
 
-		// TODO update lastPath even in found in db, use size for fast check
+		// end here for files present in DB
+		if alreadyInDb {
+			log.Printf("%s\n", "File already in DB, ending...")
+			return nil
+		}
 
 		log.Printf("%s\n", "File not in DB, check info and add to DB!")
 		name := info.Name()
