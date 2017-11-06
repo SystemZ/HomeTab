@@ -1,4 +1,5 @@
 # GoTag
+[![Build Status](https://travis-ci.org/SystemZ/gotag.svg?branch=master)](https://travis-ci.org/SystemZ/gotag)
 
 Privacy focused, browser based file manager for tagging and searching local files on disk.
 
@@ -9,7 +10,7 @@ Only changes are made in app's folder.
 
 ## How to use
 
-### Ubuntu 16.04
+### Linux
 
 - download ready to use archive from [https://github.com/SystemZ/gotag/releases](https://github.com/SystemZ/gotag/releases)
 - unpack archive

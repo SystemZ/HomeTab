@@ -34,9 +34,19 @@ function scan {
 }
 
 function build {
-    mkdir -p builds
+    [ -z "$1" ] && echo "Provide commit or version string" >&2 && exit 1
     go build
-    tar czvf builds/gotag_0.1.0_Linux-64bit.tar.gz gotag migrations templates
+    mkdir -p builds
+
+    # if we have two parameters, use second as a version
+    if [ -z "$2" ]
+    then
+      BUILD_VERSION_STR=$1
+    else
+      BUILD_VERSION_STR=$2
+    fi
+
+    zip -r9 builds/gotag-$BUILD_VERSION_STR-linux-amd64.zip gotag migrations templates LICENSE README.md
 }
 
 function prod {
