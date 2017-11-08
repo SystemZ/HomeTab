@@ -1,14 +1,27 @@
 language: go
 go:
-  - 1.9.x
+- 1.6.x
+- 1.7.x
+- 1.8.x
+- 1.9.2
+- tip
 script:
-  - go test
-  - bash Taskfile.sh build $TRAVIS_COMMIT $TRAVIS_TAG
+- go test
+- bash Taskfile.sh build-req
+- bash Taskfile.sh build $TRAVIS_COMMIT $TRAVIS_TAG
+matrix:
+  allow_failures:
+  - go: tip
 deploy:
-  - provider: releases
-    api_key:
-      secure: AjdvpbAiht9CYi317yWrF9z38ExcGOaFFLotxxp/ffAbWjE5/ZtJH/lJ8oeFKEz+ByWTsrcrJCzt8xzfSdl/4JtXRc4ne310Nv7cQwux6U4vq+Vvv55tNEDjEaWLF+outaXsZbcd1hidPshPt24enReoCWA8SePqHXmDo/t7L4wBM3s2KwZl83B/cXDi+YF5MvhKDlD4WVCoL6FexnbNTGgleER+FNJE+xFLNNTC/vNfgmeSc84lxqUAcaLUls2NvHAJnycGkIoM9bMEmKodqpoqmV6NqIqYlo5zz9WmA+BesdKJ49Id31dgLgMLlWyKdvZHpBzgUam7bzUKpmNvRo4QDSHUz65etq7dSPWk40dtU8bd8fj7Cxao4MsvXfu1UPZRiqWiBIVSwQJHOvcMA4s9VgiL5WeubvgdJRlR9iMjqsbOvSdq51zgcCxAxOBw9N3yrKuKJ7EAoTCeezjnRvKiT0KzAPpOrMl1jBk7p62RqscHnuvFtbud6PeXeXkHhkfH0AOyxgTRpFZ2XPtYhC/RHVSv8/VGQ149FIH+xvMenlPG+qm6rNAjwwGaQQT5dJ4RPrrBrTChRurKHFMFBzvvxnel8bYBpulKxJrMZbfMd90kcaLsrBOAUK0hgDmufD9ptZcMpLyVu8oc/rsy8n/B8BRjsxko36SE1oVm240=
-    file: builds/gotag-$TRAVIS_TAG-linux-amd64.zip
-    on:
-      tags: true
-      repo: SystemZ/gotag
+- provider: releases
+  api_key:
+    secure: AjdvpbAiht9CYi317yWrF9z38ExcGOaFFLotxxp/ffAbWjE5/ZtJH/lJ8oeFKEz+ByWTsrcrJCzt8xzfSdl/4JtXRc4ne310Nv7cQwux6U4vq+Vvv55tNEDjEaWLF+outaXsZbcd1hidPshPt24enReoCWA8SePqHXmDo/t7L4wBM3s2KwZl83B/cXDi+YF5MvhKDlD4WVCoL6FexnbNTGgleER+FNJE+xFLNNTC/vNfgmeSc84lxqUAcaLUls2NvHAJnycGkIoM9bMEmKodqpoqmV6NqIqYlo5zz9WmA+BesdKJ49Id31dgLgMLlWyKdvZHpBzgUam7bzUKpmNvRo4QDSHUz65etq7dSPWk40dtU8bd8fj7Cxao4MsvXfu1UPZRiqWiBIVSwQJHOvcMA4s9VgiL5WeubvgdJRlR9iMjqsbOvSdq51zgcCxAxOBw9N3yrKuKJ7EAoTCeezjnRvKiT0KzAPpOrMl1jBk7p62RqscHnuvFtbud6PeXeXkHhkfH0AOyxgTRpFZ2XPtYhC/RHVSv8/VGQ149FIH+xvMenlPG+qm6rNAjwwGaQQT5dJ4RPrrBrTChRurKHFMFBzvvxnel8bYBpulKxJrMZbfMd90kcaLsrBOAUK0hgDmufD9ptZcMpLyVu8oc/rsy8n/B8BRjsxko36SE1oVm240=
+  file:
+    - builds/gotag-$TRAVIS_TAG-linux-amd64.zip
+    - builds/gotag-$TRAVIS_TAG-linux-arm.zip
+  on:
+    repo: SystemZ/gotag
+    tags: true
+    branch: master
+    go: 1.9.2
+    condition: "`uname` == 'Linux'"

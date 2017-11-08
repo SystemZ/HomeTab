@@ -1,4 +1,5 @@
 #!/bin/bash
+BUILD_VERSION_STR=""
 
 function kill_dev() {
     PID1=$(ps aux | grep '/tmp/go' | awk '{print $2}')
@@ -23,7 +24,7 @@ function serve {
    while true; do
        go run *.go serve &
        # exclude all files with dots
-       inotifywait -e modify -e move -e create -e delete -e attrib -r `pwd` --exclude cache --exclude index.lock --exclude '/\..+' --exclude cache
+       inotifywait -e modify -r `pwd` --exclude cache --exclude gotag.sqlite3-journal --exclude '/\..+' --exclude cache
        kill_dev
    done
 }
@@ -33,9 +34,13 @@ function scan {
     go run *.go scan $1
 }
 
+function build-req {
+    # works on ubuntu 14.04/16.04
+    apt-get install -y build-essential g++-arm-linux-gnueabihf
+}
+
 function build {
     [ -z "$1" ] && echo "Provide commit or version string" >&2 && exit 1
-    go build
     mkdir -p builds
 
     # if we have two parameters, use second as a version
@@ -46,7 +51,20 @@ function build {
       BUILD_VERSION_STR=$2
     fi
 
+    build-linux-amd64
+    build-linux-arm
+}
+
+function build-linux-amd64 {
+    echo "Building linux-amd64 ..."
+    go build
     zip -r9 builds/gotag-$BUILD_VERSION_STR-linux-amd64.zip gotag migrations templates LICENSE README.md
+}
+
+function build-linux-arm {
+    echo "Building linux-arm ..."
+    CC=arm-linux-gnueabihf-gcc GOOS=linux GOARCH=arm GOARM=6 CGO_ENABLED=1 go build -o gotag
+    zip -r9 builds/gotag-$BUILD_VERSION_STR-linux-arm.zip gotag migrations templates LICENSE README.md
 }
 
 function prod {
