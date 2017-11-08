@@ -36,7 +36,7 @@ function scan {
 
 function build-req {
     # works on ubuntu 14.04/16.04
-    apt-get install -y build-essential g++-arm-linux-gnueabihf
+    sudo apt-get install -y build-essential g++-arm-linux-gnueabihf
 }
 
 function build {
