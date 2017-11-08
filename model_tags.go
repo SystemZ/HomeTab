@@ -3,6 +3,7 @@ package main
 import (
 	"database/sql"
 	"log"
+	"strings"
 )
 
 type Tag struct {
@@ -64,7 +65,11 @@ func dbTagFindSert(db *sql.DB, name string, fid int) {
 }
 
 func dbTagInsert(db *sql.DB, name string, fid int) (id int64) {
-	// insert
+	if len(strings.TrimSpace(name)) <= 1 {
+		log.Print("Tag is empty or have less than 2 letters")
+		return 0
+	}
+
 	stmt, err := db.Prepare("INSERT INTO tags(name, fid) VALUES(?,?)")
 	checkErr(err)
 
