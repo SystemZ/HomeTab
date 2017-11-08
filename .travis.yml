@@ -8,7 +8,6 @@ go:
 addons:
   apt:
     packages:
-    - build-essential
     - g++-arm-linux-gnueabihf
 script:
 - go test
@@ -26,6 +25,6 @@ deploy:
   on:
     repo: SystemZ/gotag
     tags: true
-    branch: master
     go: 1.9.2
     condition: "`uname` == 'Linux'"
+  skip_cleanup: true
