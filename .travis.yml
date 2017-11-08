@@ -5,9 +5,13 @@ go:
 - 1.8.x
 - 1.9.2
 - tip
+addons:
+  apt:
+    packages:
+    - build-essential
+    - g++-arm-linux-gnueabihf
 script:
 - go test
-- bash Taskfile.sh build-req
 - bash Taskfile.sh build $TRAVIS_COMMIT $TRAVIS_TAG
 matrix:
   allow_failures:
