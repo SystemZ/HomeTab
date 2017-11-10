@@ -14,9 +14,9 @@ func dbFileTagSearchByName(db *sql.DB, page int64, tag string) (found bool, sha2
 		offset = 0
 	}
 
-	// query
 	rows, err := db.Query("SELECT files.id, files.last_path, files.size, files.sha256 FROM tags JOIN files ON files.id = tags.fid WHERE tags.name = ? ORDER BY files.id LIMIT ?, ?", tag, offset, limit)
 	checkErr(err)
+	defer rows.Close()
 
 	for rows.Next() {
 		var id int
@@ -38,7 +38,6 @@ func dbFileTagSearchByName(db *sql.DB, page int64, tag string) (found bool, sha2
 			found = true
 		}
 	}
-	rows.Close() //good habit to close
 	return found, sha256s
 }
 
@@ -51,9 +50,9 @@ func dbFilesWithoutTags(db *sql.DB, page int64) (found bool, sha256s map[int]Fil
 		offset = 0
 	}
 
-	// query
 	rows, err := db.Query("SELECT f.id, f.last_path, f.size, f.sha256, (SELECT COUNT(id) FROM tags t WHERE t.fid = f.id) AS tags FROM files f WHERE tags < 1 ORDER BY id LIMIT ?, ?", offset, limit)
 	checkErr(err)
+	defer rows.Close()
 
 	for rows.Next() {
 		var id int
@@ -76,7 +75,6 @@ func dbFilesWithoutTags(db *sql.DB, page int64) (found bool, sha256s map[int]Fil
 			found = true
 		}
 	}
-	rows.Close() //good habit to close
 	return found, sha256s
 }
 
@@ -89,9 +87,9 @@ func dbFilesWithoutTagsRandom(db *sql.DB, page int64) (found bool, sha256s map[i
 		offset = 0
 	}
 
-	// query
 	rows, err := db.Query("SELECT f.id, f.last_path, f.size, f.sha256, (SELECT COUNT(id) FROM tags t WHERE t.fid = f.id) AS tags FROM files f WHERE tags < 1 ORDER BY random() LIMIT ?, ?", offset, limit)
 	checkErr(err)
+	defer rows.Close()
 
 	for rows.Next() {
 		var id int
@@ -114,6 +112,5 @@ func dbFilesWithoutTagsRandom(db *sql.DB, page int64) (found bool, sha256s map[i
 			found = true
 		}
 	}
-	rows.Close() //good habit to close
 	return found, sha256s
 }

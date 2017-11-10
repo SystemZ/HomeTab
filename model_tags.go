@@ -16,10 +16,10 @@ type Tag struct {
 func dbTagList(db *sql.DB, fid int) (found bool, tags map[int]Tag) {
 	found = false
 
-	// query
 	//rows, err := db.Query("SELECT id, name FROM tags WHERE fid = ? ", fid)
 	rows, err := db.Query("SELECT id, name, (SELECT COUNT(id) FROM tags t2 WHERE t1.name = t2.name) as overall FROM tags t1 WHERE fid = ? ORDER BY overall DESC", fid)
 	checkErr(err)
+	defer rows.Close()
 
 	i := 0
 	for rows.Next() {
@@ -39,21 +39,19 @@ func dbTagList(db *sql.DB, fid int) (found bool, tags map[int]Tag) {
 		}
 		i++
 	}
-	rows.Close() //good habit to close
 	return found, tags
 }
 
 func dbTagFind(db *sql.DB, name string, fid int) (found bool) {
-	// query
 	rows, err := db.Query("SELECT id FROM tags WHERE fid = ? AND name = ?", fid, name)
 	checkErr(err)
+	defer rows.Close()
 	found = false
 
 	for rows.Next() {
 		found = true
 		break
 	}
-	rows.Close() //good habit to close
 	return found
 }
 
@@ -105,9 +103,9 @@ type TagRank struct {
 func dbTagRank(db *sql.DB) (found bool, tags map[int]TagRank) {
 	found = false
 
-	// query
 	rows, err := db.Query("SELECT DISTINCT name, (SELECT COUNT(id) FROM tags t2 WHERE t1.name = t2.name) as overall FROM tags t1 ORDER BY overall DESC")
 	checkErr(err)
+	defer rows.Close()
 
 	i := 0
 	for rows.Next() {
@@ -126,6 +124,5 @@ func dbTagRank(db *sql.DB) (found bool, tags map[int]TagRank) {
 		}
 		i++
 	}
-	rows.Close() //good habit to close
 	return found, tags
 }

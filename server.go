@@ -22,8 +22,9 @@ import (
 )
 
 type FileView struct {
-	File File
-	Tags map[int]Tag
+	File    File
+	Tags    map[int]Tag
+	Similar map[int]DistanceRank
 }
 
 type FilesView struct {
@@ -164,7 +165,9 @@ func server(db *sql.DB) {
 		params := req.URL.Query()
 		_, file := dbFind(db, params.Get("sha256"))
 		_, tags := dbTagList(db, file.Fid)
-		r.HTML(w, http.StatusOK, "file", FileView{file, tags})
+		_, similar := dbDistanceTopFindSimilar(db, file.Fid)
+
+		r.HTML(w, http.StatusOK, "file", FileView{file, tags, similar})
 	})
 
 	router.Post("/file/:sha256/tag/add", func(w traffic.ResponseWriter, req *traffic.Request) {

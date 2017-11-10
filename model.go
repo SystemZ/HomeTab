@@ -2,12 +2,12 @@ package main
 
 import (
 	"database/sql"
-
+	"fmt"
+	"log"
 	"path/filepath"
 
-	"fmt"
-
 	"github.com/DavidHuie/gomigrate"
+	"github.com/carlogit/phash"
 	_ "github.com/mattn/go-sqlite3"
 )
 
@@ -18,7 +18,6 @@ func checkErr(err error) {
 }
 
 func dbInit() (db *sql.DB) {
-
 	db, err := sql.Open("sqlite3", "./gotag.sqlite3")
 	checkErr(err)
 
@@ -50,6 +49,7 @@ func dbList(db *sql.DB, page int64) (found bool, sha256s map[int]File) {
 	// query
 	rows, err := db.Query("SELECT id, last_path, size, sha256 FROM files ORDER BY id LIMIT ?, ?", offset, limit)
 	checkErr(err)
+	defer rows.Close()
 
 	for rows.Next() {
 		var id int
@@ -71,7 +71,6 @@ func dbList(db *sql.DB, page int64) (found bool, sha256s map[int]File) {
 			found = true
 		}
 	}
-	rows.Close() //good habit to close
 	return found, sha256s
 }
 
@@ -87,6 +86,7 @@ func dbListRandom(db *sql.DB, page int64) (found bool, sha256s map[int]File) {
 	// query
 	rows, err := db.Query("SELECT id, last_path, size, sha256 FROM files ORDER BY random() LIMIT ?, ?", offset, limit)
 	checkErr(err)
+	defer rows.Close()
 
 	for rows.Next() {
 		var id int
@@ -108,17 +108,14 @@ func dbListRandom(db *sql.DB, page int64) (found bool, sha256s map[int]File) {
 			found = true
 		}
 	}
-	rows.Close() //good habit to close
 	return found, sha256s
 }
 
 func dbListSha256(db *sql.DB, search string) (found bool, sha256s map[int]File) {
-
 	found = false
-
-	// query
 	rows, err := db.Query("SELECT id, last_path, size, sha256 FROM files WHERE sha256 = ? ORDER BY id LIMIT 100", search)
 	checkErr(err)
+	defer rows.Close()
 
 	for rows.Next() {
 		var id int
@@ -140,15 +137,13 @@ func dbListSha256(db *sql.DB, search string) (found bool, sha256s map[int]File) 
 			found = true
 		}
 	}
-	rows.Close() //good habit to close
 	return found, sha256s
 }
 
 func dbFind(db *sql.DB, sha256 string) (found bool, file File) {
-
-	// query
 	rows, err := db.Query("SELECT id, last_path, size FROM files WHERE sha256 = ?", sha256)
 	checkErr(err)
+	defer rows.Close()
 	var id int
 	var last_path string
 	var size int
@@ -161,15 +156,32 @@ func dbFind(db *sql.DB, sha256 string) (found bool, file File) {
 		file = File{id, last_path, size, sha256}
 		break
 	}
-	rows.Close() //good habit to close
+	return found, file
+}
+
+func dbFindById(db *sql.DB, fileId int) (found bool, file File) {
+	rows, err := db.Query("SELECT last_path, size, sha256 FROM files WHERE id = ?", fileId)
+	checkErr(err)
+	defer rows.Close()
+	var last_path string
+	var size int
+	var sha256 string
+	found = false
+
+	for rows.Next() {
+		err = rows.Scan(&last_path, &size, &sha256)
+		checkErr(err)
+		found = true
+		file = File{fileId, last_path, size, sha256}
+		break
+	}
 	return found, file
 }
 
 func dbFindSha256(db *sql.DB, sha string) (found bool, res int, lastPath string, mime string) {
-
-	// query
 	rows, err := db.Query("SELECT id, last_path, mime FROM files WHERE sha256 = ?", sha)
 	checkErr(err)
+	defer rows.Close()
 	var id int
 	var sha256 string
 
@@ -184,12 +196,10 @@ func dbFindSha256(db *sql.DB, sha string) (found bool, res int, lastPath string,
 		found = true
 		break
 	}
-	rows.Close() //good habit to close
 	return found, result, lastPath, mime
 }
 
 func dbInsert(db *sql.DB, lastPath string, size int64, mime string, md5 string, sha1 string, sha256 string) (id int64) {
-	// insert
 	stmt, err := db.Prepare("INSERT INTO files(last_path, size, mime, md5, sha1, sha256) VALUES(?,?,?,?,?,?)")
 	checkErr(err)
 
@@ -225,4 +235,88 @@ func dbUpdatePath(db *sql.DB, sha256sum string, newPath string) {
 	} else {
 		tx.Commit()
 	}
+}
+
+func dbFindPHash(db *sql.DB, sha256 string) (found bool) {
+	rows, err := db.Query("SELECT phash FROM files WHERE phash IS NOT NULL AND sha256 = ?", sha256)
+	defer rows.Close()
+
+	checkErr(err)
+	found = false
+
+	for rows.Next() {
+		//err = rows.Scan(&phash)
+		checkErr(err)
+		found = true
+		break
+	}
+	return found //, phash
+}
+
+func dbUpdatePHash(db *sql.DB, sha256sum string, pHash string) {
+	trashSQL, err := db.Prepare("UPDATE files SET phash=? WHERE sha256=?")
+	if err != nil {
+		fmt.Println(err)
+	}
+	tx, err := db.Begin()
+	if err != nil {
+		fmt.Println(err)
+	}
+	_, err = tx.Stmt(trashSQL).Exec(pHash, sha256sum)
+	if err != nil {
+		log.Println("Doing rollback")
+		tx.Rollback()
+	} else {
+		tx.Commit()
+	}
+}
+
+type Distance struct {
+	IdA  int
+	IdB  int
+	Dist int
+}
+
+func dbFilesWithPHash(db *sql.DB, page int64, sha256sum string) (distances map[int]Distance) {
+	distances = make(map[int]Distance)
+
+	rowsOneFile, err := db.Query("SELECT id, phash FROM files WHERE sha256 = ? AND phash IS NOT NULL", sha256sum)
+	checkErr(err)
+
+	var id int
+	var pHash string
+	for rowsOneFile.Next() {
+		err = rowsOneFile.Scan(&id, &pHash)
+		checkErr(err)
+		break
+	}
+	rowsOneFile.Close()
+
+	limit := int64(1000000) //FIXME
+	offset := (page - 1) * limit
+	if offset <= 0 {
+		offset = 0
+	}
+
+	rows, err := db.Query("SELECT id, phash FROM files WHERE sha256 != ? AND phash IS NOT NULL AND mime IN ('image/jpeg', 'image/png') ORDER BY id LIMIT ?, ?", sha256sum, offset, limit)
+	checkErr(err)
+	defer rows.Close()
+
+	for rows.Next() {
+		var rId int
+		var rPHash string
+		err = rows.Scan(&rId, &rPHash)
+
+		checkErr(err)
+
+		if id != rId && id != 0 {
+			distance := phash.GetDistance(pHash, rPHash)
+			/*
+				writes when reading sqlite causes locks and crashes
+				aggregate to map then write outside this function
+			*/
+			distances[rId] = Distance{id, rId, distance}
+		}
+	}
+	return distances
 }

@@ -14,9 +14,8 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
-	"strconv"
-
 	"runtime/debug"
+	"strconv"
 
 	"github.com/nfnt/resize"
 )
@@ -198,10 +197,10 @@ func createThumb(pathToImg string, sha256 string, mime string, maxWidth uint, ma
 		img, _ = jpeg.Decode(fileRead)
 	case "image/png":
 		img, _ = png.Decode(fileRead)
-	//case "video/webm":
-	//	img, _ = webm.Decode(fileRead)
-	//case "video/mp4":
-	//	img, _ = mp4.Decode(fileRead)
+		//case "video/webm":
+		//	img, _ = webm.Decode(fileRead)
+		//case "video/mp4":
+		//	img, _ = mp4.Decode(fileRead)
 	default:
 		log.Printf("%s", "This file type is not supported yet, sorry :(")
 		done <- true
@@ -278,6 +277,31 @@ func visit(db *sql.DB, generateThumbs bool) filepath.WalkFunc {
 		} else if alreadyInDb && fileInDb.Name == path {
 			log.Printf("%s\n", "File path is up to date")
 		}
+
+		log.Println("Calculating similarity to other images, this may take a while")
+		// calc and add perceptual hash to DB for images
+		pHashFound := dbFindPHash(db, sha256sum)
+		if (mime == "image/jpeg" || mime == "image/png") && !pHashFound {
+			log.Printf("%s\n", "pHash not found, calculating...")
+			pHash := getPHash(path)
+			log.Printf("%s %s\n", "pHash:", pHash)
+			dbUpdatePHash(db, sha256sum, pHash)
+		}
+
+		// calc distance between this and rest of images
+		// FIXME support more than 1m rows with count rows before starting
+		//start := timeStart()
+		distances := dbFilesWithPHash(db, 1, sha256sum)
+		tx, stmt := dbDistanceInsertPrepare(db)
+		//i := 0
+		for _, v := range distances {
+			dbDistanceInsert(stmt, v.IdA, v.IdB, v.Dist)
+			//i++
+		}
+		dbDistanceInsertEnd(tx)
+		log.Println("Calculating similarity done")
+		//timeStop(start)
+		//fmt.Printf("%d queries\n", i)
 
 		// end here for files present in DB
 		if alreadyInDb {

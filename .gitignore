@@ -3,7 +3,8 @@
 
 # gotag's generated files
 gotag
-gotag.sqlite3
+*.sqlite3
+*.sqlite3-journal
 cache/
 
 # build pipeline

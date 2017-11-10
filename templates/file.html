@@ -80,7 +80,7 @@
             {{ end }}
         </div>
 
-        <div class="col-sm-12 col-lg-8 col-sm-first col-lg-normal">
+        <div class="col-sm-12 col-lg-6 col-sm-first col-lg-normal">
             <!-- Add the extra style to make card spacing look better -->
             <div class="center-img">
                 <div style="min-width:700px">
@@ -92,6 +92,17 @@
                 <!--<p class="section double-padded">Lorem ipsum dolor sit amet, consectetur adipiscing elit.</p>-->
             </div>
         </div>
+
+        <div class="col-sm-12 col-lg-2">
+            {{ range .Similar }}
+            <span>{{ .Distance }}</span>
+            <a href="/file/{{ .Sha256 }}" target="_blank">
+                <img src="/img/thumb/100/100/{{ .Sha256 }}" alt="{{ .B }}"/>
+            </a>
+            <br>
+            {{ end }}
+        </div>
+
     </div>
 </div>
 {{ template "partials/footer" }}
