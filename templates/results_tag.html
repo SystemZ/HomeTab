@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    {{ template "partials/head" }}
+    {{ template "partials/thumb_style" }}
+    <style>
+        #prev-button, #next-button {
+            z-index: 1;
+            height: 100vh;
+            background: rgba(66, 184, 221, 0.3);
+            position: absolute;
+            bottom: 0;
+            top: 48px;
+            width: 70px;
+        }
+
+        #prev-button {
+            left: 0;
+
+        }
+
+        #next-button {
+            right: 0;
+        }
+    </style>
+</head>
+<body>
+{{ template "partials/header" }}
+<br/>
+<div id="prev-button" class="clickable" onclick="window.location.href = '/files/tag/name/{{ .Tag }}/page/{{ .PrevPage }}'">
+    <div>
+        Page
+        <br>
+        {{ .PrevPage }}
+    </div>
+</div>
+<div class="container">
+    <div class="row cols-sm-12 cols-lg-12">
+        <!-- Add the extra style to make card spacing look better -->
+        <div class="col-lg-offset-0 row" style="-webkit-justify-content: space-around; justify-content: space-around;">
+            {{range .Files}}
+            <div class="card">
+                <!--<a href="/img/full/{{ .Sha256 }}" target="_blank">-->
+                <a href="/file/{{ .Sha256 }}" target="_blank">
+                    <!-- 800x600 was default in this template -->
+                    <img src="/img/thumb/300/300/{{ .Sha256 }}" class="section media" alt="{{ .Name }}">
+                </a>
+                <!--<h3 class="section double-padded">Lorem ipsum</h3>-->
+                <!--<p class="section double-padded">Lorem ipsum dolor sit amet, consectetur adipiscing elit.</p>-->
+            </div>
+            {{end}}
+        </div>
+    </div>
+</div>
+<div id="next-button" class="clickable"
+     onclick="window.location.href = '/files/tag/name/{{ .Tag }}/page/{{ .NextPage }}'">
+    <div>
+        Page
+        <br>
+        {{ .NextPage }}
+    </div>
+</div>
+{{ template "partials/footer" }}
+</body>
+</html>

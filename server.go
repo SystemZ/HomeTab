@@ -33,6 +33,13 @@ type FilesView struct {
 	NextPage int64
 }
 
+type TagFilesView struct {
+	Files    map[int]File
+	PrevPage int64
+	NextPage int64
+	Tag      string
+}
+
 func writeImage(w http.ResponseWriter, img *image.Image) {
 	buffer := new(bytes.Buffer)
 	if err := jpeg.Encode(buffer, *img, nil); err != nil {
@@ -130,13 +137,14 @@ func server(db *sql.DB) {
 
 	router.Get("/files/tag/name/:tag/page/:page", func(w traffic.ResponseWriter, req *traffic.Request) {
 		params := req.URL.Query()
+		tag := params.Get("tag")
 		page, _ := strconv.ParseInt(params.Get("page"), 10, 64)
-		_, files := dbFileTagSearchByName(db, page, params.Get("tag"))
+		_, files := dbFileTagSearchByName(db, page, tag)
 		prevPage := page - 1
 		if page == 1 {
 			prevPage = 1
 		}
-		r.HTML(w, http.StatusOK, "results", FilesView{files, prevPage, page + 1})
+		r.HTML(w, http.StatusOK, "results_tag", TagFilesView{files, prevPage, page + 1, tag})
 	})
 
 	router.Get("/files/page/:page", func(w traffic.ResponseWriter, req *traffic.Request) {
@@ -158,7 +166,7 @@ func server(db *sql.DB) {
 		if page == 1 {
 			prevPage = 1
 		}
-		r.HTML(w, http.StatusOK, "results", FilesView{files, prevPage, page + 1})
+		r.HTML(w, http.StatusOK, "results_notag", FilesView{files, prevPage, page + 1})
 	})
 
 	router.Get("/file/:sha256", func(w traffic.ResponseWriter, req *traffic.Request) {
