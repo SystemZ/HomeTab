@@ -8,7 +8,7 @@ go:
 addons:
   apt:
     packages:
-    - g++-arm-linux-gnueabihf
+    - g++-arm-linux-gnueabihf mingw-w64
 script:
 - go test
 - bash Taskfile.sh build $TRAVIS_COMMIT $TRAVIS_TAG
@@ -22,6 +22,7 @@ deploy:
   file:
     - builds/gotag-$TRAVIS_TAG-linux-amd64.zip
     - builds/gotag-$TRAVIS_TAG-linux-arm.zip
+    - builds/gotag-$TRAVIS_TAG-windows-amd64.zip
   on:
     repo: SystemZ/gotag
     tags: true

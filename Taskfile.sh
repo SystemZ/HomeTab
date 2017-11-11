@@ -36,7 +36,7 @@ function scan {
 
 function build-req {
     # works on ubuntu 14.04/16.04
-    sudo apt-get install -y build-essential g++-arm-linux-gnueabihf
+    sudo apt-get install -y build-essential g++-arm-linux-gnueabihf mingw-w64
 }
 
 function build {
@@ -53,6 +53,7 @@ function build {
 
     build-linux-amd64
     build-linux-arm
+    build-windows-amd64
 }
 
 function build-linux-amd64 {
@@ -65,6 +66,12 @@ function build-linux-arm {
     echo "Building linux-arm ..."
     CC=arm-linux-gnueabihf-gcc GOOS=linux GOARCH=arm GOARM=6 CGO_ENABLED=1 go build -o gotag
     zip -r9 builds/gotag-$BUILD_VERSION_STR-linux-arm.zip gotag migrations templates LICENSE README.md
+}
+
+function build-windows-amd64 {
+    echo "Building windows-amd64 ..."
+    CC=x86_64-w64-mingw32-gcc GOOS=windows GOARCH=amd64 CGO_ENABLED=1 go build -o gotag.exe
+    zip -r9 builds/gotag-$BUILD_VERSION_STR-windows-amd64.zip gotag.exe migrations templates LICENSE README.md
 }
 
 function prod {
