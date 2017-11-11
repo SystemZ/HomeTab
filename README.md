@@ -10,9 +10,9 @@ Only changes are made in app's folder.
 
 ## How to use
 
-### Linux
+### Linux/Windows
 
-- download ready to use archive from [https://github.com/SystemZ/gotag/releases](https://github.com/SystemZ/gotag/releases)
+- download ready to use archive from [here](https://github.com/SystemZ/gotag/releases)
 - unpack archive
 - run binary to scan dir add add files to gotag.sqlite3 DB located in same directory as app
 ```
@@ -22,7 +22,7 @@ Only changes are made in app's folder.
 ```
 ./gotag serve
 ```
-- try to enjoy besides many bugs
+- please report encountered issues [here](https://github.com/SystemZ/gotag/issues)
 
 ## License
 

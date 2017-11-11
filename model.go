@@ -320,3 +320,16 @@ func dbFilesWithPHash(db *sql.DB, page int64, sha256sum string) (distances map[i
 	}
 	return distances
 }
+
+func dbCountAllFiles(db *sql.DB) (filesCounted int) {
+	rows, err := db.Query("SELECT COUNT(id) FROM files")
+	defer rows.Close()
+	checkErr(err)
+
+	for rows.Next() {
+		err = rows.Scan(&filesCounted)
+		checkErr(err)
+		break
+	}
+	return filesCounted
+}
