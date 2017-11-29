@@ -22,16 +22,12 @@ function help {
 function serve {
    trap sigint_handler SIGINT
    while true; do
-       go run *.go serve &
+       go build
+       ./gotag serve &
        # exclude all files with dots
        inotifywait -e modify -r `pwd` --exclude cache --exclude gotag.sqlite3-journal --exclude '/\..+' --exclude cache
        kill_dev
    done
-}
-
-function scan {
-    echo $1
-    go run *.go scan $1
 }
 
 function build-req {
