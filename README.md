@@ -24,6 +24,10 @@ Only changes are made in app's folder.
 ```
 - please report encountered issues [here](https://github.com/SystemZ/gotag/issues)
 
+### Platform differences
+
+Currently webm/mp4/gif thumbnails are supported only on Linux build as a limitation of [lilliput](https://github.com/discordapp/lilliput) library
+
 ## License
 
 MIT
