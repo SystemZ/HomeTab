@@ -77,7 +77,7 @@ func writeImageWithCache(w http.ResponseWriter, r *traffic.Request, img *image.I
 	w.Header().Set("Content-Type", "image/jpeg")
 	w.Header().Set("Content-Length", strconv.Itoa(len(buffer.Bytes())))
 	if _, err := w.Write(buffer.Bytes()); err != nil {
-		log.Println("unable to write image.")
+		log.Println("unable to write image via writeImageWithCache")
 		*img = nil
 	} else {
 		*img = nil
@@ -104,7 +104,7 @@ func writeRawFile(w http.ResponseWriter, r *traffic.Request, filePath string, mi
 	w.Header().Set("Content-Length", strconv.Itoa(len(buffer.Bytes())))
 
 	if _, err := w.Write(buffer.Bytes()); err != nil {
-		log.Println("unable to write image.")
+		log.Println("unable to write image via writeRawFile")
 	}
 }
 
@@ -225,8 +225,8 @@ func server(db *sql.DB) {
 		<-done
 		debug.FreeOSMemory()
 
-		// push thumb to browser
-		writeRawFile(w, req, thumbPath(sha256sum, width, height), mime)
+		// push thumb to browser, thumb will be always .jpg
+		writeRawFile(w, req, thumbPath(sha256sum, width, height), "image/jpeg")
 	})
 
 	router.Get("/img/thumbs/:w/:h/:sha256", func(w traffic.ResponseWriter, req *traffic.Request) {
