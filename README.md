@@ -26,7 +26,7 @@ Only changes are made in app's folder.
 
 ### Platform differences
 
-Currently webm/mp4/gif thumbnails are supported only on Linux build as a limitation of [lilliput](https://github.com/discordapp/lilliput) library
+Currently webm/mp4/gif thumbnails are supported only on Linux amd64 build as a limitation of [lilliput](https://github.com/discordapp/lilliput) library
 
 ## License
 

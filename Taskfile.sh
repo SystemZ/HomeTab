@@ -56,18 +56,21 @@ function build-linux-amd64 {
     echo "Building linux-amd64 ..."
     go build
     zip -r9 builds/gotag-$BUILD_VERSION_STR-linux-amd64.zip gotag migrations templates LICENSE README.md
+    rm gotag
 }
 
 function build-linux-arm {
     echo "Building linux-arm ..."
     CC=arm-linux-gnueabihf-gcc GOOS=linux GOARCH=arm GOARM=6 CGO_ENABLED=1 go build -o gotag
     zip -r9 builds/gotag-$BUILD_VERSION_STR-linux-arm.zip gotag migrations templates LICENSE README.md
+    rm gotag
 }
 
 function build-windows-amd64 {
     echo "Building windows-amd64 ..."
     CC=x86_64-w64-mingw32-gcc GOOS=windows GOARCH=amd64 CGO_ENABLED=1 go build -o gotag.exe
     zip -r9 builds/gotag-$BUILD_VERSION_STR-windows-amd64.zip gotag.exe migrations templates LICENSE README.md
+    rm gotag.exe
 }
 
 function prod {

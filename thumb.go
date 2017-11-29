@@ -1,3 +1,5 @@
+// +build windows,amd64 linux,arm
+
 package main
 
 import (
