@@ -3,10 +3,8 @@
 
 Privacy focused, browser based file manager for tagging and searching local files on disk.
 
-Currently this project is only prototype and have many issues to fix, don't use it in production please.
-
 You may safely test it even with important files because it don't make any changes to files it handles.
-Only changes are made in app's folder.
+Only changes are made in app's folder to sqlite DB and thumbnails cache
 
 ## How to use
 
