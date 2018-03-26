@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: db
--- Generation Time: Mar 26, 2018 at 02:34 PM
+-- Generation Time: Mar 26, 2018 at 05:20 PM
 -- Server version: 5.7.21
 -- PHP Version: 7.2.2
 
@@ -13,9 +13,9 @@ START TRANSACTION;
 SET time_zone = "+00:00";
 
 
-/*!40101 SET @OLD_CHARACTER_SET_CLIENT = @@CHARACTER_SET_CLIENT */;
-/*!40101 SET @OLD_CHARACTER_SET_RESULTS = @@CHARACTER_SET_RESULTS */;
-/*!40101 SET @OLD_COLLATION_CONNECTION = @@COLLATION_CONNECTION */;
+/*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
+/*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
+/*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;
 /*!40101 SET NAMES utf8mb4 */;
 
 --
@@ -29,13 +29,11 @@ SET time_zone = "+00:00";
 --
 
 CREATE TABLE `groups` (
-  `id`         INT(11)                         NOT NULL,
-  `name`       VARCHAR(128) CHARACTER SET utf8 NOT NULL,
-  `updated_at` INT(11)                         NOT NULL,
-  `created_at` INT(11)                         NOT NULL
-)
-  ENGINE = InnoDB
-  DEFAULT CHARSET = latin1;
+  `id` int(11) NOT NULL,
+  `name` varchar(128) CHARACTER SET utf8 NOT NULL,
+  `updated_at` int(11) NOT NULL,
+  `created_at` int(11) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
 -- --------------------------------------------------------
 
@@ -44,28 +42,21 @@ CREATE TABLE `groups` (
 --
 
 CREATE TABLE `instances` (
-  `id`              INT(11)    NOT NULL,
-  `type_id`         TINYINT(4) NOT NULL,
-  `url`             VARCHAR(128) DEFAULT NULL,
-  `updated_at`      INT(11)      DEFAULT NULL,
-  `created_at`      INT(11)      DEFAULT NULL,
-  `creator_user_id` INT(11)      DEFAULT NULL
-)
-  ENGINE = InnoDB
-  DEFAULT CHARSET = latin1
-  COMMENT ='External services access';
+  `id` int(11) NOT NULL,
+  `type_id` tinyint(4) NOT NULL,
+  `url` varchar(128) DEFAULT NULL,
+  `updated_at` int(11) DEFAULT NULL,
+  `created_at` int(11) DEFAULT NULL,
+  `creator_user_id` int(11) DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=latin1 COMMENT='External services access';
 
 --
 -- Triggers `instances`
 --
 DELIMITER $$
-CREATE TRIGGER `instances`
-  BEFORE UPDATE
-  ON `instances`
-  FOR EACH ROW
-  BEGIN
-    SET NEW.updated_at = UNIX_TIMESTAMP();
-  END
+CREATE TRIGGER `instances` BEFORE UPDATE ON `instances` FOR EACH ROW BEGIN
+  SET NEW.updated_at = UNIX_TIMESTAMP();
+END
 $$
 DELIMITER ;
 
@@ -76,17 +67,15 @@ DELIMITER ;
 --
 
 CREATE TABLE `instances_access` (
-  `id`               INT(11) UNSIGNED NOT NULL,
-  `instance_id`      INT(11)          NOT NULL,
-  `user_id`          INT(11) UNSIGNED NOT NULL,
-  `group_id`         INT(11)          NOT NULL,
-  `instance_user_id` INT(11) UNSIGNED DEFAULT NULL,
-  `token`            TEXT,
-  `updated_at`       INT(11) UNSIGNED DEFAULT NULL,
-  `created_at`       INT(11) UNSIGNED DEFAULT NULL
-)
-  ENGINE = InnoDB
-  DEFAULT CHARSET = latin1;
+  `id` int(11) UNSIGNED NOT NULL,
+  `instance_id` int(11) NOT NULL,
+  `user_id` int(11) UNSIGNED NOT NULL,
+  `group_id` int(11) NOT NULL,
+  `instance_user_id` int(11) UNSIGNED DEFAULT NULL,
+  `token` text,
+  `updated_at` int(11) UNSIGNED DEFAULT NULL,
+  `created_at` int(11) UNSIGNED DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
 -- --------------------------------------------------------
 
@@ -95,16 +84,15 @@ CREATE TABLE `instances_access` (
 --
 
 CREATE TABLE `tasks` (
-  `id`               INT(11) NOT NULL,
-  `group_id`         INT(11) NOT NULL,
-  `instance_id`      INT(11) UNSIGNED                DEFAULT NULL,
-  `instance_task_id` VARCHAR(16)                     DEFAULT NULL,
-  `title`            VARCHAR(128) CHARACTER SET utf8 DEFAULT NULL,
-  `updated_at`       INT(11)                         DEFAULT NULL,
-  `created_at`       INT(11)                         DEFAULT NULL
-)
-  ENGINE = InnoDB
-  DEFAULT CHARSET = latin1;
+  `id` int(11) NOT NULL,
+  `group_id` int(11) NOT NULL,
+  `instance_id` int(11) UNSIGNED DEFAULT NULL,
+  `instance_task_id` varchar(16) DEFAULT NULL,
+  `title` varchar(128) CHARACTER SET utf8 DEFAULT NULL,
+  `done` tinyint(1) NOT NULL DEFAULT '0' COMMENT '1 = if task is done, 0 if task is not done',
+  `updated_at` int(11) DEFAULT NULL,
+  `created_at` int(11) DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
 -- --------------------------------------------------------
 
@@ -113,14 +101,12 @@ CREATE TABLE `tasks` (
 --
 
 CREATE TABLE `users` (
-  `id`         INT(10) UNSIGNED NOT NULL,
-  `username`   VARCHAR(16)      NOT NULL,
-  `password`   VARCHAR(128) DEFAULT NULL,
-  `updated_at` INT(11)      DEFAULT NULL,
-  `created_at` INT(11)      DEFAULT NULL
-)
-  ENGINE = InnoDB
-  DEFAULT CHARSET = latin1;
+  `id` int(10) UNSIGNED NOT NULL,
+  `username` varchar(16) NOT NULL,
+  `password` varchar(128) DEFAULT NULL,
+  `updated_at` int(11) DEFAULT NULL,
+  `created_at` int(11) DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
 --
 -- Indexes for dumped tables
@@ -149,7 +135,7 @@ ALTER TABLE `instances_access`
 --
 ALTER TABLE `tasks`
   ADD PRIMARY KEY (`id`),
-  ADD UNIQUE KEY `unique_task_id` (`instance_id`, `instance_task_id`);
+  ADD UNIQUE KEY `unique_task_id` (`instance_id`,`instance_task_id`);
 
 --
 -- Indexes for table `users`
@@ -165,31 +151,27 @@ ALTER TABLE `users`
 -- AUTO_INCREMENT for table `instances`
 --
 ALTER TABLE `instances`
-  MODIFY `id` INT(11) NOT NULL AUTO_INCREMENT,
-  AUTO_INCREMENT = 1;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=1;
 
 --
 -- AUTO_INCREMENT for table `instances_access`
 --
 ALTER TABLE `instances_access`
-  MODIFY `id` INT(11) UNSIGNED NOT NULL AUTO_INCREMENT,
-  AUTO_INCREMENT = 1;
+  MODIFY `id` int(11) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=1;
 
 --
 -- AUTO_INCREMENT for table `tasks`
 --
 ALTER TABLE `tasks`
-  MODIFY `id` INT(11) NOT NULL AUTO_INCREMENT,
-  AUTO_INCREMENT = 1;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=1;
 
 --
 -- AUTO_INCREMENT for table `users`
 --
 ALTER TABLE `users`
-  MODIFY `id` INT(10) UNSIGNED NOT NULL AUTO_INCREMENT,
-  AUTO_INCREMENT = 1;
+  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=1;
 COMMIT;
 
-/*!40101 SET CHARACTER_SET_CLIENT = @OLD_CHARACTER_SET_CLIENT */;
-/*!40101 SET CHARACTER_SET_RESULTS = @OLD_CHARACTER_SET_RESULTS */;
-/*!40101 SET COLLATION_CONNECTION = @OLD_COLLATION_CONNECTION */;
+/*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
+/*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
+/*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;

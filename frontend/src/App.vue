@@ -32,17 +32,23 @@
       <v-btn icon @click.stop="miniVariant = !miniVariant">
         <v-icon v-html="miniVariant ? 'chevron_right' : 'chevron_left'"></v-icon>
       </v-btn>
+      <!--
       <v-btn icon @click.stop="clipped = !clipped">
         <v-icon>web</v-icon>
       </v-btn>
       <v-btn icon @click.stop="fixed = !fixed">
         <v-icon>remove</v-icon>
       </v-btn>
+      -->
+
       <v-toolbar-title v-text="title"></v-toolbar-title>
       <v-spacer></v-spacer>
+
+      <!--
       <v-btn icon @click.stop="rightDrawer = !rightDrawer">
         <v-icon>menu</v-icon>
       </v-btn>
+      -->
     </v-toolbar>
     <v-content>
       <router-view/>
@@ -64,28 +70,39 @@
       </v-list>
     </v-navigation-drawer>
     <v-footer :fixed="fixed" app>
-      <span>&copy; 2017</span>
+      <div class="ml-3">
+        <a class="author-link" target="_blank" href="https://systemz.pl">
+          Michał Frąckiewicz
+        </a>
+        &copy; 2018
+      </div>
     </v-footer>
   </v-app>
 </template>
 
+<style>
+  .author-link {
+    text-decoration: none;
+  }
+</style>
+
 <script>
-export default {
-  data () {
-    return {
-      clipped: false,
-      drawer: true,
-      fixed: false,
-      items: [{
-        icon: 'bubble_chart',
-        title: 'Inspire'
-      }],
-      miniVariant: false,
-      right: true,
-      rightDrawer: false,
-      title: 'Vuetify.js'
-    }
-  },
-  name: 'App'
-}
+  export default {
+    data () {
+      return {
+        clipped: false,
+        drawer: true,
+        fixed: false,
+        items: [{
+          icon: 'assignment',
+          title: 'Tasks'
+        }],
+        miniVariant: true,
+        right: true,
+        rightDrawer: false,
+        title: 'TaskTab'
+      }
+    },
+    name: 'App'
+  }
 </script>

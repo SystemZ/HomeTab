@@ -13,24 +13,45 @@ var (
 
 type Task struct {
 	Id    int    `json:"id"`
+	Done  bool   `json:"done"`
+	Type  string `json:"type"`
 	Title string `json:"title"`
 }
 
 func ListTasksForGroup(groupId int) []Task {
-	stmt, err := DB.Prepare("SELECT id, title FROM tasks WHERE group_id = ?")
+	stmt, err := DB.Prepare("SELECT id, done, title, (SELECT type_id FROM instances WHERE instances.id = tasks.instance_id) AS type_id FROM tasks WHERE group_id = ?")
 	checkErr(err)
 
 	rows, err := stmt.Query(groupId)
 	checkErr(err)
 
+	var taskType, done int
+	var doneBool bool
+
 	defer rows.Close()
 	var result []Task
 	for rows.Next() {
-		err := rows.Scan(&id, &title)
+		err := rows.Scan(&id, &done, &title, &taskType)
 		checkErr(err)
-		result = append(result, Task{Id: id, Title: title})
+		if done >= 1 {
+			doneBool = true
+		} else {
+			doneBool = false
+		}
+		result = append(result, Task{Id: id, Done: doneBool, Title: title, Type: taskTypePretty(taskType)})
 	}
 	return result
+}
+
+func taskTypePretty(typeId int) string {
+	if typeId == 1 {
+		return "gitlab"
+	} else if typeId == 2 {
+		return "github"
+	} else if typeId == 3 {
+		return "gmail"
+	}
+	return "unknown"
 }
 
 // returns row ID

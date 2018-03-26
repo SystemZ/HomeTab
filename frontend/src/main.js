@@ -3,6 +3,7 @@ import App from './App'
 import router from './router'
 import Vuetify from 'vuetify'
 import 'vuetify/dist/vuetify.min.css'
+import 'font-awesome-webpack'
 
 Vue.use(Vuetify)
 

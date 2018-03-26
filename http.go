@@ -27,7 +27,8 @@ func healthCheckHandler(w http.ResponseWriter, r *http.Request) {
 func taskListHandler(w http.ResponseWriter, r *http.Request) {
 	res := model.ListTasksForGroup(1)
 
-	pagesJson, err := json.Marshal(res)
+	//pagesJson, err := json.Marshal(res)
+	pagesJson, err := json.MarshalIndent(res,"","\t")
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		io.WriteString(w, `{"error": true}`)
