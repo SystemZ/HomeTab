@@ -8,18 +8,26 @@ import (
 )
 
 var (
-	title string
+	title          string
+	checkedAt      int
+	updatedAt      int
+	createdAt      int
+	instanceTaskId string
 )
 
 type Task struct {
-	Id    int    `json:"id"`
-	Done  bool   `json:"done"`
-	Type  string `json:"type"`
-	Title string `json:"title"`
+	Id             int    `json:"id"`
+	InstanceTaskId string `json:"instanceTaskId"`
+	Done           bool   `json:"done"`
+	Type           string `json:"type"`
+	Title          string `json:"title"`
+	CheckedAt      int    `json:"checkedAt"`
+	UpdatedAt      int    `json:"updatedAt"`
+	CreatedAt      int    `json:"createdAt"`
 }
 
 func ListTasksForGroup(groupId int) []Task {
-	stmt, err := DB.Prepare("SELECT id, done, title, (SELECT type_id FROM instances WHERE instances.id = tasks.instance_id) AS type_id FROM tasks WHERE group_id = ?")
+	stmt, err := DB.Prepare("SELECT id, instance_task_id, done, title, (SELECT type_id FROM instances WHERE instances.id = tasks.instance_id) AS type_id, checked_at, updated_at, created_at FROM tasks WHERE group_id = ?")
 	checkErr(err)
 
 	rows, err := stmt.Query(groupId)
@@ -31,14 +39,57 @@ func ListTasksForGroup(groupId int) []Task {
 	defer rows.Close()
 	var result []Task
 	for rows.Next() {
-		err := rows.Scan(&id, &done, &title, &taskType)
+		err := rows.Scan(&id, &instanceTaskId, &done, &title, &taskType, &checkedAt, &updatedAt, &createdAt)
 		checkErr(err)
 		if done >= 1 {
 			doneBool = true
 		} else {
 			doneBool = false
 		}
-		result = append(result, Task{Id: id, Done: doneBool, Title: title, Type: taskTypePretty(taskType)})
+		result = append(result, Task{
+			Id:             id,
+			InstanceTaskId: instanceTaskId,
+			Done:           doneBool,
+			Title:          title,
+			Type:           taskTypePretty(taskType),
+			CheckedAt:      checkedAt,
+			UpdatedAt:      updatedAt,
+			CreatedAt:      createdAt,
+		})
+	}
+	return result
+}
+
+func ListTasksForInstance(instanceIdInt int) []Task {
+	stmt, err := DB.Prepare("SELECT id, instance_task_id, done, title, (SELECT type_id FROM instances WHERE instances.id = tasks.instance_id) AS type_id, checked_at, updated_at, created_at FROM tasks WHERE instance_id = ?")
+	checkErr(err)
+
+	rows, err := stmt.Query(instanceIdInt)
+	checkErr(err)
+
+	var taskType, done int
+	var doneBool bool
+
+	defer rows.Close()
+	var result []Task
+	for rows.Next() {
+		err := rows.Scan(&id, &instanceTaskId, &done, &title, &taskType, &checkedAt, &updatedAt, &createdAt)
+		checkErr(err)
+		if done >= 1 {
+			doneBool = true
+		} else {
+			doneBool = false
+		}
+		result = append(result, Task{
+			Id:             id,
+			InstanceTaskId: instanceTaskId,
+			Done:           doneBool,
+			Title:          title,
+			Type:           taskTypePretty(taskType),
+			CheckedAt:      checkedAt,
+			UpdatedAt:      updatedAt,
+			CreatedAt:      createdAt,
+		})
 	}
 	return result
 }
@@ -55,7 +106,7 @@ func taskTypePretty(typeId int) string {
 }
 
 // returns row ID
-func ImportGitlabTask(issue *gitlab.Issue, instanceId int, groupId int) int64 {
+func ImportGitlabTask(issue *gitlab.Issue, instanceId string, groupId int) int64 {
 	stmt, err := DB.Prepare("INSERT IGNORE tasks SET title = ?, instance_task_id = ?, created_at = ?, instance_id = ?, group_id = ?")
 	checkErr(err)
 
@@ -69,7 +120,7 @@ func ImportGitlabTask(issue *gitlab.Issue, instanceId int, groupId int) int64 {
 }
 
 // returns row ID
-func ImportGithubTask(issue *github.Issue, instanceId int, groupId int) int64 {
+func ImportGithubTask(issue *github.Issue, instanceId string, groupId int) int64 {
 	stmt, err := DB.Prepare("INSERT IGNORE tasks SET title = ?, instance_task_id = ?, created_at = ?, instance_id = ?, group_id = ?")
 	checkErr(err)
 
@@ -83,7 +134,7 @@ func ImportGithubTask(issue *github.Issue, instanceId int, groupId int) int64 {
 }
 
 // returns row ID
-func ImportGmailTask(message *gmail.Message, instanceId int, groupId int) int64 {
+func ImportGmailTask(message *gmail.Message, instanceId string, groupId int) int64 {
 	var subject string
 
 	for _, header := range message.Payload.Headers {
@@ -103,4 +154,20 @@ func ImportGmailTask(message *gmail.Message, instanceId int, groupId int) int64 
 	checkErr(err)
 
 	return id
+}
+
+func SetAsDone(task Task) {
+	stmt, err := DB.Prepare("UPDATE tasks SET done=? WHERE id = ?")
+	checkErr(err)
+
+	_, err = stmt.Exec(1, task.Id)
+	checkErr(err)
+}
+
+func SetAsNotDone(task Task) {
+	stmt, err := DB.Prepare("UPDATE tasks SET done=? WHERE id = ?")
+	checkErr(err)
+
+	_, err = stmt.Exec(0, task.Id)
+	checkErr(err)
 }

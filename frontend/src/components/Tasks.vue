@@ -86,6 +86,7 @@
                 <v-list-tile slot="activator">
                   <v-list-tile-content>
                     <v-list-tile-title>
+                      <v-icon v-if="task.done">fa fa-check</v-icon>
                       <v-icon v-if="task.type == 'github'">fa fa-github</v-icon>
                       <v-icon v-if="task.type == 'gitlab'">fa fa-gitlab</v-icon>
                       <v-icon v-if="task.type == 'gmail'">fa fa-at</v-icon>
