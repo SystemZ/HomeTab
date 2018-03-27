@@ -12,9 +12,9 @@ import (
 	"google.golang.org/api/gmail/v1"
 )
 
-func GmailGetInboxUnreadMessages(credentials types.Credentials) *gmail.ListMessagesResponse {
+func GmailGetInboxMessages(credentials types.Credentials) *gmail.ListMessagesResponse {
 	srv := GmailAuth(credentials.Token)
-	r, err := srv.Users.Messages.List("me").LabelIds("INBOX", "UNREAD").Do()
+	r, err := srv.Users.Messages.List("me").LabelIds("INBOX").Do()
 	if err != nil {
 		log.Printf("%v", err)
 	}

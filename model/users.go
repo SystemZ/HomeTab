@@ -6,8 +6,8 @@ import (
 
 func GetAllUsersIds() []int {
 	rows, err := DB.Query("SELECT id FROM users")
-	checkErr(err)
 	defer rows.Close()
+	checkErr(err)
 	var result []int
 	for rows.Next() {
 		err := rows.Scan(&id)

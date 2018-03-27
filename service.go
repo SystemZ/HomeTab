@@ -21,6 +21,15 @@ func markAsDone(id int) {
 	model.SetAsDone(task)
 }
 
+func originUrl(task model.Task) string {
+	switch task.Type {
+	case "gmail":
+		return "https://mail.google.com/mail/u/0/#inbox/" + task.InstanceTaskId
+	}
+
+	return ""
+}
+
 func getTasksForAllGroups() {
 	log.Println("Importing tasks for all groups")
 	groups := model.GetAllGroupsIds()
@@ -63,7 +72,6 @@ func UpdateTasksForInstance(instanceId int) {
 			case 3: //gmail
 				freshMsg := integrations.GmailGetMessage(credential, task.InstanceTaskId)
 				if task.Done == contains(freshMsg.LabelIds, "INBOX") {
-					log.Printf("%v", "yes")
 					if (task.Done) {
 						model.SetAsNotDone(task)
 					} else {
@@ -108,7 +116,7 @@ func GetTasksForCredential(credentials types.Credentials, accessId int, groupId 
 		}
 	case 3:
 		log.Printf("Processing Gmail messages for credentials #%v", accessId)
-		tasks := integrations.GmailGetInboxUnreadMessages(credentials)
+		tasks := integrations.GmailGetInboxMessages(credentials)
 		for _, task := range tasks.Messages {
 			t := integrations.GmailGetMessage(credentials, task.Id)
 			model.ImportGmailTask(t, credentials.InstanceId, groupId)

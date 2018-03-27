@@ -5,6 +5,7 @@ import (
 	"github.com/xanzy/go-gitlab"
 	"google.golang.org/api/gmail/v1"
 	"log"
+	"strconv"
 )
 
 var (
@@ -29,6 +30,15 @@ type Task struct {
 
 func GetTaskById(taskId int) Task {
 	return getTask("taskId", taskId)[0]
+}
+
+func GetTaskByStringId(taskIdString string) Task {
+	taskId, _ := strconv.ParseInt(taskIdString, 10, 64)
+	return getTask("taskId", int(taskId))[0]
+}
+
+func GetTasksByInstanceTaskId(instanceId int, instanceTaskId string) []Task {
+	return getTaskInstance("instanceTaskId", instanceId, instanceTaskId)
 }
 
 func ListTasksForGroup(groupId int) []Task {
@@ -57,7 +67,50 @@ func getTask(typeId string, id int) []Task {
 	}
 	stmt, err := DB.Prepare(query)
 	checkErr(err)
+	defer stmt.Close()
+
 	rows, err := stmt.Query(id)
+	checkErr(err)
+
+	var taskType, done int
+	var doneBool bool
+
+	defer rows.Close()
+	var result []Task
+	for rows.Next() {
+		err := rows.Scan(&id, &instanceTaskId, &instanceId, &done, &title, &taskType, &checkedAt, &updatedAt, &createdAt)
+		checkErr(err)
+		if done >= 1 {
+			doneBool = true
+		} else {
+			doneBool = false
+		}
+		result = append(result, Task{
+			Id:             id,
+			InstanceTaskId: instanceTaskId,
+			InstanceId:     instanceId,
+			Done:           doneBool,
+			Title:          title,
+			Type:           taskTypePretty(taskType),
+			CheckedAt:      checkedAt,
+			UpdatedAt:      updatedAt,
+			CreatedAt:      createdAt,
+		})
+	}
+	return result
+}
+
+func getTaskInstance(typeId string, id int, idString string) []Task {
+	query := "SELECT id, instance_task_id, instance_id, done, title, (SELECT type_id FROM instances WHERE instances.id = tasks.instance_id) AS type_id, checked_at, updated_at, created_at FROM tasks "
+	switch typeId {
+	case "instanceTaskId":
+		query += "WHERE instance_id = ? AND instance_task_id = ?"
+	}
+	stmt, err := DB.Prepare(query)
+	checkErr(err)
+	defer stmt.Close()
+
+	rows, err := stmt.Query(id, idString)
 	checkErr(err)
 
 	var taskType, done int
@@ -101,7 +154,13 @@ func taskTypePretty(typeId int) string {
 
 // returns row ID
 func ImportGitlabTask(issue *gitlab.Issue, instanceId int, groupId int) int64 {
+	task := GetTasksByInstanceTaskId(instanceId, strconv.Itoa(issue.ID))
+	if len(task) > 0 {
+		return 0
+	}
+
 	stmt, err := DB.Prepare("INSERT IGNORE tasks SET title = ?, instance_task_id = ?, created_at = ?, instance_id = ?, group_id = ?")
+	defer stmt.Close()
 	checkErr(err)
 
 	res, err := stmt.Exec(issue.Title, issue.ID, issue.CreatedAt.Unix(), instanceId, groupId)
@@ -115,7 +174,13 @@ func ImportGitlabTask(issue *gitlab.Issue, instanceId int, groupId int) int64 {
 
 // returns row ID
 func ImportGithubTask(issue *github.Issue, instanceId int, groupId int) int64 {
+	task := GetTasksByInstanceTaskId(instanceId, strconv.Itoa(int(*issue.ID)))
+	if len(task) > 0 {
+		return 0
+	}
+
 	stmt, err := DB.Prepare("INSERT IGNORE tasks SET title = ?, instance_task_id = ?, created_at = ?, instance_id = ?, group_id = ?")
+	defer stmt.Close()
 	checkErr(err)
 
 	res, err := stmt.Exec(issue.Title, issue.ID, issue.CreatedAt.Unix(), instanceId, groupId)
@@ -129,6 +194,11 @@ func ImportGithubTask(issue *github.Issue, instanceId int, groupId int) int64 {
 
 // returns row ID
 func ImportGmailTask(message *gmail.Message, instanceId int, groupId int) int64 {
+	task := GetTasksByInstanceTaskId(instanceId, message.Id)
+	if len(task) > 0 {
+		return 0
+	}
+
 	var subject string
 
 	for _, header := range message.Payload.Headers {
@@ -139,6 +209,7 @@ func ImportGmailTask(message *gmail.Message, instanceId int, groupId int) int64 
 	}
 
 	stmt, err := DB.Prepare("INSERT IGNORE tasks SET title = ?, instance_task_id = ?, created_at = ?, instance_id = ?, group_id = ?")
+	defer stmt.Close()
 	checkErr(err)
 
 	res, err := stmt.Exec(subject, message.Id, message.InternalDate/1000, instanceId, groupId)
@@ -152,6 +223,7 @@ func ImportGmailTask(message *gmail.Message, instanceId int, groupId int) int64 
 
 func SetAsDone(task Task) {
 	stmt, err := DB.Prepare("UPDATE tasks SET done=? WHERE id = ?")
+	defer stmt.Close()
 	checkErr(err)
 
 	_, err = stmt.Exec(1, task.Id)
@@ -160,6 +232,7 @@ func SetAsDone(task Task) {
 
 func SetAsNotDone(task Task) {
 	stmt, err := DB.Prepare("UPDATE tasks SET done=? WHERE id = ?")
+	defer stmt.Close()
 	checkErr(err)
 
 	_, err = stmt.Exec(0, task.Id)

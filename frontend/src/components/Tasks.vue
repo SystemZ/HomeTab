@@ -106,7 +106,7 @@
                       <v-icon v-if="task.type == 'github'">fa fa-github</v-icon>
                       <v-icon v-if="task.type == 'gitlab'">fa fa-gitlab</v-icon>
                       <v-icon v-if="task.type == 'gmail'">fa fa-at</v-icon>
-                      {{ task.title }}
+                      #{{task.id}} {{ task.title }}
                     </v-list-tile-title>
                   </v-list-tile-content>
                 </v-list-tile>
@@ -114,10 +114,24 @@
 
                 <!-- action for task row start -->
                 <v-list-tile>
-                  <v-list-tile-action @click="getTasks">
+                  <v-list-tile-action>
                     <v-btn @click="markAsDone(task.id)">
                       <v-icon>check</v-icon>
                       Mark as done
+                    </v-btn>
+                  </v-list-tile-action>
+                  <v-list-tile-content>
+                    <v-list-tile-title></v-list-tile-title>
+                  </v-list-tile-content>
+                </v-list-tile>
+                <!-- action for task row end -->
+
+                <!-- action for task row start -->
+                <v-list-tile>
+                  <v-list-tile-action>
+                    <v-btn @click="redirectToOrigin(task.id)">
+                      <v-icon class="mr-1">fa fa-external-link</v-icon>
+                      Redirect
                     </v-btn>
                   </v-list-tile-action>
                   <v-list-tile-content>
@@ -170,6 +184,10 @@
       setTasks (filter) {
         this.showTasks = filter
         this.getTasks()
+      },
+      redirectToOrigin (id) {
+        let win = window.open(this.$config.apiUrl + 'task/' + id + '/redirect', '_blank')
+        win.focus()
       },
       markAsDone (id) {
         this.refreshing = true

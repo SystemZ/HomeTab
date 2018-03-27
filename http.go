@@ -30,7 +30,7 @@ func taskListHandler(w http.ResponseWriter, r *http.Request) {
 	res := model.ListTasksForGroup(1)
 
 	//pagesJson, err := json.Marshal(res)
-	pagesJson, err := json.MarshalIndent(res,"","\t")
+	pagesJson, err := json.MarshalIndent(res, "", "\t")
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		io.WriteString(w, `{"error": true}`)
@@ -43,8 +43,7 @@ func tasksTodoListHandler(w http.ResponseWriter, r *http.Request) {
 	//FIXME
 	res := model.ListTasksToDoForGroup(1)
 
-	//pagesJson, err := json.Marshal(res)
-	pagesJson, err := json.MarshalIndent(res,"","\t")
+	pagesJson, err := json.MarshalIndent(res, "", "\t")
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		io.WriteString(w, `{"error": true}`)
@@ -53,9 +52,16 @@ func tasksTodoListHandler(w http.ResponseWriter, r *http.Request) {
 	io.WriteString(w, string(pagesJson))
 }
 
+func redirectToTaskOriginHandler(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	task := model.GetTaskByStringId(vars["id"])
+	url := originUrl(task)
+	http.Redirect(w, r, url, http.StatusTemporaryRedirect)
+}
+
 func taskDoneHandler(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
-	taskId, err := strconv.ParseInt(vars["id"],10,64)
+	taskId, err := strconv.ParseInt(vars["id"], 10, 64)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		io.WriteString(w, `{"error": true}`)
@@ -79,7 +85,10 @@ func httpStart() {
 	r := mux.NewRouter()
 	r.HandleFunc("/health", healthCheckHandler).Methods("GET")
 	r.HandleFunc("/api/v1/sync", syncHandler).Methods("GET")
+
+	r.HandleFunc("/api/v1/task/{id}/redirect", redirectToTaskOriginHandler).Methods("GET", "OPTIONS")
 	r.HandleFunc("/api/v1/task/{id}/done", taskDoneHandler).Methods("POST", "OPTIONS")
+
 	r.HandleFunc("/api/v1/tasks/all/{uid}", taskListHandler).Methods("GET", "OPTIONS")
 	r.HandleFunc("/api/v1/tasks/todo/{uid}", tasksTodoListHandler).Methods("GET", "OPTIONS")
 
