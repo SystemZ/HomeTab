@@ -26,79 +26,37 @@ type Task struct {
 	CreatedAt      int    `json:"createdAt"`
 }
 
+func GetTaskById(taskId int) Task {
+	return getTask("taskId", taskId)[0]
+}
+
 func ListTasksForGroup(groupId int) []Task {
-	stmt, err := DB.Prepare("SELECT id, instance_task_id, done, title, (SELECT type_id FROM instances WHERE instances.id = tasks.instance_id) AS type_id, checked_at, updated_at, created_at FROM tasks WHERE group_id = ?")
-	checkErr(err)
-
-	rows, err := stmt.Query(groupId)
-	checkErr(err)
-
-	var taskType, done int
-	var doneBool bool
-
-	defer rows.Close()
-	var result []Task
-	for rows.Next() {
-		err := rows.Scan(&id, &instanceTaskId, &done, &title, &taskType, &checkedAt, &updatedAt, &createdAt)
-		checkErr(err)
-		if done >= 1 {
-			doneBool = true
-		} else {
-			doneBool = false
-		}
-		result = append(result, Task{
-			Id:             id,
-			InstanceTaskId: instanceTaskId,
-			Done:           doneBool,
-			Title:          title,
-			Type:           taskTypePretty(taskType),
-			CheckedAt:      checkedAt,
-			UpdatedAt:      updatedAt,
-			CreatedAt:      createdAt,
-		})
-	}
-	return result
+	return getTask("groupId", groupId)
 }
 
 func ListTasksToDoForGroup(groupId int) []Task {
-	stmt, err := DB.Prepare("SELECT id, instance_task_id, done, title, (SELECT type_id FROM instances WHERE instances.id = tasks.instance_id) AS type_id, checked_at, updated_at, created_at FROM tasks WHERE done = 0 AND group_id = ?")
-	checkErr(err)
-
-	rows, err := stmt.Query(groupId)
-	checkErr(err)
-
-	var taskType, done int
-	var doneBool bool
-
-	defer rows.Close()
-	var result []Task
-	for rows.Next() {
-		err := rows.Scan(&id, &instanceTaskId, &done, &title, &taskType, &checkedAt, &updatedAt, &createdAt)
-		checkErr(err)
-		if done >= 1 {
-			doneBool = true
-		} else {
-			doneBool = false
-		}
-		result = append(result, Task{
-			Id:             id,
-			InstanceTaskId: instanceTaskId,
-			Done:           doneBool,
-			Title:          title,
-			Type:           taskTypePretty(taskType),
-			CheckedAt:      checkedAt,
-			UpdatedAt:      updatedAt,
-			CreatedAt:      createdAt,
-		})
-	}
-	return result
+	return getTask("groupIdToDo", groupId)
 }
 
 func ListTasksForInstance(instanceIdInt int) []Task {
-	stmt, err := DB.Prepare("SELECT id, instance_task_id, done, title, (SELECT type_id FROM instances WHERE instances.id = tasks.instance_id) AS type_id, checked_at, updated_at, created_at FROM tasks WHERE instance_id = ?")
-	checkErr(err)
+	return getTask("instanceId", instanceIdInt)
+}
 
-	rows, err := stmt.Query(instanceIdInt)
+func getTask(typeId string, id int) []Task {
+	query := "SELECT id, instance_task_id, done, title, (SELECT type_id FROM instances WHERE instances.id = tasks.instance_id) AS type_id, checked_at, updated_at, created_at FROM tasks "
+	switch typeId {
+	case "taskId":
+		query += "WHERE id = ? LIMIT 1"
+	case "groupId":
+		query += "WHERE group_id = ?"
+	case "groupIdToDo":
+		query += "WHERE done = 0 AND group_id = ?"
+	case "instanceId":
+		query += "WHERE instance_id = ?"
+	}
+	stmt, err := DB.Prepare(query)
+	checkErr(err)
+	rows, err := stmt.Query(id)
 	checkErr(err)
 
 	var taskType, done int
