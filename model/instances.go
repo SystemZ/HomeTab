@@ -13,7 +13,7 @@ var (
 	id         int
 	url        string
 	token      string
-	instanceId string
+	instanceId int
 	typeId     int
 )
 

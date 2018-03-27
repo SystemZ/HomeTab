@@ -134,6 +134,14 @@ func GmailGetMessage(credentials types.Credentials, msgId string) *gmail.Message
 	return r
 }
 
+func GmailMarkMessageAsDone(credentials types.Credentials, msgId string) error {
+	srv := GmailAuth(credentials.Token)
+	labels := []string{"UNREAD", "INBOX"}
+	_, err := srv.Users.Messages.Modify("me", msgId, &gmail.ModifyMessageRequest{RemoveLabelIds: labels}).Do()
+	log.Printf("%v", err)
+	return err
+}
+
 func GmailAuth(token string) *gmail.Service {
 	ctx := context.Background()
 

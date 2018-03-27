@@ -10,6 +10,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"strconv"
 )
 
 func respondOk(w http.ResponseWriter) {
@@ -25,6 +26,7 @@ func healthCheckHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func taskListHandler(w http.ResponseWriter, r *http.Request) {
+	//FIXME
 	res := model.ListTasksForGroup(1)
 
 	//pagesJson, err := json.Marshal(res)
@@ -38,6 +40,7 @@ func taskListHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func tasksTodoListHandler(w http.ResponseWriter, r *http.Request) {
+	//FIXME
 	res := model.ListTasksToDoForGroup(1)
 
 	//pagesJson, err := json.Marshal(res)
@@ -48,6 +51,18 @@ func tasksTodoListHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	respondOk(w)
 	io.WriteString(w, string(pagesJson))
+}
+
+func taskDoneHandler(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	taskId, err := strconv.ParseInt(vars["id"],10,64)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		io.WriteString(w, `{"error": true}`)
+	}
+	markAsDone(int(taskId))
+	respondOk(w)
+	io.WriteString(w, `{"syncing": true}`)
 }
 
 func syncHandler(w http.ResponseWriter, r *http.Request) {
@@ -64,6 +79,7 @@ func httpStart() {
 	r := mux.NewRouter()
 	r.HandleFunc("/health", healthCheckHandler).Methods("GET")
 	r.HandleFunc("/api/v1/sync", syncHandler).Methods("GET")
+	r.HandleFunc("/api/v1/task/{id}/done", taskDoneHandler).Methods("POST", "OPTIONS")
 	r.HandleFunc("/api/v1/tasks/all/{uid}", taskListHandler).Methods("GET", "OPTIONS")
 	r.HandleFunc("/api/v1/tasks/todo/{uid}", tasksTodoListHandler).Methods("GET", "OPTIONS")
 

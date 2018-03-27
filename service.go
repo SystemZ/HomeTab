@@ -8,6 +8,19 @@ import (
 	"time"
 )
 
+func markAsDone(id int) {
+	task := model.GetTaskById(id)
+	if task.Done {
+		log.Printf("Task already done: %v", id)
+	}
+	credential := model.GetCredentialByInstanceId(task.InstanceId)
+	switch credential.TypeId {
+	case 3:
+		integrations.GmailMarkMessageAsDone(credential, task.InstanceTaskId)
+	}
+	model.SetAsDone(task)
+}
+
 func getTasksForAllGroups() {
 	log.Println("Importing tasks for all groups")
 	groups := model.GetAllGroupsIds()

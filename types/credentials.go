@@ -2,7 +2,7 @@ package types
 
 type Credentials struct {
 	UserIdOnInstance int
-	InstanceId       string
+	InstanceId       int
 	Url              string
 	Token            string
 	TypeId           int

@@ -114,15 +114,15 @@
 
                 <!-- action for task row start -->
                 <v-list-tile>
-                  <v-list-tile-content>
-                    <v-list-tile-title>zzz</v-list-tile-title>
-                  </v-list-tile-content>
                   <v-list-tile-action @click="getTasks">
-                    <v-btn>
-                      <v-icon>help</v-icon>
-                      Refresh
+                    <v-btn @click="markAsDone(task.id)">
+                      <v-icon>check</v-icon>
+                      Mark as done
                     </v-btn>
                   </v-list-tile-action>
+                  <v-list-tile-content>
+                    <v-list-tile-title></v-list-tile-title>
+                  </v-list-tile-content>
                 </v-list-tile>
                 <!-- action for task row end -->
 
@@ -154,6 +154,15 @@
         }
       }
     },
+    // https://stackoverflow.com/a/34143409/1351857
+    // computed: {
+    //   filteredTasks: function () {
+    //     var self = this;
+    //     return self.tasks.filter(function (task) {
+    //       return task.indexOf(self.searchQuery) !== -1;
+    //     })
+    //   }
+    // },
     mounted () {
       this.getTasks()
     },
@@ -161,6 +170,22 @@
       setTasks (filter) {
         this.showTasks = filter
         this.getTasks()
+      },
+      markAsDone (id) {
+        this.refreshing = true
+        axios({
+          method: 'post',
+          //headers: {'Authorization': 'Bearer ' + localStorage.getItem('token')},
+          url: this.$config.apiUrl + 'task/' + id + '/done'
+        }).then((res) => {
+          this.getTasks()
+        }).catch((err) => {
+          if (err.response.status === 401) {
+            //this.$store.dispatch('setLoggedOut')
+          } else if (err.response.status === 404) {
+            //this.$router.push('/404')
+          }
+        })
       },
       getTasks () {
         let tasksUrl = this.todoTasksUrl

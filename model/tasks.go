@@ -17,6 +17,7 @@ var (
 
 type Task struct {
 	Id             int    `json:"id"`
+	InstanceId     int    `json:"instanceId"`
 	InstanceTaskId string `json:"instanceTaskId"`
 	Done           bool   `json:"done"`
 	Type           string `json:"type"`
@@ -43,7 +44,7 @@ func ListTasksForInstance(instanceIdInt int) []Task {
 }
 
 func getTask(typeId string, id int) []Task {
-	query := "SELECT id, instance_task_id, done, title, (SELECT type_id FROM instances WHERE instances.id = tasks.instance_id) AS type_id, checked_at, updated_at, created_at FROM tasks "
+	query := "SELECT id, instance_task_id, instance_id, done, title, (SELECT type_id FROM instances WHERE instances.id = tasks.instance_id) AS type_id, checked_at, updated_at, created_at FROM tasks "
 	switch typeId {
 	case "taskId":
 		query += "WHERE id = ? LIMIT 1"
@@ -65,7 +66,7 @@ func getTask(typeId string, id int) []Task {
 	defer rows.Close()
 	var result []Task
 	for rows.Next() {
-		err := rows.Scan(&id, &instanceTaskId, &done, &title, &taskType, &checkedAt, &updatedAt, &createdAt)
+		err := rows.Scan(&id, &instanceTaskId, &instanceId, &done, &title, &taskType, &checkedAt, &updatedAt, &createdAt)
 		checkErr(err)
 		if done >= 1 {
 			doneBool = true
@@ -75,6 +76,7 @@ func getTask(typeId string, id int) []Task {
 		result = append(result, Task{
 			Id:             id,
 			InstanceTaskId: instanceTaskId,
+			InstanceId:     instanceId,
 			Done:           doneBool,
 			Title:          title,
 			Type:           taskTypePretty(taskType),
@@ -98,7 +100,7 @@ func taskTypePretty(typeId int) string {
 }
 
 // returns row ID
-func ImportGitlabTask(issue *gitlab.Issue, instanceId string, groupId int) int64 {
+func ImportGitlabTask(issue *gitlab.Issue, instanceId int, groupId int) int64 {
 	stmt, err := DB.Prepare("INSERT IGNORE tasks SET title = ?, instance_task_id = ?, created_at = ?, instance_id = ?, group_id = ?")
 	checkErr(err)
 
@@ -112,7 +114,7 @@ func ImportGitlabTask(issue *gitlab.Issue, instanceId string, groupId int) int64
 }
 
 // returns row ID
-func ImportGithubTask(issue *github.Issue, instanceId string, groupId int) int64 {
+func ImportGithubTask(issue *github.Issue, instanceId int, groupId int) int64 {
 	stmt, err := DB.Prepare("INSERT IGNORE tasks SET title = ?, instance_task_id = ?, created_at = ?, instance_id = ?, group_id = ?")
 	checkErr(err)
 
@@ -126,7 +128,7 @@ func ImportGithubTask(issue *github.Issue, instanceId string, groupId int) int64
 }
 
 // returns row ID
-func ImportGmailTask(message *gmail.Message, instanceId string, groupId int) int64 {
+func ImportGmailTask(message *gmail.Message, instanceId int, groupId int) int64 {
 	var subject string
 
 	for _, header := range message.Payload.Headers {
