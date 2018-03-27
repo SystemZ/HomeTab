@@ -60,6 +60,40 @@ func ListTasksForGroup(groupId int) []Task {
 	return result
 }
 
+func ListTasksToDoForGroup(groupId int) []Task {
+	stmt, err := DB.Prepare("SELECT id, instance_task_id, done, title, (SELECT type_id FROM instances WHERE instances.id = tasks.instance_id) AS type_id, checked_at, updated_at, created_at FROM tasks WHERE done = 0 AND group_id = ?")
+	checkErr(err)
+
+	rows, err := stmt.Query(groupId)
+	checkErr(err)
+
+	var taskType, done int
+	var doneBool bool
+
+	defer rows.Close()
+	var result []Task
+	for rows.Next() {
+		err := rows.Scan(&id, &instanceTaskId, &done, &title, &taskType, &checkedAt, &updatedAt, &createdAt)
+		checkErr(err)
+		if done >= 1 {
+			doneBool = true
+		} else {
+			doneBool = false
+		}
+		result = append(result, Task{
+			Id:             id,
+			InstanceTaskId: instanceTaskId,
+			Done:           doneBool,
+			Title:          title,
+			Type:           taskTypePretty(taskType),
+			CheckedAt:      checkedAt,
+			UpdatedAt:      updatedAt,
+			CreatedAt:      createdAt,
+		})
+	}
+	return result
+}
+
 func ListTasksForInstance(instanceIdInt int) []Task {
 	stmt, err := DB.Prepare("SELECT id, instance_task_id, done, title, (SELECT type_id FROM instances WHERE instances.id = tasks.instance_id) AS type_id, checked_at, updated_at, created_at FROM tasks WHERE instance_id = ?")
 	checkErr(err)

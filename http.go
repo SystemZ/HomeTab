@@ -37,6 +37,19 @@ func taskListHandler(w http.ResponseWriter, r *http.Request) {
 	io.WriteString(w, string(pagesJson))
 }
 
+func tasksTodoListHandler(w http.ResponseWriter, r *http.Request) {
+	res := model.ListTasksToDoForGroup(1)
+
+	//pagesJson, err := json.Marshal(res)
+	pagesJson, err := json.MarshalIndent(res,"","\t")
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		io.WriteString(w, `{"error": true}`)
+	}
+	respondOk(w)
+	io.WriteString(w, string(pagesJson))
+}
+
 func syncHandler(w http.ResponseWriter, r *http.Request) {
 	go getTasksForAllGroups()
 	respondOk(w)
@@ -51,7 +64,8 @@ func httpStart() {
 	r := mux.NewRouter()
 	r.HandleFunc("/health", healthCheckHandler).Methods("GET")
 	r.HandleFunc("/api/v1/sync", syncHandler).Methods("GET")
-	r.HandleFunc("/api/v1/task/{uid}", taskListHandler).Methods("GET", "OPTIONS")
+	r.HandleFunc("/api/v1/tasks/all/{uid}", taskListHandler).Methods("GET", "OPTIONS")
+	r.HandleFunc("/api/v1/tasks/todo/{uid}", tasksTodoListHandler).Methods("GET", "OPTIONS")
 
 	//http.Handle("/static", http.FileServer(http.Dir("./frontend/dist/static")))
 	//http.Handle("/", http.FileServer(rice.MustFindBox("frontend").HTTPBox()))
