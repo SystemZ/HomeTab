@@ -2,12 +2,27 @@ package main
 
 import (
 	"github.com/robfig/cron"
+	"log"
+)
+
+var (
+	scheduleRunning = false
 )
 
 func schedule() {
 	c := cron.New()
-	c.AddFunc("*/25 * * * * *", func() { getTasksForAllGroups() })
-	c.AddFunc("*/20 * * * * *", func() { UpdateTasksForInstance(3) })
+	c.AddFunc("*/15 * * * * *", func() {
+		// run only one instance at a time
+		if scheduleRunning {
+			log.Println("Cron tasks already running, aborting...")
+			return
+		}
+		log.Println("Starting cron task...")
+		scheduleRunning = true
+		getTasksForAllGroups()
+		UpdateTasksForInstance(3)
+		scheduleRunning = false
+	})
 	c.Start()
 }
 

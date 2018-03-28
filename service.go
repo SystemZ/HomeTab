@@ -6,6 +6,7 @@ import (
 	"gitlab.systemz.pl/systemz/tasktab/types"
 	"log"
 	"time"
+	"sync"
 )
 
 func markAsDone(id int) {
@@ -40,11 +41,14 @@ func getTasksForAllGroups() {
 
 func getTasksForGroup(groupId int) {
 	log.Printf("Importing tasks for group ID %v", groupId)
+	var wg sync.WaitGroup
 	accessIds := model.GetAllInstancesAccessIds()
 	for _, accessId := range accessIds {
 		credentials := model.GetInstanceByAccessId(accessId)
-		go GetTasksForCredential(credentials, accessId, groupId)
+		wg.Add(1)
+		go GetTasksForCredential(credentials, accessId, groupId, &wg)
 	}
+	wg.Wait()
 }
 
 func contains(slice []string, wanted string) bool {
@@ -63,13 +67,13 @@ func UpdateTasksForInstance(instanceId int) {
 	credential := model.GetCredentialByInstanceId(instanceId)
 	tasks := model.ListTasksForInstance(instanceId)
 	for _, task := range tasks {
-		log.Printf("%v", task.InstanceTaskId)
-		log.Printf("%v", task.Title)
+		//log.Printf("%v", task.InstanceTaskId)
 		timestampNow := time.Now().Unix()
 		// no update for 10 minutes, need to check
 		if timestampNow-int64(task.CheckedAt) > 600 {
 			switch credential.TypeId {
 			case 3: //gmail
+				log.Printf("Updating email with title: %v", task.Title)
 				freshMsg := integrations.GmailGetMessage(credential, task.InstanceTaskId)
 				if task.Done == contains(freshMsg.LabelIds, "INBOX") {
 					if (task.Done) {
@@ -100,22 +104,23 @@ func UpdateTasksForInstance(instanceId int) {
 //	}
 //}
 
-func GetTasksForCredential(credentials types.Credentials, accessId int, groupId int) {
+func GetTasksForCredential(credentials types.Credentials, accessId int, groupId int, wg *sync.WaitGroup) {
+	defer wg.Done()
 	switch credentials.TypeId {
 	case 1:
-		log.Printf("Processing GitLab issues for credentials #%v", accessId)
+		log.Printf("Importing GitLab issues for credentials #%v", accessId)
 		tasks := integrations.GetAllTasksAssignedToAidFromGitLab(credentials)
 		for _, task := range tasks {
 			model.ImportGitlabTask(task, credentials.InstanceId, groupId)
 		}
 	case 2:
-		log.Printf("Processing GitHub issues for credentials #%v", accessId)
+		log.Printf("Importing GitHub issues for credentials #%v", accessId)
 		tasks := integrations.GetAllIssuesAssignedToGitHubUser(credentials)
 		for _, task := range tasks {
 			model.ImportGithubTask(task, credentials.InstanceId, groupId)
 		}
 	case 3:
-		log.Printf("Processing Gmail messages for credentials #%v", accessId)
+		log.Printf("Importing Gmail messages for credentials #%v", accessId)
 		tasks := integrations.GmailGetInboxMessages(credentials)
 		for _, task := range tasks.Messages {
 			t := integrations.GmailGetMessage(credentials, task.Id)
