@@ -160,10 +160,10 @@ func taskTypePretty(typeId int) string {
 }
 
 // returns row ID
-func ImportGitlabTask(issue *gitlab.Issue, instanceId int, groupId int, projectId int) int64 {
-	task := GetTasksByInstanceTaskId(instanceId, strconv.Itoa(issue.ID))
-	if len(task) > 0 {
-		return int64(task[0].Id)
+func ImportGitlabTask(issue *gitlab.Issue, instanceId int, groupId int, projectId int) (alreadyExists bool, task Task) {
+	getTask := GetTasksByInstanceTaskId(instanceId, strconv.Itoa(issue.ID))
+	if len(getTask) > 0 {
+		return true, getTask[0]
 	}
 
 	done := 0
@@ -175,20 +175,18 @@ func ImportGitlabTask(issue *gitlab.Issue, instanceId int, groupId int, projectI
 	defer stmt.Close()
 	checkErr(err)
 
-	res, err := stmt.Exec(done, issue.Title, issue.ID, strconv.Itoa(issue.IID), projectId, issue.CreatedAt.Unix(), instanceId, groupId)
+	_, err = stmt.Exec(done, issue.Title, issue.ID, strconv.Itoa(issue.IID), projectId, issue.CreatedAt.Unix(), instanceId, groupId)
 	checkErr(err)
 
-	id, err := res.LastInsertId()
-	checkErr(err)
-
-	return id
+	getTask = GetTasksByInstanceTaskId(instanceId, strconv.Itoa(issue.ID))
+	return false, getTask[0]
 }
 
 // returns row ID
-func ImportGithubTask(issue *github.Issue, instanceId int, groupId int, projectId int) int64 {
-	task := GetTasksByInstanceTaskId(instanceId, strconv.Itoa(int(*issue.ID)))
-	if len(task) > 0 {
-		return int64(task[0].Id)
+func ImportGithubTask(issue *github.Issue, instanceId int, groupId int, projectId int) (alreadyExists bool, task Task) {
+	getTask := GetTasksByInstanceTaskId(instanceId, strconv.Itoa(int(*issue.ID)))
+	if len(getTask) > 0 {
+		return true, getTask[0]
 	}
 
 	done := 0
@@ -200,13 +198,11 @@ func ImportGithubTask(issue *github.Issue, instanceId int, groupId int, projectI
 	defer stmt.Close()
 	checkErr(err)
 
-	res, err := stmt.Exec(done, issue.Title, issue.ID, issue.Number, projectId, issue.CreatedAt.Unix(), instanceId, groupId)
+	_, err = stmt.Exec(done, issue.Title, issue.ID, issue.Number, projectId, issue.CreatedAt.Unix(), instanceId, groupId)
 	checkErr(err)
 
-	id, err := res.LastInsertId()
-	checkErr(err)
-
-	return id
+	getTask = GetTasksByInstanceTaskId(instanceId, strconv.Itoa(int(*issue.ID)))
+	return false, getTask[0]
 }
 
 // returns row ID
@@ -237,6 +233,37 @@ func ImportGmailTask(message *gmail.Message, instanceId int, groupId int) int64 
 	checkErr(err)
 
 	return id
+}
+
+func RefreshDone(task Task, state string) {
+	//github and gitlab
+	if task.Done && state == "closed" {
+		return
+	}
+	//github
+	if !task.Done && state == "open" {
+		return
+	}
+	//gitlab
+	if !task.Done && state == "opened" {
+		return
+	}
+
+	stmt, err := DB.Prepare("UPDATE tasks SET done=? WHERE id = ?")
+	defer stmt.Close()
+	checkErr(err)
+
+	if task.Done && state == "open" {
+		_, err = stmt.Exec(0, task.Id)
+	}
+	if task.Done && state == "opened" {
+		_, err = stmt.Exec(0, task.Id)
+	}
+	if !task.Done && state == "closed" {
+		_, err = stmt.Exec(1, task.Id)
+	}
+
+	checkErr(err)
 }
 
 func SetAsDone(task Task) {

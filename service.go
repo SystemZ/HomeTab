@@ -117,14 +117,20 @@ func GetTasksForCredential(credentials types.Credentials, accessId int, groupId 
 		for _, task := range tasks {
 			splitRes := strings.Split(task.WebURL, "/")
 			projectId := model.CreateProject(credentials.InstanceId, task.ProjectID, splitRes[4])
-			model.ImportGitlabTask(task, credentials.InstanceId, groupId, projectId)
+			alreadyExists, taskFromDb := model.ImportGitlabTask(task, credentials.InstanceId, groupId, projectId)
+			if alreadyExists {
+				model.RefreshDone(taskFromDb, task.State)
+			}
 		}
 	case 2:
 		log.Printf("Importing GitHub issues for credentials #%v", accessId)
 		tasks := integrations.GetAllIssuesAssignedToGitHubUser(credentials)
 		for _, task := range tasks {
 			projectId := model.CreateProject(credentials.InstanceId, int(*task.Repository.ID), *task.Repository.Name)
-			model.ImportGithubTask(task, credentials.InstanceId, groupId, projectId)
+			alreadyExists, taskFromDb := model.ImportGithubTask(task, credentials.InstanceId, groupId, projectId)
+			if alreadyExists {
+				model.RefreshDone(taskFromDb, *task.State)
+			}
 		}
 	case 3:
 		log.Printf("Importing Gmail messages for credentials #%v", accessId)
