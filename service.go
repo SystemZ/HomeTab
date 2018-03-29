@@ -43,6 +43,13 @@ func originUrl(task model.Task) string {
 	return ""
 }
 
+func updateTasksForAllInstances() {
+	instances := model.GetAllInstancesIds()
+	for _, instanceId := range instances {
+		UpdateTasksForInstance(instanceId)
+	}
+}
+
 func getTasksForAllGroups() {
 	log.Println("Importing tasks for all groups")
 	groups := model.GetAllGroupsIds()
@@ -96,25 +103,10 @@ func UpdateTasksForInstance(instanceId int) {
 				}
 			}
 		}
-		time.Sleep(time.Second)
 	}
+	time.Sleep(time.Second)
 	//}
 }
-
-//func UpdateTasksForCredential(credentials types.Credentials, accessId int, groupId int) {
-//	switch credentials.TypeId {
-//	case 3:
-//		log.Printf("Processing Gmail messages for credentials #%v", accessId)
-//		tasks := integrations.GmailGetInboxUnreadMessages(credentials)
-//		for _, task := range tasks.Messages {
-//			log.Printf("%v", task)
-//			t := integrations.GmailGetMessage(credentials, )
-//			model.ImportGmailTask(t, credentials.InstanceId, groupId)
-//		}
-//	default:
-//		log.Printf("%s: %v", "Unknown instance typeID", credentials.TypeId)
-//	}
-//}
 
 func GetTasksForCredential(credentials types.Credentials, accessId int, groupId int, wg *sync.WaitGroup) {
 	defer wg.Done()

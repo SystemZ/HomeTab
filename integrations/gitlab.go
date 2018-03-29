@@ -38,37 +38,3 @@ func GetAllTasksAssignedToAidFromGitLab(credentials types.Credentials) []*gitlab
 	}
 	return result
 }
-
-func GetTasksFromProjectIdFromGitlab(projectId int, credentials types.Credentials) {
-	lab := gitlab.NewClient(nil, credentials.Token)
-	lab.SetBaseURL(credentials.Url)
-
-	issues := lab.Issues
-	sort := "desc"
-
-	page := 1
-	finished := false
-
-	for ; finished == false; page++ {
-		listOptions := gitlab.ListOptions{Page: page, PerPage: 50}
-		projectIssuesOptions := &gitlab.ListProjectIssuesOptions{Sort: &sort, ListOptions: listOptions}
-		_, res, err := issues.ListProjectIssues(projectId, projectIssuesOptions)
-		if err != nil {
-			log.Println(err)
-			log.Panic("Error with gitlab ListProjectIssues req")
-		}
-
-		//for _, v := range iss {
-		//log.Printf("key=%v, value=%v", k, v)
-		//log.Printf("%v", v.Title, v.WebURL)
-		//}
-
-		if res.NextPage == 0 {
-			finished = true
-		}
-
-		//FIXME configurable cooldown
-		time.Sleep(time.Second * 1)
-	}
-
-}

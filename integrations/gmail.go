@@ -21,15 +21,6 @@ func GmailGetInboxMessages(credentials types.Credentials) *gmail.ListMessagesRes
 	return r
 }
 
-func GmailGetMessages(token string) *gmail.ListMessagesResponse {
-	srv := GmailAuth(token)
-	r, err := srv.Users.Messages.List("me").LabelIds("INBOX").Do()
-	if err != nil {
-		log.Printf("%v", err)
-	}
-	return r
-}
-
 func GmailGetMessage(credentials types.Credentials, msgId string) *gmail.Message {
 	srv := GmailAuth(credentials.Token)
 	r, err := srv.Users.Messages.Get("me", msgId).Do()
