@@ -14,12 +14,15 @@ var (
 	updatedAt      int
 	createdAt      int
 	instanceTaskId string
+	projectTaskId  string
 )
 
 type Task struct {
 	Id             int    `json:"id"`
 	InstanceId     int    `json:"instanceId"`
 	InstanceTaskId string `json:"instanceTaskId"`
+	ProjectId      int    `json:"projectId"`
+	ProjectTaskId  string `json:"projectTaskId"`
 	Done           bool   `json:"done"`
 	Type           string `json:"type"`
 	Title          string `json:"title"`
@@ -54,7 +57,7 @@ func ListTasksForInstance(instanceIdInt int) []Task {
 }
 
 func getTask(typeId string, id int) []Task {
-	query := "SELECT id, instance_task_id, instance_id, done, title, (SELECT type_id FROM instances WHERE instances.id = tasks.instance_id) AS type_id, checked_at, updated_at, created_at FROM tasks "
+	query := "SELECT id, instance_task_id, project_id, project_task_id, instance_id, done, title, (SELECT type_id FROM instances WHERE instances.id = tasks.instance_id) AS type_id, checked_at, updated_at, created_at FROM tasks "
 	switch typeId {
 	case "taskId":
 		query += "WHERE id = ? LIMIT 1"
@@ -72,13 +75,13 @@ func getTask(typeId string, id int) []Task {
 	rows, err := stmt.Query(id)
 	checkErr(err)
 
-	var taskType, done int
+	var taskType, done, projectId int
 	var doneBool bool
 
 	defer rows.Close()
 	var result []Task
 	for rows.Next() {
-		err := rows.Scan(&id, &instanceTaskId, &instanceId, &done, &title, &taskType, &checkedAt, &updatedAt, &createdAt)
+		err := rows.Scan(&id, &instanceTaskId, &projectId, &projectTaskId, &instanceId, &done, &title, &taskType, &checkedAt, &updatedAt, &createdAt)
 		checkErr(err)
 		if done >= 1 {
 			doneBool = true
@@ -88,6 +91,8 @@ func getTask(typeId string, id int) []Task {
 		result = append(result, Task{
 			Id:             id,
 			InstanceTaskId: instanceTaskId,
+			ProjectId:      projectId,
+			ProjectTaskId:  projectTaskId,
 			InstanceId:     instanceId,
 			Done:           doneBool,
 			Title:          title,
@@ -101,7 +106,7 @@ func getTask(typeId string, id int) []Task {
 }
 
 func getTaskInstance(typeId string, id int, idString string) []Task {
-	query := "SELECT id, instance_task_id, instance_id, done, title, (SELECT type_id FROM instances WHERE instances.id = tasks.instance_id) AS type_id, checked_at, updated_at, created_at FROM tasks "
+	query := "SELECT id, instance_task_id, project_id, project_task_id, instance_id, done, title, (SELECT type_id FROM instances WHERE instances.id = tasks.instance_id) AS type_id, checked_at, updated_at, created_at FROM tasks "
 	switch typeId {
 	case "instanceTaskId":
 		query += "WHERE instance_id = ? AND instance_task_id = ?"
@@ -113,13 +118,13 @@ func getTaskInstance(typeId string, id int, idString string) []Task {
 	rows, err := stmt.Query(id, idString)
 	checkErr(err)
 
-	var taskType, done int
+	var taskType, done, projectId int
 	var doneBool bool
 
 	defer rows.Close()
 	var result []Task
 	for rows.Next() {
-		err := rows.Scan(&id, &instanceTaskId, &instanceId, &done, &title, &taskType, &checkedAt, &updatedAt, &createdAt)
+		err := rows.Scan(&id, &instanceTaskId, &projectId, &projectTaskId, &instanceId, &done, &title, &taskType, &checkedAt, &updatedAt, &createdAt)
 		checkErr(err)
 		if done >= 1 {
 			doneBool = true
@@ -129,6 +134,8 @@ func getTaskInstance(typeId string, id int, idString string) []Task {
 		result = append(result, Task{
 			Id:             id,
 			InstanceTaskId: instanceTaskId,
+			ProjectId:      projectId,
+			ProjectTaskId:  projectTaskId,
 			InstanceId:     instanceId,
 			Done:           doneBool,
 			Title:          title,
@@ -153,17 +160,17 @@ func taskTypePretty(typeId int) string {
 }
 
 // returns row ID
-func ImportGitlabTask(issue *gitlab.Issue, instanceId int, groupId int) int64 {
+func ImportGitlabTask(issue *gitlab.Issue, instanceId int, groupId int, projectId int) int64 {
 	task := GetTasksByInstanceTaskId(instanceId, strconv.Itoa(issue.ID))
 	if len(task) > 0 {
 		return 0
 	}
 
-	stmt, err := DB.Prepare("INSERT IGNORE tasks SET title = ?, instance_task_id = ?, created_at = ?, instance_id = ?, group_id = ?")
+	stmt, err := DB.Prepare("INSERT IGNORE tasks SET title = ?, instance_task_id = ?, project_task_id = ?, project_id = ?, created_at = ?, instance_id = ?, group_id = ?")
 	defer stmt.Close()
 	checkErr(err)
 
-	res, err := stmt.Exec(issue.Title, issue.ID, issue.CreatedAt.Unix(), instanceId, groupId)
+	res, err := stmt.Exec(issue.Title, issue.ID, strconv.Itoa(issue.IID), projectId, issue.CreatedAt.Unix(), instanceId, groupId)
 	checkErr(err)
 
 	id, err := res.LastInsertId()
@@ -173,17 +180,17 @@ func ImportGitlabTask(issue *gitlab.Issue, instanceId int, groupId int) int64 {
 }
 
 // returns row ID
-func ImportGithubTask(issue *github.Issue, instanceId int, groupId int) int64 {
+func ImportGithubTask(issue *github.Issue, instanceId int, groupId int, projectId int) int64 {
 	task := GetTasksByInstanceTaskId(instanceId, strconv.Itoa(int(*issue.ID)))
 	if len(task) > 0 {
 		return 0
 	}
 
-	stmt, err := DB.Prepare("INSERT IGNORE tasks SET title = ?, instance_task_id = ?, created_at = ?, instance_id = ?, group_id = ?")
+	stmt, err := DB.Prepare("INSERT IGNORE tasks SET title = ?, instance_task_id = ?, project_task_id = ?, project_id = ?, created_at = ?, instance_id = ?, group_id = ?")
 	defer stmt.Close()
 	checkErr(err)
 
-	res, err := stmt.Exec(issue.Title, issue.ID, issue.CreatedAt.Unix(), instanceId, groupId)
+	res, err := stmt.Exec(issue.Title, issue.ID, issue.Number, projectId, issue.CreatedAt.Unix(), instanceId, groupId)
 	checkErr(err)
 
 	id, err := res.LastInsertId()

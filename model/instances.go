@@ -1,44 +1,10 @@
 package model
 
 import (
-	"database/sql"
 	_ "github.com/go-sql-driver/mysql"
 	"gitlab.systemz.pl/systemz/tasktab/types"
 	"log"
 )
-
-var DB *sql.DB
-
-var (
-	id         int
-	url        string
-	token      string
-	instanceId int
-	typeId     int
-)
-
-func checkErr(err error) {
-	if err != nil {
-		panic(err)
-	}
-}
-
-func init() {
-	//fmt.Println("init model")
-	var err error
-	DB, err = sql.Open("mysql", "dev:dev@/dev?charset=utf8")
-	//user:password@/dbname
-	if err != nil {
-		log.Fatalln("open db fail:", err)
-	}
-
-	////DB.SetMaxIdleConns(g.Config().Database.Idle)
-	//
-	//err = DB.Ping()
-	//if err != nil {
-	//	log.Fatalln("ping db fail:", err)
-	//}
-}
 
 // returns row ID
 func CreateInstance(typeId int, url string, token string) int64 {
@@ -95,6 +61,29 @@ func GetInstanceByAccessId(id int) types.Credentials {
 	checkErr(err)
 
 	return types.Credentials{id, instanceId, url, token, typeId}
+}
+
+type Instance struct {
+	InstanceId int
+	Url        string
+	TypeId     int
+}
+
+func GetInstanceById(id int) Instance {
+	//rows, err := DB.Query("SELECT url, (SELECT token FROM instances_access WHERE instances_access.instance_id = instances.id) AS token FROM instances WHERE id = ? LIMIT 1", id)
+	rows, err := DB.Query("SELECT id, type_id, url FROM instances WHERE id = ? LIMIT 1", id)
+	defer rows.Close()
+	if err != nil {
+		log.Fatal(err)
+	}
+	for rows.Next() {
+		err := rows.Scan(&id, &typeId, &url)
+		checkErr(err)
+	}
+	err = rows.Err()
+	checkErr(err)
+
+	return Instance{InstanceId: id, TypeId: typeId, Url: url}
 }
 
 func GetCredentialByInstanceId(id int) types.Credentials {

@@ -7,6 +7,7 @@ import (
 	"log"
 	"time"
 	"sync"
+	"strings"
 )
 
 func markAsDone(id int) {
@@ -26,8 +27,19 @@ func originUrl(task model.Task) string {
 	switch task.Type {
 	case "gmail":
 		return "https://mail.google.com/mail/u/0/#inbox/" + task.InstanceTaskId
+	case "gitlab":
+		project := model.GetProjectByInstanceIdAndProjectId(task.InstanceId, task.ProjectId)
+		instance := model.GetInstanceById(task.InstanceId)
+		splitResult := strings.Split(instance.Url, "/")
+		username := "systemz" //FIXME
+		return splitResult[0] + "//" + splitResult[2] + "/" + username + "/" + project[0].Title + "/issues/" + task.ProjectTaskId
+	case "github":
+		project := model.GetProjectByInstanceIdAndProjectId(task.InstanceId, task.ProjectId)
+		instance := model.GetInstanceById(task.InstanceId)
+		splitResult := strings.Split(instance.Url, "/")
+		username := "systemz" //FIXME
+		return splitResult[0] + "//" + splitResult[2] + "/" + username + "/" + project[0].Title + "/issues/" + task.ProjectTaskId
 	}
-
 	return ""
 }
 
@@ -111,13 +123,16 @@ func GetTasksForCredential(credentials types.Credentials, accessId int, groupId 
 		log.Printf("Importing GitLab issues for credentials #%v", accessId)
 		tasks := integrations.GetAllTasksAssignedToAidFromGitLab(credentials)
 		for _, task := range tasks {
-			model.ImportGitlabTask(task, credentials.InstanceId, groupId)
+			splitRes := strings.Split(task.WebURL, "/")
+			projectId := model.CreateProject(credentials.InstanceId, task.ProjectID, splitRes[4])
+			model.ImportGitlabTask(task, credentials.InstanceId, groupId, projectId)
 		}
 	case 2:
 		log.Printf("Importing GitHub issues for credentials #%v", accessId)
 		tasks := integrations.GetAllIssuesAssignedToGitHubUser(credentials)
 		for _, task := range tasks {
-			model.ImportGithubTask(task, credentials.InstanceId, groupId)
+			projectId := model.CreateProject(credentials.InstanceId, int(*task.Repository.ID), *task.Repository.Name)
+			model.ImportGithubTask(task, credentials.InstanceId, groupId, projectId)
 		}
 	case 3:
 		log.Printf("Importing Gmail messages for credentials #%v", accessId)

@@ -11,7 +11,7 @@ var (
 
 func schedule() {
 	c := cron.New()
-	c.AddFunc("*/15 * * * * *", func() {
+	c.AddFunc("*/30 * * * * *", func() {
 		// run only one instance at a time
 		if scheduleRunning {
 			log.Println("Cron tasks already running, aborting...")

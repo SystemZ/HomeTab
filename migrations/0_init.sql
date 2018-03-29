@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: db
--- Generation Time: Mar 26, 2018 at 05:20 PM
+-- Generation Time: Mar 29, 2018 at 04:32 PM
 -- Server version: 5.7.21
 -- PHP Version: 7.2.2
 
@@ -80,18 +80,36 @@ CREATE TABLE `instances_access` (
 -- --------------------------------------------------------
 
 --
+-- Table structure for table `projects`
+--
+
+CREATE TABLE `projects` (
+  `id` int(11) NOT NULL,
+  `instance_id` int(11) NOT NULL DEFAULT '0',
+  `instance_project_id` int(11) NOT NULL DEFAULT '0',
+  `title` varchar(64) CHARACTER SET utf8 NOT NULL DEFAULT '',
+  `updated_at` int(11) NOT NULL DEFAULT '0',
+  `created_at` int(11) DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+
+-- --------------------------------------------------------
+
+--
 -- Table structure for table `tasks`
 --
 
 CREATE TABLE `tasks` (
   `id` int(11) NOT NULL,
   `group_id` int(11) NOT NULL,
+  `project_id` int(11) NOT NULL DEFAULT '0',
   `instance_id` int(11) UNSIGNED DEFAULT NULL,
   `instance_task_id` varchar(16) DEFAULT NULL,
+  `project_task_id` varchar(16) NOT NULL DEFAULT '',
   `title` varchar(128) CHARACTER SET utf8 DEFAULT NULL,
   `done` tinyint(1) NOT NULL DEFAULT '0' COMMENT '1 = if task is done, 0 if task is not done',
-  `updated_at` int(11) DEFAULT NULL,
-  `created_at` int(11) DEFAULT NULL
+  `checked_at` int(11) NOT NULL DEFAULT '0',
+  `updated_at` int(11) DEFAULT '0',
+  `created_at` int(11) DEFAULT '0'
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
 -- --------------------------------------------------------
@@ -131,6 +149,13 @@ ALTER TABLE `instances_access`
   ADD PRIMARY KEY (`id`);
 
 --
+-- Indexes for table `projects`
+--
+ALTER TABLE `projects`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `unique_project` (`instance_id`,`instance_project_id`);
+
+--
 -- Indexes for table `tasks`
 --
 ALTER TABLE `tasks`
@@ -158,6 +183,12 @@ ALTER TABLE `instances`
 --
 ALTER TABLE `instances_access`
   MODIFY `id` int(11) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=1;
+
+--
+-- AUTO_INCREMENT for table `projects`
+--
+ALTER TABLE `projects`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=1;
 
 --
 -- AUTO_INCREMENT for table `tasks`
