@@ -43,13 +43,6 @@ func originUrl(task model.Task) string {
 	return ""
 }
 
-func updateTasksForAllInstances() {
-	instances := model.GetAllInstancesIds()
-	for _, instanceId := range instances {
-		UpdateTasksForInstance(instanceId)
-	}
-}
-
 func getTasksForAllGroups() {
 	log.Println("Importing tasks for all groups")
 	groups := model.GetAllGroupsIds()
@@ -134,11 +127,19 @@ func GetTasksForCredential(credentials types.Credentials, accessId int, groupId 
 		}
 	case 3:
 		log.Printf("Importing Gmail messages for credentials #%v", accessId)
-		tasks := integrations.GmailGetInboxMessages(credentials)
-		for _, task := range tasks.Messages {
-			t := integrations.GmailGetMessage(credentials, task.Id)
-			model.ImportGmailTask(t, credentials.InstanceId, groupId)
+		mails := integrations.GmailGetInboxMessages(credentials)
+		var whitelist []string
+		for _, mail := range mails.Messages {
+			tasksInDb := model.GetTasksByInstanceTaskId(credentials.InstanceId, mail.Id)
+			if len(tasksInDb) <= 0 {
+				// fresh mail, no questions asked, just download it
+				t := integrations.GmailGetMessage(credentials, mail.Id)
+				model.ImportGmailTask(t, credentials.InstanceId, groupId)
+			}
+			whitelist = append(whitelist, mail.Id)
 		}
+		//TODO mark as done all tasks except on whitelist
+		//model.MarkAllTasksDoneExcept()
 	default:
 		log.Printf("%s: %v", "Unknown instance typeID", credentials.TypeId)
 	}

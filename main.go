@@ -20,7 +20,6 @@ func schedule() {
 		log.Println("Starting cron task...")
 		scheduleRunning = true
 		getTasksForAllGroups()
-		updateTasksForAllInstances()
 		scheduleRunning = false
 	})
 	c.Start()
