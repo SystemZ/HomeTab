@@ -163,14 +163,19 @@ func taskTypePretty(typeId int) string {
 func ImportGitlabTask(issue *gitlab.Issue, instanceId int, groupId int, projectId int) int64 {
 	task := GetTasksByInstanceTaskId(instanceId, strconv.Itoa(issue.ID))
 	if len(task) > 0 {
-		return 0
+		return int64(task[0].Id)
 	}
 
-	stmt, err := DB.Prepare("INSERT IGNORE tasks SET title = ?, instance_task_id = ?, project_task_id = ?, project_id = ?, created_at = ?, instance_id = ?, group_id = ?")
+	done := 0
+	if issue.State == "closed" {
+		done = 1
+	}
+
+	stmt, err := DB.Prepare("INSERT IGNORE tasks SET done = ?, title = ?, instance_task_id = ?, project_task_id = ?, project_id = ?, created_at = ?, instance_id = ?, group_id = ?")
 	defer stmt.Close()
 	checkErr(err)
 
-	res, err := stmt.Exec(issue.Title, issue.ID, strconv.Itoa(issue.IID), projectId, issue.CreatedAt.Unix(), instanceId, groupId)
+	res, err := stmt.Exec(done, issue.Title, issue.ID, strconv.Itoa(issue.IID), projectId, issue.CreatedAt.Unix(), instanceId, groupId)
 	checkErr(err)
 
 	id, err := res.LastInsertId()
@@ -183,14 +188,19 @@ func ImportGitlabTask(issue *gitlab.Issue, instanceId int, groupId int, projectI
 func ImportGithubTask(issue *github.Issue, instanceId int, groupId int, projectId int) int64 {
 	task := GetTasksByInstanceTaskId(instanceId, strconv.Itoa(int(*issue.ID)))
 	if len(task) > 0 {
-		return 0
+		return int64(task[0].Id)
 	}
 
-	stmt, err := DB.Prepare("INSERT IGNORE tasks SET title = ?, instance_task_id = ?, project_task_id = ?, project_id = ?, created_at = ?, instance_id = ?, group_id = ?")
+	done := 0
+	if *issue.State == "closed" {
+		done = 1
+	}
+
+	stmt, err := DB.Prepare("INSERT IGNORE tasks SET done = ?, title = ?, instance_task_id = ?, project_task_id = ?, project_id = ?, created_at = ?, instance_id = ?, group_id = ?")
 	defer stmt.Close()
 	checkErr(err)
 
-	res, err := stmt.Exec(issue.Title, issue.ID, issue.Number, projectId, issue.CreatedAt.Unix(), instanceId, groupId)
+	res, err := stmt.Exec(done, issue.Title, issue.ID, issue.Number, projectId, issue.CreatedAt.Unix(), instanceId, groupId)
 	checkErr(err)
 
 	id, err := res.LastInsertId()
@@ -215,6 +225,7 @@ func ImportGmailTask(message *gmail.Message, instanceId int, groupId int) int64 
 		}
 	}
 
+	// e-mails in INBOX are always not finished, so default done = 0 is OK
 	stmt, err := DB.Prepare("INSERT IGNORE tasks SET title = ?, instance_task_id = ?, created_at = ?, instance_id = ?, group_id = ?")
 	defer stmt.Close()
 	checkErr(err)
