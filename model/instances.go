@@ -60,7 +60,7 @@ func GetInstanceByAccessId(id int) types.Credentials {
 	err = rows.Err()
 	checkErr(err)
 
-	return types.Credentials{id, instanceId, url, token, typeId}
+	return types.Credentials{UserIdOnInstance: id, InstanceId: instanceId, Url: url, Token: token, TypeId: typeId}
 }
 
 type Instance struct {
@@ -99,5 +99,5 @@ func GetCredentialByInstanceId(id int) types.Credentials {
 	err = rows.Err()
 	checkErr(err)
 
-	return types.Credentials{id, instanceId, url, token, typeId}
+	return types.Credentials{UserIdOnInstance: id, InstanceId: instanceId, Url: url, Token: token, TypeId: typeId}
 }

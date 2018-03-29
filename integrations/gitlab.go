@@ -52,16 +52,16 @@ func GetTasksFromProjectIdFromGitlab(projectId int, credentials types.Credential
 	for ; finished == false; page++ {
 		listOptions := gitlab.ListOptions{Page: page, PerPage: 50}
 		projectIssuesOptions := &gitlab.ListProjectIssuesOptions{Sort: &sort, ListOptions: listOptions}
-		iss, res, err := issues.ListProjectIssues(projectId, projectIssuesOptions)
+		_, res, err := issues.ListProjectIssues(projectId, projectIssuesOptions)
 		if err != nil {
 			log.Println(err)
 			log.Panic("Error with gitlab ListProjectIssues req")
 		}
 
-		for _, v := range iss {
-			//log.Printf("key=%v, value=%v", k, v)
-			log.Printf("%v", v.Title, v.WebURL)
-		}
+		//for _, v := range iss {
+		//log.Printf("key=%v, value=%v", k, v)
+		//log.Printf("%v", v.Title, v.WebURL)
+		//}
 
 		if res.NextPage == 0 {
 			finished = true
