@@ -52,6 +52,19 @@ func tasksTodoListHandler(w http.ResponseWriter, r *http.Request) {
 	io.WriteString(w, string(pagesJson))
 }
 
+func tasksFocusListHandler(w http.ResponseWriter, r *http.Request) {
+	//FIXME
+	res := model.ListTasksToDoForGroupFocus(1)
+
+	pagesJson, err := json.MarshalIndent(res, "", "\t")
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		io.WriteString(w, `{"error": true}`)
+	}
+	respondOk(w)
+	io.WriteString(w, string(pagesJson))
+}
+
 func redirectToTaskOriginHandler(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	task := model.GetTaskByStringId(vars["id"])
@@ -67,6 +80,23 @@ func taskDoneHandler(w http.ResponseWriter, r *http.Request) {
 		io.WriteString(w, `{"error": true}`)
 	}
 	markAsDone(int(taskId))
+	respondOk(w)
+	io.WriteString(w, `{"syncing": true}`)
+}
+
+func taskDelayHandler(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	taskId, err := strconv.ParseInt(vars["id"], 10, 64)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		io.WriteString(w, `{"error": true}`)
+	}
+	seconds, err := strconv.ParseInt(vars["seconds"], 10, 64)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		io.WriteString(w, `{"error": true}`)
+	}
+	markAsDelayed(int(taskId), int(seconds))
 	respondOk(w)
 	io.WriteString(w, `{"syncing": true}`)
 }
@@ -122,9 +152,11 @@ func httpStart() {
 
 	r.HandleFunc("/api/v1/task/{id}/redirect", redirectToTaskOriginHandler).Methods("GET", "OPTIONS")
 	r.HandleFunc("/api/v1/task/{id}/done", taskDoneHandler).Methods("POST", "OPTIONS")
+	r.HandleFunc("/api/v1/task/{id}/delay/by/", taskDelayHandler).Methods("POST", "OPTIONS")
 
 	r.HandleFunc("/api/v1/tasks/all/{uid}", taskListHandler).Methods("GET", "OPTIONS")
 	r.HandleFunc("/api/v1/tasks/todo/{uid}", tasksTodoListHandler).Methods("GET", "OPTIONS")
+	r.HandleFunc("/api/v1/tasks/focus/{uid}", tasksFocusListHandler).Methods("GET", "OPTIONS")
 
 	//http.Handle("/static", http.FileServer(http.Dir("./frontend/dist/static")))
 	//http.Handle("/", http.FileServer(rice.MustFindBox("frontend").HTTPBox()))

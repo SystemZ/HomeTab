@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: db
--- Generation Time: Mar 31, 2018 at 01:45 PM
+-- Generation Time: Mar 31, 2018 at 08:41 PM
 -- Server version: 5.7.21
 -- PHP Version: 7.2.2
 
@@ -131,6 +131,7 @@ CREATE TABLE `tasks` (
   `project_task_id` varchar(16) NOT NULL DEFAULT '',
   `title` varchar(128) CHARACTER SET utf8 DEFAULT NULL,
   `done` tinyint(1) NOT NULL DEFAULT '0' COMMENT '1 = if task is done, 0 if task is not done',
+  `show_after` int(11) NOT NULL DEFAULT '0',
   `checked_at` int(11) NOT NULL DEFAULT '0',
   `updated_at` int(11) DEFAULT '0',
   `created_at` int(11) DEFAULT '0'
@@ -212,7 +213,7 @@ ALTER TABLE `users`
 -- AUTO_INCREMENT for table `events`
 --
 ALTER TABLE `events`
-  MODIFY `id` int(11) UNSIGNED NOT NULL AUTO_INCREMENT;
+  MODIFY `id` int(11) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=1;
 
 --
 -- AUTO_INCREMENT for table `events_types`

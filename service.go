@@ -10,6 +10,11 @@ import (
 	"strings"
 )
 
+func markAsDelayed(id int, seconds int) {
+	task := model.GetTaskById(id)
+	model.DelayBy(task,seconds)
+}
+
 func markAsDone(id int) {
 	task := model.GetTaskById(id)
 	if task.Done {

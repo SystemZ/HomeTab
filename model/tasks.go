@@ -53,6 +53,10 @@ func ListTasksToDoForGroup(groupId int) []Task {
 	return getTask("groupIdToDo", groupId)
 }
 
+func ListTasksToDoForGroupFocus(groupId int) []Task {
+	return getTask("groupIdToDoFocus", groupId)
+}
+
 func ListTasksForInstance(instanceIdInt int) []Task {
 	return getTask("instanceId", instanceIdInt)
 }
@@ -66,6 +70,8 @@ func getTask(typeId string, id int) []Task {
 		query += "WHERE group_id = ?"
 	case "groupIdToDo":
 		query += "WHERE done = 0 AND group_id = ?"
+	case "groupIdToDoFocus":
+		query += "WHERE done = 0 AND group_id = ? AND (show_after < UNIX_TIMESTAMP() OR show_after = 0)"
 	case "instanceId":
 		query += "WHERE instance_id = ?"
 	}
@@ -273,6 +279,15 @@ func SetAsDone(task Task) {
 	checkErr(err)
 
 	_, err = stmt.Exec(1, task.Id)
+	checkErr(err)
+}
+
+func DelayBy(task Task, seconds int) {
+	stmt, err := DB.Prepare("UPDATE tasks SET show_after=UNIX_TIMESTAMP()+? WHERE id = ?")
+	defer stmt.Close()
+	checkErr(err)
+
+	_, err = stmt.Exec(seconds, task.Id)
 	checkErr(err)
 }
 
