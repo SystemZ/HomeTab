@@ -77,6 +77,38 @@ func syncHandler(w http.ResponseWriter, r *http.Request) {
 	io.WriteString(w, `{"syncing": true}`)
 }
 
+func reportHandler(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	userId, err := strconv.ParseInt(vars["id"], 10, 64)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		io.WriteString(w, `{"error": true}`)
+	}
+
+	err = r.ParseForm()
+	if err != nil {
+		panic(err)
+	}
+
+	battery := r.PostFormValue("bat")
+	bluetooth := r.PostFormValue("blu")
+	brightness := r.PostFormValue("bri")
+	light := r.PostFormValue("lig")
+	gps := r.PostFormValue("gps")
+	wifi := r.PostFormValue("wif")
+
+	log.Printf("battery: %v bluetooth: %v brightness: %v light: %v gps: %v wifi: %v", battery, bluetooth, brightness, light, gps, wifi)
+
+	//FIXME real user id from auth token and real types
+	model.CreateEvent(1, int(userId))
+
+	//x := r.PostFormValue("x")
+	//log.Printf("%v", x)
+
+	respondOk(w)
+	io.WriteString(w, `{"ok": true}`)
+}
+
 func httpStart() {
 	//FIXME configurable port
 	host := ":3000"
@@ -84,6 +116,8 @@ func httpStart() {
 
 	r := mux.NewRouter()
 	r.HandleFunc("/health", healthCheckHandler).Methods("GET")
+
+	r.HandleFunc("/api/v1/report/{id}", reportHandler).Methods("POST")
 	r.HandleFunc("/api/v1/sync", syncHandler).Methods("GET")
 
 	r.HandleFunc("/api/v1/task/{id}/redirect", redirectToTaskOriginHandler).Methods("GET", "OPTIONS")
