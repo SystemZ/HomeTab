@@ -6,6 +6,7 @@ import (
 	"google.golang.org/api/gmail/v1"
 	"log"
 	"strconv"
+	"strings"
 )
 
 var (
@@ -281,5 +282,28 @@ func SetAsNotDone(task Task) {
 	checkErr(err)
 
 	_, err = stmt.Exec(0, task.Id)
+	checkErr(err)
+}
+
+func MarkAllGmailTasksDoneExcept(instanceId int, whitelist []string) {
+	realWhitelist := "'" + strings.Join(whitelist, "','") + "'"
+	// mark tasks as not done if moved from archived to inbox
+	stmt, err := DB.Prepare("UPDATE tasks SET done = 0 WHERE instance_id = ? AND tasks.instance_task_id IN ( ? )")
+	defer stmt.Close()
+	checkErr(err)
+	toDoRes, err := stmt.Exec(instanceId, realWhitelist)
+	todoAffected, _ := toDoRes.RowsAffected()
+	log.Printf("Emails set as todo: %v", todoAffected)
+	checkErr(err)
+
+	// NOT IN ( ? ) doesn't work, have to make hack like this :/
+	blacklist := " AND tasks.instance_task_id != '" + strings.Join(whitelist, "' AND tasks.instance_task_id != '") + "'"
+	// mark all tasks as done if not in inbox
+	stmt2, err := DB.Prepare("UPDATE tasks SET done = 1 WHERE instance_id = ?" + blacklist)
+	defer stmt2.Close()
+	checkErr(err)
+	doneRes, err := stmt2.Exec(instanceId)
+	doneAffected, _ := doneRes.RowsAffected()
+	log.Printf("Emails set as done: %v", doneAffected)
 	checkErr(err)
 }

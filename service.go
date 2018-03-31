@@ -138,8 +138,7 @@ func GetTasksForCredential(credentials types.Credentials, accessId int, groupId 
 			}
 			whitelist = append(whitelist, mail.Id)
 		}
-		//TODO mark as done all tasks except on whitelist
-		//model.MarkAllTasksDoneExcept()
+		model.MarkAllGmailTasksDoneExcept(credentials.InstanceId, whitelist)
 	default:
 		log.Printf("%s: %v", "Unknown instance typeID", credentials.TypeId)
 	}
