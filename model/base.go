@@ -3,6 +3,7 @@ package model
 import (
 	"database/sql"
 	"log"
+	"gitlab.systemz.pl/systemz/tasktab/config"
 )
 
 var (
@@ -21,10 +22,9 @@ func checkErr(err error) {
 }
 
 func init() {
-	//fmt.Println("init model")
 	var err error
-	DB, err = sql.Open("mysql", "dev:dev@/dev?charset=utf8")
-	//user:password@/dbname
+	dbUrl := config.DB_USERNAME + ":" + config.DB_PASSWORD + "@tcp(" + config.DB_HOST + ":" + config.DB_PORT + ")/" + config.DB_NAME + "?charset=utf8"
+	DB, err = sql.Open("mysql", dbUrl)
 	if err != nil {
 		log.Fatalln("open db fail:", err)
 	}
