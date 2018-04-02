@@ -28,11 +28,11 @@ func init() {
 	if err != nil {
 		log.Fatalln("open db fail:", err)
 	}
+	///DB.SetMaxIdleConns(g.Config().Database.Idle)
 
-	////DB.SetMaxIdleConns(g.Config().Database.Idle)
-	//
-	//err = DB.Ping()
-	//if err != nil {
-	//	log.Fatalln("ping db fail:", err)
-	//}
+	err = DB.Ping()
+	if err != nil {
+		log.Panic("Ping to DB failed")
+	}
+	log.Printf("%v", "Connection to DB seems OK!")
 }
