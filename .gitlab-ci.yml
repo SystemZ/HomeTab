@@ -39,6 +39,9 @@ build-frontend:
     artifacts:
       paths:
         - frontend/dist
+    cache:
+      paths:
+        - frontend/node_modules/
 
 backend:
     stage: docker
