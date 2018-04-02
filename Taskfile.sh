@@ -9,6 +9,9 @@ function help {
 function build {
     docker build -t tasktab .
 }
+function build-frontend {
+    docker build -f frontend.Dockerfile -t tasktab/frontend .
+}
 function up {
     docker-compose up -d
     cd frontend
@@ -17,7 +20,6 @@ function up {
 function stop {
     docker-compose stop
 }
-
 function default {
     up
 }
