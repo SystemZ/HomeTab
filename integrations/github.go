@@ -18,7 +18,7 @@ func GetAllIssuesAssignedToGitHubUser(credentials types.Credentials) []*github.I
 
 	client := github.NewClient(tc)
 
-	opt := &github.IssueListOptions{ListOptions: github.ListOptions{PerPage: 100}}
+	opt := &github.IssueListOptions{State: "all", ListOptions: github.ListOptions{PerPage: 100}}
 	var allIssues []*github.Issue
 
 	for {
