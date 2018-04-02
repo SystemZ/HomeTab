@@ -22,6 +22,7 @@ type Task struct {
 	Id             int    `json:"id"`
 	InstanceId     int    `json:"instanceId"`
 	InstanceTaskId string `json:"instanceTaskId"`
+	ProjectName    string `json:"projectName"`
 	ProjectId      int    `json:"projectId"`
 	ProjectTaskId  string `json:"projectTaskId"`
 	Done           bool   `json:"done"`
@@ -62,7 +63,7 @@ func ListTasksForInstance(instanceIdInt int) []Task {
 }
 
 func getTask(typeId string, id int) []Task {
-	query := "SELECT id, instance_task_id, project_id, project_task_id, instance_id, done, title, (SELECT type_id FROM instances WHERE instances.id = tasks.instance_id) AS type_id, checked_at, updated_at, created_at FROM tasks "
+	query := "SELECT id, instance_task_id, (SELECT title FROM projects WHERE projects.id = tasks.project_id) AS project_name, project_id, project_task_id, instance_id, done, title, (SELECT type_id FROM instances WHERE instances.id = tasks.instance_id) AS type_id, checked_at, updated_at, created_at FROM tasks "
 	switch typeId {
 	case "taskId":
 		query += "WHERE id = ? LIMIT 1"
@@ -84,11 +85,12 @@ func getTask(typeId string, id int) []Task {
 
 	var taskType, done, projectId int
 	var doneBool bool
+	var projectName string
 
 	defer rows.Close()
 	var result []Task
 	for rows.Next() {
-		err := rows.Scan(&id, &instanceTaskId, &projectId, &projectTaskId, &instanceId, &done, &title, &taskType, &checkedAt, &updatedAt, &createdAt)
+		err := rows.Scan(&id, &instanceTaskId, &projectName, &projectId, &projectTaskId, &instanceId, &done, &title, &taskType, &checkedAt, &updatedAt, &createdAt)
 		checkErr(err)
 		if done >= 1 {
 			doneBool = true
@@ -98,6 +100,7 @@ func getTask(typeId string, id int) []Task {
 		result = append(result, Task{
 			Id:             id,
 			InstanceTaskId: instanceTaskId,
+			ProjectName:    projectName,
 			ProjectId:      projectId,
 			ProjectTaskId:  projectTaskId,
 			InstanceId:     instanceId,
@@ -113,7 +116,7 @@ func getTask(typeId string, id int) []Task {
 }
 
 func getTaskInstance(typeId string, id int, idString string) []Task {
-	query := "SELECT id, instance_task_id, project_id, project_task_id, instance_id, done, title, (SELECT type_id FROM instances WHERE instances.id = tasks.instance_id) AS type_id, checked_at, updated_at, created_at FROM tasks "
+	query := "SELECT id, instance_task_id, (SELECT title FROM projects WHERE projects.id = tasks.project_id) AS project_name, project_id, project_task_id, instance_id, done, title, (SELECT type_id FROM instances WHERE instances.id = tasks.instance_id) AS type_id, checked_at, updated_at, created_at FROM tasks "
 	switch typeId {
 	case "instanceTaskId":
 		query += "WHERE instance_id = ? AND instance_task_id = ?"
@@ -127,11 +130,12 @@ func getTaskInstance(typeId string, id int, idString string) []Task {
 
 	var taskType, done, projectId int
 	var doneBool bool
+	var projectName string
 
 	defer rows.Close()
 	var result []Task
 	for rows.Next() {
-		err := rows.Scan(&id, &instanceTaskId, &projectId, &projectTaskId, &instanceId, &done, &title, &taskType, &checkedAt, &updatedAt, &createdAt)
+		err := rows.Scan(&id, &instanceTaskId, &projectName, &projectId, &projectTaskId, &instanceId, &done, &title, &taskType, &checkedAt, &updatedAt, &createdAt)
 		checkErr(err)
 		if done >= 1 {
 			doneBool = true
@@ -141,6 +145,7 @@ func getTaskInstance(typeId string, id int, idString string) []Task {
 		result = append(result, Task{
 			Id:             id,
 			InstanceTaskId: instanceTaskId,
+			ProjectName:    projectName,
 			ProjectId:      projectId,
 			ProjectTaskId:  projectTaskId,
 			InstanceId:     instanceId,
