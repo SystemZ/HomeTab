@@ -84,6 +84,18 @@ func taskDoneHandler(w http.ResponseWriter, r *http.Request) {
 	io.WriteString(w, `{"syncing": true}`)
 }
 
+func taskToDoHandler(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	taskId, err := strconv.ParseInt(vars["id"], 10, 64)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		io.WriteString(w, `{"error": true}`)
+	}
+	markAsDone(int(taskId))
+	respondOk(w)
+	io.WriteString(w, `{"syncing": true}`)
+}
+
 func taskDelayHandler(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	taskId, err := strconv.ParseInt(vars["id"], 10, 64)
@@ -152,7 +164,8 @@ func httpStart() {
 
 	r.HandleFunc("/api/v1/task/{id}/redirect", redirectToTaskOriginHandler).Methods("GET", "OPTIONS")
 	r.HandleFunc("/api/v1/task/{id}/done", taskDoneHandler).Methods("POST", "OPTIONS")
-	r.HandleFunc("/api/v1/task/{id}/delay/by/", taskDelayHandler).Methods("POST", "OPTIONS")
+	r.HandleFunc("/api/v1/task/{id}/todo", taskToDoHandler).Methods("POST", "OPTIONS")
+	r.HandleFunc("/api/v1/task/{id}/delay/by/{seconds}", taskDelayHandler).Methods("POST", "OPTIONS")
 
 	r.HandleFunc("/api/v1/tasks/all/{uid}", taskListHandler).Methods("GET", "OPTIONS")
 	r.HandleFunc("/api/v1/tasks/todo/{uid}", tasksTodoListHandler).Methods("GET", "OPTIONS")

@@ -28,6 +28,20 @@ func markAsDone(id int) {
 	model.SetAsDone(task)
 }
 
+func markAsToDo(id int) {
+	task := model.GetTaskById(id)
+	if !task.Done {
+		log.Printf("Task already todo: %v", id)
+	}
+	credential := model.GetCredentialByInstanceId(task.InstanceId)
+	//TODO other services
+	switch credential.TypeId {
+	case 3:
+		integrations.GmailMarkMessageAsToDo(credential, task.InstanceTaskId)
+	}
+	model.SetAsDone(task)
+}
+
 func originUrl(task model.Task) string {
 	switch task.Type {
 	case "gmail":
