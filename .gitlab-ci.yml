@@ -35,7 +35,7 @@ docker:
     stage: docker
     image: docker
     script:
-    - docker pull $CONTAINER_IMAGE:latest || true
-    - docker build --cache-from $CONTAINER_IMAGE:latest --tag $CONTAINER_IMAGE:$CI_BUILD_REF --tag $CONTAINER_IMAGE:latest .
-    - docker push $CONTAINER_IMAGE:$CI_BUILD_REF
-    - docker push $CONTAINER_IMAGE:latest
+    - docker pull $CI_REGISTRY_IMAGE/tasktab:latest || true
+    - docker build --cache-from $CI_REGISTRY_IMAGE/tasktab:latest --tag $CI_REGISTRY_IMAGE/tasktab:pipeline-$CI_PIPELINE_ID --tag $CI_REGISTRY_IMAGE/tasktab:latest .
+    - docker push $CI_REGISTRY_IMAGE/tasktab:pipeline-$CI_PIPELINE_ID
+    - docker push $CI_REGISTRY_IMAGE/tasktab:latest
