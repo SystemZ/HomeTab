@@ -29,6 +29,9 @@ compile-backend:
     artifacts:
       paths:
         - tasktab
+    cache:
+      paths:
+        - $GOPATH/src/github.com/
 
 build-frontend:
     stage: build
