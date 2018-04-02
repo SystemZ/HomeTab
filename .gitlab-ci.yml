@@ -27,9 +27,10 @@ compile-backend:
       - go test -race $(go list ./... | grep -v /vendor/)
       #- go build -race -ldflags "-extldflags '-static'" -o $CI_PROJECT_DIR/tasktab
       - go build -o $CI_PROJECT_DIR/tasktab
+      - ls -alh $CI_PROJECT_DIR/
     artifacts:
       paths:
-        - tasktab
+        - $CI_PROJECT_DIR/tasktab
     cache:
       paths:
         - $GOPATH/src/github.com/
