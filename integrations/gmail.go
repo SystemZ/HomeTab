@@ -38,6 +38,14 @@ func GmailMarkMessageAsDone(credentials types.Credentials, msgId string) error {
 	return err
 }
 
+func GmailMarkMessageAsToDo(credentials types.Credentials, msgId string) error {
+	srv := GmailAuth(credentials.Token)
+	labels := []string{"INBOX"}
+	_, err := srv.Users.Messages.Modify("me", msgId, &gmail.ModifyMessageRequest{AddLabelIds: labels}).Do()
+	log.Printf("%v", err)
+	return err
+}
+
 func GmailAuth(token string) *gmail.Service {
 	ctx := context.Background()
 
