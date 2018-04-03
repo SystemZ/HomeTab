@@ -25,8 +25,7 @@ compile-backend:
       - go fmt $(go list ./... | grep -v /vendor/)
       - go vet $(go list ./... | grep -v /vendor/)
       - go test -race $(go list ./... | grep -v /vendor/)
-      #- go build -race -ldflags "-extldflags '-static'" -o $CI_PROJECT_DIR/tasktab
-      - go build -o $CI_PROJECT_DIR/tasktab
+      - CGO_ENABLED=0 go build -o $CI_PROJECT_DIR/tasktab
       - ls -alh $CI_PROJECT_DIR/
     artifacts:
       paths:
