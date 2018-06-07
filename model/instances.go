@@ -2,7 +2,7 @@ package model
 
 import (
 	_ "github.com/go-sql-driver/mysql"
-	"gitlab.systemz.pl/systemz/tasktab/types"
+	"gitlab.com/systemz/tasktab/types"
 	"log"
 )
 

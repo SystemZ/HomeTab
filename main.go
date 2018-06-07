@@ -1,7 +1,7 @@
 package main
 
 import (
-	_ "gitlab.systemz.pl/systemz/tasktab/config"
+	_ "gitlab.com/systemz/tasktab/config"
 	"github.com/robfig/cron"
 	"log"
 )

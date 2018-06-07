@@ -5,7 +5,7 @@ import (
 	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
 	"github.com/rs/cors"
-	"gitlab.systemz.pl/systemz/tasktab/model"
+	"gitlab.com/systemz/tasktab/model"
 	"io"
 	"log"
 	"net/http"

@@ -3,7 +3,7 @@ package model
 import (
 	"database/sql"
 	"log"
-	"gitlab.systemz.pl/systemz/tasktab/config"
+	"gitlab.com/systemz/tasktab/config"
 )
 
 var (

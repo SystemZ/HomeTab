@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"log"
-	"gitlab.systemz.pl/systemz/tasktab/types"
+	"gitlab.com/systemz/tasktab/types"
 	"golang.org/x/net/context"
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/google"

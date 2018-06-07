@@ -2,7 +2,7 @@ package integrations
 
 import (
 	"github.com/xanzy/go-gitlab"
-	"gitlab.systemz.pl/systemz/tasktab/types"
+	"gitlab.com/systemz/tasktab/types"
 	"log"
 	"time"
 )

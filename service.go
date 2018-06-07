@@ -1,9 +1,9 @@
 package main
 
 import (
-	"gitlab.systemz.pl/systemz/tasktab/integrations"
-	"gitlab.systemz.pl/systemz/tasktab/model"
-	"gitlab.systemz.pl/systemz/tasktab/types"
+	"gitlab.com/systemz/tasktab/integrations"
+	"gitlab.com/systemz/tasktab/model"
+	"gitlab.com/systemz/tasktab/types"
 	"log"
 	"time"
 	"sync"

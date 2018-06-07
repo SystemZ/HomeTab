@@ -2,7 +2,7 @@ package integrations
 
 import (
 	"github.com/google/go-github/github"
-	"gitlab.systemz.pl/systemz/tasktab/types"
+	"gitlab.com/systemz/tasktab/types"
 	"golang.org/x/net/context"
 	"golang.org/x/oauth2"
 	"log"
