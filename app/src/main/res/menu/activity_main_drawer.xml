@@ -5,9 +5,10 @@
 
     <group android:checkableBehavior="single">
         <item
-            android:id="@+id/nav_camera"
-            android:icon="@drawable/ic_menu_camera"
-            android:title="Import" />
+            android:id="@+id/taskList"
+            android:icon="@drawable/ic_assignment_black_24dp"
+            android:title="Tasks" />
+        <!--
         <item
             android:id="@+id/nav_gallery"
             android:icon="@drawable/ic_menu_gallery"
@@ -20,8 +21,10 @@
             android:id="@+id/nav_manage"
             android:icon="@drawable/ic_menu_manage"
             android:title="Tools" />
+        -->
     </group>
 
+    <!--
     <item android:title="Communicate">
         <menu>
             <item
@@ -34,5 +37,6 @@
                 android:title="Send" />
         </menu>
     </item>
+    -->
 
 </menu>

@@ -36,8 +36,10 @@ public class MainActivity extends AppCompatActivity
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show();
+                Intent i = new Intent(MainActivity.this, TaskList.class);
+                startActivity(i);
+//                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
+//                        .setAction("Action", null).show();
             }
         });
 
@@ -89,33 +91,27 @@ public class MainActivity extends AppCompatActivity
         // Handle navigation view item clicks here.
         int id = item.getItemId();
 
-        if (id == R.id.nav_camera) {
-            // Handle the camera action
-        } else if (id == R.id.nav_gallery) {
 
-        } else if (id == R.id.nav_slideshow) {
-
-        } else if (id == R.id.nav_manage) {
-
-        } else if (id == R.id.nav_share) {
+        if (id == R.id.taskList) {
             Intent i = new Intent(this, TaskList.class);
             startActivity(i);
-        } else if (id == R.id.nav_send) {
-            Log.v("tasktab","nav_send clicked");
-
-            NotificationCompat.Builder builder = new NotificationCompat.Builder(this)
-                    .setSmallIcon(R.drawable.ic_menu_camera)
-                    .setContentTitle("test")
-                    .setContentText("content")
-                    .setPriority(NotificationCompat.PRIORITY_DEFAULT);
-
-            NotificationManagerCompat notificationManager = NotificationManagerCompat.from(this);
-
-            // notificationId is a unique int for each notification that you must define
-            notificationManager.notify(1337, builder.build());
-
-
         }
+//        } else if (id == R.id.nav_send) {
+//            Log.v("tasktab", "nav_send clicked");
+//
+//            NotificationCompat.Builder builder = new NotificationCompat.Builder(this)
+//                    .setSmallIcon(R.drawable.ic_menu_camera)
+//                    .setContentTitle("test")
+//                    .setContentText("content")
+//                    .setPriority(NotificationCompat.PRIORITY_DEFAULT);
+//
+//            NotificationManagerCompat notificationManager = NotificationManagerCompat.from(this);
+//
+//            // notificationId is a unique int for each notification that you must define
+//            notificationManager.notify(1337, builder.build());
+//
+//
+//        }
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         drawer.closeDrawer(GravityCompat.START);
