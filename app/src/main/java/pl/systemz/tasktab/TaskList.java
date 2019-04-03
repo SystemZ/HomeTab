@@ -5,7 +5,9 @@ import androidx.core.app.NavUtils;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.MenuItem;
 
 import java.util.ArrayList;
@@ -41,13 +43,23 @@ public class TaskList extends AppCompatActivity {
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
+        Log.v("menu", item.toString());
         switch (item.getItemId()) {
             // Respond to the action bar's Up/Home button
             case android.R.id.home:
                 NavUtils.navigateUpFromSameTask(this);
+//                Intent mainActivityIntent = new Intent(this, MainActivity.class);
+//                this.startActivity(mainActivityIntent);
                 return true;
         }
         return super.onOptionsItemSelected(item);
     }
+//
+//    @Override
+//    public void onBackPressed() {
+//        this.finish();
+//        Intent mainActivityIntent = new Intent(this, MainActivity.class);
+//        this.startActivity(mainActivityIntent);
+//    }
 
 }
