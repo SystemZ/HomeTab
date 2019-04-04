@@ -4,6 +4,10 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.NavUtils;
 import androidx.core.app.NotificationCompat;
 import androidx.core.app.NotificationManagerCompat;
+import pl.systemz.tasktab.api.Client;
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 import android.app.PendingIntent;
 import android.content.Intent;
@@ -21,6 +25,9 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import java.io.IOException;
+import java.util.List;
 
 import static java.lang.System.currentTimeMillis;
 
@@ -102,6 +109,24 @@ public class Task extends AppCompatActivity {
 
         // notificationId is a unique int for each notification that you must define
         notificationManager.notify(taskId, builder.build());
+
+//        Client client = Client.getInstance();
+//        Call<List<Client.Contributor>> call = client.getGithub().contributors("square", "retrofit");
+//        call.enqueue(new Callback<List<Client.Contributor>>() {
+//            @Override
+//            public void onResponse(Call<List<Client.Contributor>> call, Response<List<Client.Contributor>> response) {
+//                //System.out.println(response.body().toString());
+//                for(Client.Contributor contributor : response.body()) {
+//                    System.out.println(contributor.contributions);
+//                }
+//            }
+//
+//            @Override
+//            public void onFailure(Call<List<Client.Contributor>> call, Throwable t) {
+//
+//            }
+//        });
+
     }
 
     protected void counterStop(Integer taskId) {
