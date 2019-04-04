@@ -9,7 +9,7 @@ import retrofit2.http.GET;
 import retrofit2.http.Path;
 
 public class Client {
-    public static final String API_URL = "https://api.github.com";
+    public static final String API_URL = "http://192.168.2.88:3000/api/v1/";
     private static Client instance = null;
     private GitHub github;
 
@@ -23,11 +23,22 @@ public class Client {
         }
     }
 
+    public static class Timer {
+        public final int id;
+
+        public Timer(int id) {
+            this.id = id;
+        }
+    }
+
     public interface GitHub {
         @GET("/repos/{owner}/{repo}/contributors")
         Call<List<Contributor>> contributors(
                 @Path("owner") String owner,
                 @Path("repo") String repo);
+
+        @GET("timer")
+        Call<List<Timer>> timers();
     }
 
     private Client() {

@@ -10,6 +10,7 @@ import retrofit2.Callback;
 import retrofit2.Response;
 
 import android.app.PendingIntent;
+import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -110,22 +111,30 @@ public class Task extends AppCompatActivity {
         // notificationId is a unique int for each notification that you must define
         notificationManager.notify(taskId, builder.build());
 
-//        Client client = Client.getInstance();
-//        Call<List<Client.Contributor>> call = client.getGithub().contributors("square", "retrofit");
-//        call.enqueue(new Callback<List<Client.Contributor>>() {
-//            @Override
-//            public void onResponse(Call<List<Client.Contributor>> call, Response<List<Client.Contributor>> response) {
-//                //System.out.println(response.body().toString());
-//                for(Client.Contributor contributor : response.body()) {
-//                    System.out.println(contributor.contributions);
-//                }
-//            }
-//
-//            @Override
-//            public void onFailure(Call<List<Client.Contributor>> call, Throwable t) {
-//
-//            }
-//        });
+        Client client = Client.getInstance();
+        Call<List<Client.Timer>> call = client.getGithub().timers();
+        call.enqueue(new Callback<List<Client.Timer>>() {
+            @Override
+            public void onResponse(Call<List<Client.Timer>> call, Response<List<Client.Timer>> response) {
+                if (!response.isSuccessful()) {
+                    return;
+                }
+                for (Client.Timer timer : response.body()) {
+                    System.out.println(timer.id);
+                }
+            }
+
+            @Override
+            public void onFailure(Call<List<Client.Timer>> call, Throwable t) {
+                Toast.makeText(Task.this, t.getMessage(), Toast.LENGTH_SHORT).show();
+//                runOnUiThread(new Runnable() {
+//                    @Override
+//                    public void run() {
+//                        Toast.makeText(Task.this, "Charger connected", Toast.LENGTH_SHORT).show();
+//                    }
+//                });
+            }
+        });
 
     }
 
