@@ -64,12 +64,12 @@ ensureContainer:
     - app/build/outputs
 
 buildDebug:
-  extends: .build_job
+#  extends: .build_job
   script:
   - bundle exec fastlane buildDebug
 
 buildRelease:
-  extends: .build_job
+#  extends: .build_job
   script:
   - bundle exec fastlane buildRelease
   environment:
@@ -105,19 +105,19 @@ publishInternal:
   after_script:
   - rm -f ~/google_play_api_key.json
 
-promoteAlpha:
+.promoteAlpha:
   extends: .promote_job
   stage: alpha
   script:
   - bundle exec fastlane promote_internal_to_alpha
 
-promoteBeta:
+.promoteBeta:
   extends: .promote_job
   stage: beta
   script:
   - bundle exec fastlane promote_alpha_to_beta
 
-promoteProduction:
+.promoteProduction:
   extends: .promote_job
   stage: production
   # We only allow production promotion on `master` because
