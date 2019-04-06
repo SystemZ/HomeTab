@@ -51,7 +51,7 @@ ensureContainer:
   - "export VERSION_CODE=$((100 + $CI_PIPELINE_IID)) && echo $VERSION_CODE"
   - "export VERSION_SHA=`echo ${CI_COMMIT_SHA:0:8}` && echo $VERSION_SHA"
   # Make the changelog
-  - cp ./fastlane/metadata/android/en-GB/changelogs/CURRENT_VERSION.txt "./fastlane/metadata/android/en-GB/changelogs/$VERSION_CODE.txt"
+  #- cp ./fastlane/metadata/android/en-GB/changelogs/CURRENT_VERSION.txt "./fastlane/metadata/android/en-GB/changelogs/$VERSION_CODE.txt"
   # We allow the remote push and MR creation to fail because the other job could create it
   # and it's not strictly necessary (we just need the file locally for the CI build)
   - ./ci-scripts/create-changlog-mr.sh || true
@@ -64,12 +64,12 @@ ensureContainer:
     - app/build/outputs
 
 buildDebug:
-#  extends: .build_job
+  extends: .build_job
   script:
   - bundle exec fastlane buildDebug
 
 buildRelease:
-#  extends: .build_job
+  extends: .build_job
   script:
   - bundle exec fastlane buildRelease
   environment:
