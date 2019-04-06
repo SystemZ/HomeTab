@@ -18,10 +18,41 @@
 default_platform(:android)
 
 platform :android do
-  # desc "Runs all the tests"
-  # lane :test do
-  #   gradle(task: "test")
-  # end
+
+  desc "Builds the debug code"
+  lane :buildDebug do
+    gradle(task: "assembleDebug")
+  end
+
+  desc "Builds the release code"
+  lane :buildRelease do
+    gradle(task: "assembleRelease")
+  end
+
+  desc "Runs all the tests"
+  lane :test do
+    gradle(task: "test")
+  end
+
+  desc "Submit a new Internal Build to Play Store"
+  lane :internal do
+    upload_to_play_store(track: 'internal', apk: 'app/build/outputs/apk/release/app-release.apk')
+  end
+
+  desc "Promote Internal to Alpha"
+  lane :promote_internal_to_alpha do
+    upload_to_play_store(track: 'internal', track_promote_to: 'alpha')
+  end
+
+  desc "Promote Alpha to Beta"
+  lane :promote_alpha_to_beta do
+    upload_to_play_store(track: 'alpha', track_promote_to: 'beta')
+  end
+
+  desc "Promote Beta to Production"
+  lane :promote_beta_to_production do
+    upload_to_play_store(track: 'beta', track_promote_to: 'production')
+  end
 
   # desc "Submit a new Beta Build to Crashlytics Beta"
   # lane :beta do
@@ -30,17 +61,6 @@ platform :android do
   #
   #   # sh "your_script.sh"
   #   # You can also use other beta testing services here
-  # end
-
-  desc "Submit a new Internal Build to Play Store"
-  lane :internal do
-    upload_to_play_store(track: 'internal', apk: 'app/build/outputs/apk/release/app-release.apk')
-  end
-
-  # desc "Deploy a new version to the Google Play"
-  # lane :deploy do
-  #   gradle(task: "clean assembleRelease")
-  #   upload_to_play_store
   # end
 
 end
