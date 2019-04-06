@@ -26,10 +26,14 @@ public class Client {
     public static class Timer {
         public final int id;
         public final String name;
+        public final List<String> tags;
+        public final int seconds;
 
-        public Timer(int id, String name) {
+        public Timer(int id, String name, List<String> tags, int seconds) {
             this.id = id;
             this.name = name;
+            this.tags = tags;
+            this.seconds = seconds;
         }
     }
 
@@ -48,7 +52,7 @@ public class Client {
     }
 
     public static Client getInstance() {
-        if(instance == null) {
+        if (instance == null) {
             instance = new Client();
         }
         return instance;

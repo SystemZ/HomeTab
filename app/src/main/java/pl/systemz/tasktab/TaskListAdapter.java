@@ -3,16 +3,19 @@ package pl.systemz.tasktab;
 import java.util.List;
 
 import android.content.Intent;
+import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
+import org.w3c.dom.Text;
+
 import androidx.recyclerview.widget.RecyclerView;
 
 public class TaskListAdapter extends RecyclerView.Adapter<TaskListAdapter.ViewHolder> {
-    private List<String> values;
+    private List<TaskModel> values;
 
     // Provide a reference to the views for each data item
     // Complex data items may need more than one view per item, and
@@ -31,7 +34,7 @@ public class TaskListAdapter extends RecyclerView.Adapter<TaskListAdapter.ViewHo
         }
     }
 
-    public void add(int position, String item) {
+    public void add(int position, TaskModel item) {
         values.add(position, item);
         notifyItemInserted(position);
     }
@@ -42,7 +45,7 @@ public class TaskListAdapter extends RecyclerView.Adapter<TaskListAdapter.ViewHo
     }
 
     // Provide a suitable constructor (depends on the kind of dataset)
-    public TaskListAdapter(List<String> myDataset) {
+    public TaskListAdapter(List<TaskModel> myDataset) {
         values = myDataset;
     }
 
@@ -53,8 +56,7 @@ public class TaskListAdapter extends RecyclerView.Adapter<TaskListAdapter.ViewHo
         // create a new view
         LayoutInflater inflater = LayoutInflater.from(
                 parent.getContext());
-        View v =
-                inflater.inflate(R.layout.row_layout, parent, false);
+        View v = inflater.inflate(R.layout.row_layout, parent, false);
         // set the view's size, margins, paddings and layout parameters
         ViewHolder vh = new ViewHolder(v);
         return vh;
@@ -65,19 +67,23 @@ public class TaskListAdapter extends RecyclerView.Adapter<TaskListAdapter.ViewHo
     public void onBindViewHolder(ViewHolder holder, final int position) {
         // - get element from your dataset at this position
         // - replace the contents of the view with that element
-        final String name = values.get(position);
-        holder.txtHeader.setText(name);
+        final TaskModel task = values.get(position);
+        // set title of this list element
+        holder.txtHeader.setText(task.name);
+        // set what to do on clicking
         holder.txtHeader.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
                 //remove(position);
                 Intent intent = new Intent(v.getContext(), Task.class);
-                intent.putExtra("TASK_ID", position);
+                intent.putExtra("TASK_ID", task.id);
                 v.getContext().startActivity(intent);
             }
         });
-
-        holder.txtFooter.setText("Footer: " + name);
+        // set footer
+        String footer = TextUtils.join(", ", task.tags);
+        footer = footer + " (" + (task.seconds / 3600) + "h)";
+        holder.txtFooter.setText(footer);
     }
 
     // Return the size of your dataset (invoked by the layout manager)

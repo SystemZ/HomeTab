@@ -37,9 +37,13 @@ public class TaskList extends AppCompatActivity {
         // use a linear layout manager
         layoutManager = new LinearLayoutManager(this);
         recyclerView.setLayoutManager(layoutManager);
-        final List<String> input = new ArrayList<>();
-        input.add("Loading...");
+        final List<TaskModel> input = new ArrayList<>();
 
+        //FIXME need progress bar
+        TaskModel loadingInProgress = new TaskModel(0, "Loading...", new ArrayList<String>(), 0);
+        input.add(loadingInProgress);
+
+        // calling backend API
         Client client = Client.getInstance();
         Call<List<Client.Timer>> call = client.getGithub().timers();
         call.enqueue(new Callback<List<Client.Timer>>() {
@@ -48,11 +52,11 @@ public class TaskList extends AppCompatActivity {
                 if (!response.isSuccessful()) {
                     return;
                 }
+                // remove loading task
                 input.remove(0);
                 for (Client.Timer timer : response.body()) {
-//                    System.out.println(timer.id);
-//                    System.out.println(timer.name);
-                    input.add(timer.name);
+                    TaskModel task = new TaskModel(timer.id, timer.name, timer.tags, timer.seconds);
+                    input.add(task);
                 }
                 // define an adapter
                 mAdapter = new TaskListAdapter(input);
@@ -61,8 +65,11 @@ public class TaskList extends AppCompatActivity {
 
             @Override
             public void onFailure(Call<List<Client.Timer>> call, Throwable t) {
+                // remove loading task
                 input.remove(0);
-                input.add("Loading tasks failed");
+                //FIXME
+                TaskModel failure = new TaskModel(0, "Loading tasks failed :(", new ArrayList<String>(), 0);
+                input.add(failure);
                 // define an adapter
                 mAdapter = new TaskListAdapter(input);
                 recyclerView.setAdapter(mAdapter);
