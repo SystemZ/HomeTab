@@ -25,9 +25,11 @@ public class Client {
 
     public static class Timer {
         public final int id;
+        public final String name;
 
-        public Timer(int id) {
+        public Timer(int id, String name) {
             this.id = id;
+            this.name = name;
         }
     }
 

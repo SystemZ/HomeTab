@@ -4,11 +4,15 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.NavUtils;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+import pl.systemz.tasktab.api.Client;
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
-import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.MenuItem;
+import android.widget.Toast;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -33,12 +37,38 @@ public class TaskList extends AppCompatActivity {
         // use a linear layout manager
         layoutManager = new LinearLayoutManager(this);
         recyclerView.setLayoutManager(layoutManager);
-        List<String> input = new ArrayList<>();
-        for (int i = 0; i < 15; i++) {
-            input.add("Test" + i);
-        }// define an adapter
-        mAdapter = new MyAdapter(input);
-        recyclerView.setAdapter(mAdapter);
+        final List<String> input = new ArrayList<>();
+        input.add("Loading...");
+
+        Client client = Client.getInstance();
+        Call<List<Client.Timer>> call = client.getGithub().timers();
+        call.enqueue(new Callback<List<Client.Timer>>() {
+            @Override
+            public void onResponse(Call<List<Client.Timer>> call, Response<List<Client.Timer>> response) {
+                if (!response.isSuccessful()) {
+                    return;
+                }
+                input.remove(0);
+                for (Client.Timer timer : response.body()) {
+//                    System.out.println(timer.id);
+//                    System.out.println(timer.name);
+                    input.add(timer.name);
+                }
+                // define an adapter
+                mAdapter = new TaskListAdapter(input);
+                recyclerView.setAdapter(mAdapter);
+            }
+
+            @Override
+            public void onFailure(Call<List<Client.Timer>> call, Throwable t) {
+                input.remove(0);
+                input.add("Loading tasks failed");
+                // define an adapter
+                mAdapter = new TaskListAdapter(input);
+                recyclerView.setAdapter(mAdapter);
+            }
+        });
+
     }
 
     @Override
