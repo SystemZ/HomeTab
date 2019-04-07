@@ -68,7 +68,7 @@ public class Task extends AppCompatActivity {
             public void onClick(View v) {
                 startButton.setVisibility(View.GONE);
                 stopButton.setVisibility(View.VISIBLE);
-                counterStart(taskIdz);
+                counterStart(taskIdz, taskName);
             }
         });
 
@@ -83,28 +83,33 @@ public class Task extends AppCompatActivity {
 
     }
 
-    protected void counterStart(Integer taskId) {
+    protected void counterStart(Integer taskId, String taskName) {
 
         // this allows returning to task after tapping on notification
-        Intent broadcastIntent = new Intent(this, NotificationReceiver.class);
-        broadcastIntent.putExtra("TASK_ID", taskId);
-        PendingIntent actionIntent = PendingIntent.getBroadcast(this, 0, broadcastIntent, PendingIntent.FLAG_UPDATE_CURRENT);
-//        PendingIntent.getBroadcast()
+        Intent tapBroadcastIntent = new Intent(this, NotificationReceiver.class);
+        tapBroadcastIntent.putExtra("TASK_ID", taskId);
+        tapBroadcastIntent.putExtra("TASK_NAME", taskName);
+        tapBroadcastIntent.putExtra("ACTION", "VIEW");
+        PendingIntent tapIntent = PendingIntent.getBroadcast(this, 0, tapBroadcastIntent, PendingIntent.FLAG_UPDATE_CURRENT);
 
-//        Bitmap bigIcon = BitmapFactory.decodeResource(getResources(), R.drawable.ic_access_time_black_24dp);
+        // this makes stop button in notification
+//        Intent stopActionBroadcastIntent = new Intent(this, NotificationReceiver.class);
+//        stopActionBroadcastIntent.putExtra("TASK_ID", taskId);
+//        stopActionBroadcastIntent.putExtra("ACTION", "STOP");
+//        PendingIntent stopActionIntent = PendingIntent.getBroadcast(this, 1, stopActionBroadcastIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+
         NotificationCompat.Builder builder = new NotificationCompat.Builder(this, "tasktab-task-" + taskId.toString())
                 .setSmallIcon(R.drawable.ic_access_time_black_24dp)
-//                .setLargeIcon(bigIcon)
-                .setContentTitle("Task " + taskId.toString())
-                .setContentText("Counting time...")
+                .setContentTitle(taskName)
+                .setContentText("In progress...")
                 .setUsesChronometer(true)
                 .setWhen(currentTimeMillis())
                 .setOngoing(true)
-                .setContentIntent(actionIntent)
-                .addAction(R.mipmap.ic_launcher, "Test", actionIntent)
+                .setContentIntent(tapIntent)
+//                .addAction(R.mipmap.ic_launcher, "Stop", stopActionIntent)
                 .setColor(Color.GREEN)
                 //.setAutoCancel(true)
-                //.setVibrate(new long[] { 1000, 1000})
+                .setVibrate(new long[]{150})
                 //.setSound(Settings.System.DEFAULT_NOTIFICATION_URI)
                 .setPriority(NotificationCompat.PRIORITY_DEFAULT);
 
