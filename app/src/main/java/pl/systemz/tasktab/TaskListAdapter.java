@@ -74,9 +74,9 @@ public class TaskListAdapter extends RecyclerView.Adapter<TaskListAdapter.ViewHo
         holder.txtHeader.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
-                //remove(position);
                 Intent intent = new Intent(v.getContext(), Task.class);
                 intent.putExtra("TASK_ID", task.id);
+                intent.putExtra("TASK_NAME", task.name);
                 v.getContext().startActivity(intent);
             }
         });

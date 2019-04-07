@@ -39,13 +39,11 @@ public class Task extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_task);
 
-//        final Integer taskId = getIntent().getIntExtra("TASK_ID", 0);
         final Integer taskIdz = getIntent().getIntExtra("TASK_ID", 0);
-        Log.v("task_id", taskIdz.toString());
-//        Log.v("tasktab",taskId.toString());
+        final String taskName = getIntent().getStringExtra("TASK_NAME");
 
-        EditText editText = (EditText) findViewById(R.id.taskIdInput);
-        editText.setText(taskIdz.toString(), TextView.BufferType.EDITABLE);
+        TextView taskTitle = findViewById(R.id.TaskTitle);
+        taskTitle.setText(taskName);
 
         final Button startButton = (Button) findViewById(R.id.taskCounterStart);
         final Button stopButton = (Button) findViewById(R.id.taskCounterStop);
@@ -74,12 +72,6 @@ public class Task extends AppCompatActivity {
     protected void counterStart(Integer taskId) {
 
         // this allows returning to task after tapping on notification
-        Intent activityIntent = new Intent(this, Task.class);
-        activityIntent.putExtra("TASK_ID", taskId);
-        Log.v("task_id", taskId.toString());
-//        PendingIntent contentIntent = PendingIntent.getActivity(this, 0, activityIntent, PendingIntent.FLAG_UPDATE_CURRENT);
-        PendingIntent contentIntent = PendingIntent.getActivity(this, 0, activityIntent, 0);
-
         Intent broadcastIntent = new Intent(this, NotificationReceiver.class);
         broadcastIntent.putExtra("TASK_ID", taskId);
         PendingIntent actionIntent = PendingIntent.getBroadcast(this, 0, broadcastIntent, PendingIntent.FLAG_UPDATE_CURRENT);
@@ -119,9 +111,9 @@ public class Task extends AppCompatActivity {
                 if (!response.isSuccessful()) {
                     return;
                 }
-                for (Client.Timer timer : response.body()) {
-                    System.out.println(timer.id);
-                }
+//                for (Client.Timer timer : response.body()) {
+//                    System.out.println(timer.id);
+//                }
             }
 
             @Override

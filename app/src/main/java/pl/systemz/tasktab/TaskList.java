@@ -42,6 +42,8 @@ public class TaskList extends AppCompatActivity {
         //FIXME need progress bar
         TaskModel loadingInProgress = new TaskModel(0, "Loading...", new ArrayList<String>(), 0);
         input.add(loadingInProgress);
+        mAdapter = new TaskListAdapter(input);
+        recyclerView.setAdapter(mAdapter);
 
         // calling backend API
         Client client = Client.getInstance();
