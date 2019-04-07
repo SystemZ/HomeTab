@@ -9,8 +9,6 @@ import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import java.util.List;
-
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.NotificationCompat;
 import androidx.core.app.NotificationManagerCompat;
@@ -93,34 +91,45 @@ public class Task extends AppCompatActivity {
         notificationManager.notify(taskId, builder.build());
 
         Client client = Client.getInstance();
-        Call<List<Client.Timer>> call = client.getGithub().timers();
-        call.enqueue(new Callback<List<Client.Timer>>() {
+        Call<Client.Timer> call = client.getGithub().timerStart(taskId);
+        call.enqueue(new Callback<Client.Timer>() {
             @Override
-            public void onResponse(Call<List<Client.Timer>> call, Response<List<Client.Timer>> response) {
+            public void onResponse(Call<Client.Timer> call, Response<Client.Timer> response) {
                 if (!response.isSuccessful()) {
+                    Toast.makeText(Task.this, "Something is wrong with the server...", Toast.LENGTH_SHORT).show();
                     return;
                 }
-//                for (Client.Timer timer : response.body()) {
-//                    System.out.println(timer.id);
-//                }
+                Toast.makeText(Task.this, "Counter started", Toast.LENGTH_SHORT).show();
             }
 
             @Override
-            public void onFailure(Call<List<Client.Timer>> call, Throwable t) {
+            public void onFailure(Call<Client.Timer> call, Throwable t) {
                 Toast.makeText(Task.this, t.getMessage(), Toast.LENGTH_SHORT).show();
-//                runOnUiThread(new Runnable() {
-//                    @Override
-//                    public void run() {
-//                        Toast.makeText(Task.this, "Charger connected", Toast.LENGTH_SHORT).show();
-//                    }
-//                });
             }
         });
 
     }
 
-    protected void counterStop(Integer taskId) {
-        NotificationManagerCompat notificationManager = NotificationManagerCompat.from(this);
-        notificationManager.cancel(taskId);
+    protected void counterStop(final Integer taskId) {
+        Client client = Client.getInstance();
+        Call<Client.Timer> call = client.getGithub().timerStop(taskId);
+        call.enqueue(new Callback<Client.Timer>() {
+            @Override
+            public void onResponse(Call<Client.Timer> call, Response<Client.Timer> response) {
+                if (!response.isSuccessful()) {
+                    Toast.makeText(Task.this, "Something is wrong with the server...", Toast.LENGTH_SHORT).show();
+                    return;
+                }
+                Toast.makeText(Task.this, "Counter stopped", Toast.LENGTH_SHORT).show();
+                NotificationManagerCompat notificationManager = NotificationManagerCompat.from(Task.this);
+                notificationManager.cancel(taskId);
+            }
+
+            @Override
+            public void onFailure(Call<Client.Timer> call, Throwable t) {
+                Toast.makeText(Task.this, t.getMessage(), Toast.LENGTH_SHORT).show();
+            }
+        });
+
     }
 }

@@ -6,6 +6,7 @@ import retrofit2.Call;
 import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
 import retrofit2.http.GET;
+import retrofit2.http.POST;
 import retrofit2.http.Path;
 
 public class Client {
@@ -45,6 +46,21 @@ public class Client {
 
         @GET("timer")
         Call<List<Timer>> timers();
+
+        @GET("timer/{id}")
+        Call<Timer> timerInfo(
+                @Path("id") int id
+        );
+
+        @POST("timer/{id}/start")
+        Call<Timer> timerStart(
+                @Path("id") int id
+        );
+
+        @POST("timer/{id}/stop")
+        Call<Timer> timerStop(
+                @Path("id") int id
+        );
     }
 
     private Client() {
