@@ -25,7 +25,7 @@ updateContainer:
     changes:
     - Dockerfile
 
-ensureContainer:
+.ensureContainer:
   extends: .updateContainerJob
   allow_failure: true
   before_script:
