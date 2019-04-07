@@ -29,12 +29,14 @@ public class Client {
         public final String name;
         public final List<String> tags;
         public final int seconds;
+        public final boolean inProgress;
 
-        public Timer(int id, String name, List<String> tags, int seconds) {
+        public Timer(int id, String name, List<String> tags, int seconds, boolean inProgress) {
             this.id = id;
             this.name = name;
             this.tags = tags;
             this.seconds = seconds;
+            this.inProgress = inProgress;
         }
     }
 

@@ -29,12 +29,39 @@ public class Task extends AppCompatActivity {
         final Integer taskIdz = getIntent().getIntExtra("TASK_ID", 0);
         final String taskName = getIntent().getStringExtra("TASK_NAME");
 
-        TextView taskTitle = findViewById(R.id.TaskTitle);
+        final TextView taskTitle = findViewById(R.id.TaskTitle);
         taskTitle.setText(taskName);
 
         final Button startButton = findViewById(R.id.taskCounterStart);
         final Button stopButton = findViewById(R.id.taskCounterStop);
-        stopButton.setVisibility(View.GONE);
+
+        Client client = Client.getInstance();
+        Call<Client.Timer> call = client.getGithub().timerInfo(taskIdz);
+        call.enqueue(new Callback<Client.Timer>() {
+            @Override
+            public void onResponse(Call<Client.Timer> call, Response<Client.Timer> response) {
+                if (!response.isSuccessful()) {
+                    Toast.makeText(Task.this, "Something is wrong with the server...", Toast.LENGTH_SHORT).show();
+                    return;
+                }
+
+                taskTitle.setText(response.body().name);
+
+                if (response.body().inProgress) {
+                    stopButton.setVisibility(View.VISIBLE);
+                    startButton.setVisibility(View.INVISIBLE);
+                } else {
+                    stopButton.setVisibility(View.INVISIBLE);
+                    startButton.setVisibility(View.VISIBLE);
+                }
+            }
+
+            @Override
+            public void onFailure(Call<Client.Timer> call, Throwable t) {
+                Toast.makeText(Task.this, t.getMessage(), Toast.LENGTH_SHORT).show();
+            }
+        });
+
 
         startButton.setOnClickListener(new View.OnClickListener() {
             @Override
