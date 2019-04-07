@@ -1,5 +1,12 @@
 package pl.systemz.tasktab;
 
+import android.os.Bundle;
+import android.util.Log;
+import android.view.MenuItem;
+
+import java.util.ArrayList;
+import java.util.List;
+
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.NavUtils;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -8,14 +15,6 @@ import pl.systemz.tasktab.api.Client;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
-
-import android.os.Bundle;
-import android.util.Log;
-import android.view.MenuItem;
-import android.widget.Toast;
-
-import java.util.ArrayList;
-import java.util.List;
 
 public class TaskList extends AppCompatActivity {
     private RecyclerView recyclerView;
@@ -37,10 +36,10 @@ public class TaskList extends AppCompatActivity {
         // use a linear layout manager
         layoutManager = new LinearLayoutManager(this);
         recyclerView.setLayoutManager(layoutManager);
-        final List<TaskModel> input = new ArrayList<>();
+        final List<Client.Timer> input = new ArrayList<>();
 
         //FIXME need progress bar
-        TaskModel loadingInProgress = new TaskModel(0, "Loading...", new ArrayList<String>(), 0);
+        Client.Timer loadingInProgress = new Client.Timer(0, "Loading...", new ArrayList<String>(), 0);
         input.add(loadingInProgress);
         mAdapter = new TaskListAdapter(input);
         recyclerView.setAdapter(mAdapter);
@@ -57,7 +56,7 @@ public class TaskList extends AppCompatActivity {
                 // remove loading task
                 input.remove(0);
                 for (Client.Timer timer : response.body()) {
-                    TaskModel task = new TaskModel(timer.id, timer.name, timer.tags, timer.seconds);
+                    Client.Timer task = new Client.Timer(timer.id, timer.name, timer.tags, timer.seconds);
                     input.add(task);
                 }
                 // define an adapter
@@ -70,7 +69,7 @@ public class TaskList extends AppCompatActivity {
                 // remove loading task
                 input.remove(0);
                 //FIXME
-                TaskModel failure = new TaskModel(0, "Loading tasks failed :(", new ArrayList<String>(), 0);
+                Client.Timer failure = new Client.Timer(0, "Loading tasks failed :(", new ArrayList<String>(), 0);
                 input.add(failure);
                 // define an adapter
                 mAdapter = new TaskListAdapter(input);

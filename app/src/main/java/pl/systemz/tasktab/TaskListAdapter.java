@@ -1,7 +1,5 @@
 package pl.systemz.tasktab;
 
-import java.util.List;
-
 import android.content.Intent;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
@@ -10,12 +8,13 @@ import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
-import org.w3c.dom.Text;
+import java.util.List;
 
 import androidx.recyclerview.widget.RecyclerView;
+import pl.systemz.tasktab.api.Client;
 
 public class TaskListAdapter extends RecyclerView.Adapter<TaskListAdapter.ViewHolder> {
-    private List<TaskModel> values;
+    private List<Client.Timer> values;
 
     // Provide a reference to the views for each data item
     // Complex data items may need more than one view per item, and
@@ -34,7 +33,7 @@ public class TaskListAdapter extends RecyclerView.Adapter<TaskListAdapter.ViewHo
         }
     }
 
-    public void add(int position, TaskModel item) {
+    public void add(int position, Client.Timer item) {
         values.add(position, item);
         notifyItemInserted(position);
     }
@@ -45,7 +44,7 @@ public class TaskListAdapter extends RecyclerView.Adapter<TaskListAdapter.ViewHo
     }
 
     // Provide a suitable constructor (depends on the kind of dataset)
-    public TaskListAdapter(List<TaskModel> myDataset) {
+    public TaskListAdapter(List<Client.Timer> myDataset) {
         values = myDataset;
     }
 
@@ -67,7 +66,7 @@ public class TaskListAdapter extends RecyclerView.Adapter<TaskListAdapter.ViewHo
     public void onBindViewHolder(ViewHolder holder, final int position) {
         // - get element from your dataset at this position
         // - replace the contents of the view with that element
-        final TaskModel task = values.get(position);
+        final Client.Timer task = values.get(position);
         // set title of this list element
         holder.txtHeader.setText(task.name);
         // set what to do on clicking
