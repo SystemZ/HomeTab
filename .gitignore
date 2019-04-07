@@ -13,3 +13,4 @@
 .externalNativeBuild
 google_play_api_key.json
 android-signing-keystore.jks
+secrets.properties
