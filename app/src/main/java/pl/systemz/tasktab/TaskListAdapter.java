@@ -2,19 +2,25 @@ package pl.systemz.tasktab;
 
 import android.content.Intent;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
+import android.widget.Filter;
+import android.widget.Filterable;
 import android.widget.TextView;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import androidx.recyclerview.widget.RecyclerView;
 import pl.systemz.tasktab.api.Client;
 
-public class TaskListAdapter extends RecyclerView.Adapter<TaskListAdapter.ViewHolder> {
+public class TaskListAdapter extends RecyclerView.Adapter<TaskListAdapter.ViewHolder> implements Filterable {
     private List<Client.Timer> values;
+    private List<Client.Timer> exampleList;
+    private List<Client.Timer> exampleListFull;
 
     // Provide a reference to the views for each data item
     // Complex data items may need more than one view per item, and
@@ -46,6 +52,8 @@ public class TaskListAdapter extends RecyclerView.Adapter<TaskListAdapter.ViewHo
     // Provide a suitable constructor (depends on the kind of dataset)
     public TaskListAdapter(List<Client.Timer> myDataset) {
         values = myDataset;
+        this.exampleList = myDataset;
+        exampleListFull = new ArrayList<>(exampleList);
     }
 
     // Create new views (invoked by the layout manager)
@@ -90,5 +98,42 @@ public class TaskListAdapter extends RecyclerView.Adapter<TaskListAdapter.ViewHo
     public int getItemCount() {
         return values.size();
     }
+
+    @Override
+    public Filter getFilter() {
+        return exampleFilter;
+    }
+
+    private Filter exampleFilter = new Filter() {
+        @Override
+        protected FilterResults performFiltering(CharSequence constraint) {
+            List<Client.Timer> filteredList = new ArrayList<>();
+            if (constraint == null || constraint.length() == 0) {
+                Log.v("", "zerolen");
+                filteredList.addAll(exampleListFull);
+            } else {
+                String filterPattern = constraint.toString().toLowerCase().trim();
+                Log.v("", "pattern: " + filterPattern);
+                for (Client.Timer item : exampleListFull) {
+//                    if (item.getText1().toLowerCase().startsWith(filterPattern)) {
+                    if (item.name.toLowerCase().contains(filterPattern)) {
+                        filteredList.add(item);
+                    }
+                }
+            }
+
+            FilterResults results = new FilterResults();
+            results.values = filteredList;
+
+            return results;
+        }
+
+        @Override
+        protected void publishResults(CharSequence constraint, FilterResults results) {
+            exampleList.clear();
+            exampleList.addAll((List) results.values);
+            notifyDataSetChanged();
+        }
+    };
 
 }
