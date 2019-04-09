@@ -94,7 +94,6 @@ public class TaskList extends AppCompatActivity {
         searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
             @Override
             public boolean onQueryTextSubmit(String query) {
-                Log.v("", "onQueryTextSubmit");
                 return false;
             }
 
@@ -102,24 +101,12 @@ public class TaskList extends AppCompatActivity {
             public boolean onQueryTextChange(String newText) {
                 // https://www.youtube.com/watch?v=sJ-Z9G0SDhc
                 mAdapter.getFilter().filter(newText);
-                Log.v("", "onQueryTextChange");
                 return false;
             }
         });
 
         return true;
     }
-//
-
-    public boolean onQueryTextListener(String query) {
-        // Here is where we are going to implement the filter logic
-        return false;
-    }
-//
-//    @Override
-//    public boolean onQueryTextSubmit(String query) {
-//        return false;
-//    }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
@@ -128,8 +115,6 @@ public class TaskList extends AppCompatActivity {
             // Respond to the action bar's Up/Home button
             case android.R.id.home:
                 NavUtils.navigateUpFromSameTask(this);
-//                Intent mainActivityIntent = new Intent(this, MainActivity.class);
-//                this.startActivity(mainActivityIntent);
                 return true;
         }
         return super.onOptionsItemSelected(item);

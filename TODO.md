@@ -1,5 +1,8 @@
 # TODO
 
+### Setting server address
+
+
 ### Notes / links saving
 
 * https://developer.android.com/training/basics/intents/filters
