@@ -10,6 +10,8 @@ import (
 	"os"
 	"strconv"
 
+	"gitlab.com/systemz/gotag/model"
+
 	"image/png"
 
 	"strings"
@@ -22,19 +24,19 @@ import (
 )
 
 type FileView struct {
-	File    File
-	Tags    map[int]Tag
-	Similar map[int]DistanceRank
+	File    model.File
+	Tags    map[int]model.Tag
+	Similar map[int]model.DistanceRank
 }
 
 type FilesView struct {
-	Files    map[int]File
+	Files    map[int]model.File
 	PrevPage int64
 	NextPage int64
 }
 
 type TagFilesView struct {
-	Files    map[int]File
+	Files    map[int]model.File
 	PrevPage int64
 	NextPage int64
 	Tag      string
@@ -121,17 +123,17 @@ func server(db *sql.DB) {
 	})
 
 	router.Get("/tags", func(w traffic.ResponseWriter, req *traffic.Request) {
-		_, tags := dbTagRank(db)
+		_, tags := model.GetTagRank(db)
 		r.HTML(w, http.StatusOK, "tag_rank", tags)
 	})
 
 	router.Get("/files/random", func(w traffic.ResponseWriter, req *traffic.Request) {
-		_, files := dbListRandom(db, 1)
+		_, files := model.ListRandom(db, 1)
 		r.HTML(w, http.StatusOK, "results_onepage", FilesView{files, 0, 0})
 	})
 
 	router.Get("/files/random/notag", func(w traffic.ResponseWriter, req *traffic.Request) {
-		_, files := dbFilesWithoutTagsRandom(db, 1)
+		_, files := model.FilesWithoutTagsRandom(db, 1)
 		r.HTML(w, http.StatusOK, "results_onepage", FilesView{files, 0, 0})
 	})
 
@@ -139,7 +141,7 @@ func server(db *sql.DB) {
 		params := req.URL.Query()
 		tag := params.Get("tag")
 		page, _ := strconv.ParseInt(params.Get("page"), 10, 64)
-		_, files := dbFileTagSearchByName(db, page, tag)
+		_, files := model.FileTagSearchByName(db, page, tag)
 		prevPage := page - 1
 		if page == 1 {
 			prevPage = 1
@@ -150,7 +152,7 @@ func server(db *sql.DB) {
 	router.Get("/files/page/:page", func(w traffic.ResponseWriter, req *traffic.Request) {
 		params := req.URL.Query()
 		page, _ := strconv.ParseInt(params.Get("page"), 10, 64)
-		_, files := dbList(db, page)
+		_, files := model.List(db, page)
 		prevPage := page - 1
 		if page == 1 {
 			prevPage = 1
@@ -161,7 +163,7 @@ func server(db *sql.DB) {
 	router.Get("/files/notag/page/:page", func(w traffic.ResponseWriter, req *traffic.Request) {
 		params := req.URL.Query()
 		page, _ := strconv.ParseInt(params.Get("page"), 10, 64)
-		_, files := dbFilesWithoutTags(db, page)
+		_, files := model.FilesWithoutTags(db, page)
 		prevPage := page - 1
 		if page == 1 {
 			prevPage = 1
@@ -171,23 +173,23 @@ func server(db *sql.DB) {
 
 	router.Get("/file/:sha256", func(w traffic.ResponseWriter, req *traffic.Request) {
 		params := req.URL.Query()
-		_, file := dbFind(db, params.Get("sha256"))
-		_, tags := dbTagList(db, file.Fid)
-		_, similar := dbDistanceTopFindSimilar(db, file.Fid)
+		_, file := model.Find(db, params.Get("sha256"))
+		_, tags := model.TagList(db, file.Fid)
+		_, similar := model.DistanceTopFindSimilar(db, file.Fid)
 
 		r.HTML(w, http.StatusOK, "file", FileView{file, tags, similar})
 	})
 
 	router.Post("/file/:sha256/tag/add", func(w traffic.ResponseWriter, req *traffic.Request) {
 		params := req.URL.Query()
-		found, files := dbListSha256(db, params.Get("sha256"))
+		found, files := model.ListSha256(db, params.Get("sha256"))
 		if !found {
 			http.Error(w, "File doesn't exist", 404)
 		}
 		tag := req.FormValue("name")
 
 		for k := range files {
-			dbTagFindSert(db, tag, k)
+			model.TagFindSert(db, tag, k)
 		}
 
 		w.Header().Set("Location", "/file/"+params.Get("sha256"))
@@ -198,7 +200,7 @@ func server(db *sql.DB) {
 		params := req.URL.Query()
 		tag := req.FormValue("id")
 		tagId, _ := strconv.ParseInt(tag, 10, 16)
-		dbTagDelete(db, int(tagId))
+		model.TagDelete(db, int(tagId))
 
 		w.Header().Set("Location", "/file/"+params.Get("sha256"))
 		r.Text(w, 302, "")
@@ -206,7 +208,7 @@ func server(db *sql.DB) {
 
 	router.Get("/img/full/:sha256", func(w traffic.ResponseWriter, req *traffic.Request) {
 		params := req.URL.Query()
-		_, _, lastPath, mime := dbFindSha256(db, params.Get("sha256"))
+		_, _, lastPath, mime := model.FindSha256(db, params.Get("sha256"))
 		writeRawFile(w, req, lastPath, mime)
 	})
 
@@ -217,7 +219,7 @@ func server(db *sql.DB) {
 		height64, _ := strconv.ParseUint(params.Get("h"), 10, 32)
 		width := uint(width64)
 		height := uint(height64)
-		_, _, imgPath, mime := dbFindSha256(db, sha256sum)
+		_, _, imgPath, mime := model.FindSha256(db, sha256sum)
 
 		// create thumb on disk if needed
 		done := make(chan bool)
@@ -233,7 +235,7 @@ func server(db *sql.DB) {
 		//debug.FreeOSMemory()
 		params := req.URL.Query()
 		var img image.Image
-		_, _, lastPath, mime := dbFindSha256(db, params.Get("sha256"))
+		_, _, lastPath, mime := model.FindSha256(db, params.Get("sha256"))
 
 		width, _ := strconv.ParseUint(params.Get("w"), 10, 32)
 		height, _ := strconv.ParseUint(params.Get("h"), 10, 32)

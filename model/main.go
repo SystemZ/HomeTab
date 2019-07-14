@@ -1,4 +1,4 @@
-package main
+package model
 
 import (
 	"database/sql"
@@ -17,7 +17,7 @@ func checkErr(err error) {
 	}
 }
 
-func dbInit() (db *sql.DB) {
+func DbInit() (db *sql.DB) {
 	db, err := sql.Open("sqlite3", "./gotag.sqlite3")
 	checkErr(err)
 
@@ -37,7 +37,7 @@ type File struct {
 
 type Files []File
 
-func dbList(db *sql.DB, page int64) (found bool, sha256s map[int]File) {
+func List(db *sql.DB, page int64) (found bool, sha256s map[int]File) {
 	found = false
 
 	limit := int64(15)
@@ -74,7 +74,7 @@ func dbList(db *sql.DB, page int64) (found bool, sha256s map[int]File) {
 	return found, sha256s
 }
 
-func dbListRandom(db *sql.DB, page int64) (found bool, sha256s map[int]File) {
+func ListRandom(db *sql.DB, page int64) (found bool, sha256s map[int]File) {
 	found = false
 
 	limit := int64(15)
@@ -111,7 +111,7 @@ func dbListRandom(db *sql.DB, page int64) (found bool, sha256s map[int]File) {
 	return found, sha256s
 }
 
-func dbListSha256(db *sql.DB, search string) (found bool, sha256s map[int]File) {
+func ListSha256(db *sql.DB, search string) (found bool, sha256s map[int]File) {
 	found = false
 	rows, err := db.Query("SELECT id, last_path, size, sha256 FROM files WHERE sha256 = ? ORDER BY id LIMIT 100", search)
 	checkErr(err)
@@ -140,7 +140,7 @@ func dbListSha256(db *sql.DB, search string) (found bool, sha256s map[int]File) 
 	return found, sha256s
 }
 
-func dbFind(db *sql.DB, sha256 string) (found bool, file File) {
+func Find(db *sql.DB, sha256 string) (found bool, file File) {
 	rows, err := db.Query("SELECT id, last_path, size FROM files WHERE sha256 = ?", sha256)
 	checkErr(err)
 	defer rows.Close()
@@ -159,7 +159,7 @@ func dbFind(db *sql.DB, sha256 string) (found bool, file File) {
 	return found, file
 }
 
-func dbFindById(db *sql.DB, fileId int) (found bool, file File) {
+func FindById(db *sql.DB, fileId int) (found bool, file File) {
 	rows, err := db.Query("SELECT last_path, size, sha256 FROM files WHERE id = ?", fileId)
 	checkErr(err)
 	defer rows.Close()
@@ -178,7 +178,7 @@ func dbFindById(db *sql.DB, fileId int) (found bool, file File) {
 	return found, file
 }
 
-func dbFindSha256(db *sql.DB, sha string) (found bool, res int, lastPath string, mime string) {
+func FindSha256(db *sql.DB, sha string) (found bool, res int, lastPath string, mime string) {
 	rows, err := db.Query("SELECT id, last_path, mime FROM files WHERE sha256 = ?", sha)
 	checkErr(err)
 	defer rows.Close()
@@ -199,7 +199,7 @@ func dbFindSha256(db *sql.DB, sha string) (found bool, res int, lastPath string,
 	return found, result, lastPath, mime
 }
 
-func dbInsert(db *sql.DB, lastPath string, size int64, mime string, md5 string, sha1 string, sha256 string) (id int64) {
+func Insert(db *sql.DB, lastPath string, size int64, mime string, md5 string, sha1 string, sha256 string) (id int64) {
 	stmt, err := db.Prepare("INSERT INTO files(last_path, size, mime, md5, sha1, sha256) VALUES(?,?,?,?,?,?)")
 	checkErr(err)
 
@@ -212,14 +212,14 @@ func dbInsert(db *sql.DB, lastPath string, size int64, mime string, md5 string, 
 	return id
 }
 
-func dbFindSert(db *sql.DB, lastPath string, size int64, mime string, md5 string, sha1 string, sha256 string) {
-	found, _ := dbFind(db, sha256)
+func FindSert(db *sql.DB, lastPath string, size int64, mime string, md5 string, sha1 string, sha256 string) {
+	found, _ := Find(db, sha256)
 	if !found {
-		dbInsert(db, lastPath, size, mime, md5, sha1, sha256)
+		Insert(db, lastPath, size, mime, md5, sha1, sha256)
 	}
 }
 
-func dbUpdatePath(db *sql.DB, sha256sum string, newPath string) {
+func UpdatePath(db *sql.DB, sha256sum string, newPath string) {
 	trashSQL, err := db.Prepare("UPDATE files SET last_path=? WHERE sha256=?")
 	if err != nil {
 		fmt.Println(err)
@@ -237,7 +237,7 @@ func dbUpdatePath(db *sql.DB, sha256sum string, newPath string) {
 	}
 }
 
-func dbFindPHash(db *sql.DB, sha256 string) (found bool) {
+func FindPHash(db *sql.DB, sha256 string) (found bool) {
 	rows, err := db.Query("SELECT phash FROM files WHERE phash IS NOT NULL AND sha256 = ?", sha256)
 	defer rows.Close()
 
@@ -253,7 +253,7 @@ func dbFindPHash(db *sql.DB, sha256 string) (found bool) {
 	return found //, phash
 }
 
-func dbUpdatePHash(db *sql.DB, sha256sum string, pHash string) {
+func UpdatePHash(db *sql.DB, sha256sum string, pHash string) {
 	trashSQL, err := db.Prepare("UPDATE files SET phash=? WHERE sha256=?")
 	if err != nil {
 		fmt.Println(err)
@@ -277,7 +277,7 @@ type Distance struct {
 	Dist int
 }
 
-func dbFilesWithPHash(db *sql.DB, page int64, sha256sum string) (distances map[int]Distance) {
+func FilesWithPHash(db *sql.DB, page int64, sha256sum string) (distances map[int]Distance) {
 	distances = make(map[int]Distance)
 
 	rowsOneFile, err := db.Query("SELECT id, phash FROM files WHERE sha256 = ? AND phash IS NOT NULL", sha256sum)
@@ -321,7 +321,7 @@ func dbFilesWithPHash(db *sql.DB, page int64, sha256sum string) (distances map[i
 	return distances
 }
 
-func dbCountAllFiles(db *sql.DB) (filesCounted int) {
+func CountAllFiles(db *sql.DB) (filesCounted int) {
 	rows, err := db.Query("SELECT COUNT(id) FROM files")
 	defer rows.Close()
 	checkErr(err)

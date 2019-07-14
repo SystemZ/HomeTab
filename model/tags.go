@@ -1,4 +1,4 @@
-package main
+package model
 
 import (
 	"database/sql"
@@ -13,7 +13,7 @@ type Tag struct {
 	Overall int
 }
 
-func dbTagList(db *sql.DB, fid int) (found bool, tags map[int]Tag) {
+func TagList(db *sql.DB, fid int) (found bool, tags map[int]Tag) {
 	found = false
 
 	//rows, err := db.Query("SELECT id, name FROM tags WHERE fid = ? ", fid)
@@ -42,7 +42,7 @@ func dbTagList(db *sql.DB, fid int) (found bool, tags map[int]Tag) {
 	return found, tags
 }
 
-func dbTagFind(db *sql.DB, name string, fid int) (found bool) {
+func TagFind(db *sql.DB, name string, fid int) (found bool) {
 	rows, err := db.Query("SELECT id FROM tags WHERE fid = ? AND name = ?", fid, name)
 	checkErr(err)
 	defer rows.Close()
@@ -55,14 +55,14 @@ func dbTagFind(db *sql.DB, name string, fid int) (found bool) {
 	return found
 }
 
-func dbTagFindSert(db *sql.DB, name string, fid int) {
-	found := dbTagFind(db, name, fid)
+func TagFindSert(db *sql.DB, name string, fid int) {
+	found := TagFind(db, name, fid)
 	if !found {
-		dbTagInsert(db, name, fid)
+		TagInsert(db, name, fid)
 	}
 }
 
-func dbTagInsert(db *sql.DB, name string, fid int) (id int64) {
+func TagInsert(db *sql.DB, name string, fid int) (id int64) {
 	if len(strings.TrimSpace(name)) <= 1 {
 		log.Print("Tag is empty or have less than 2 letters")
 		return 0
@@ -80,7 +80,7 @@ func dbTagInsert(db *sql.DB, name string, fid int) (id int64) {
 	return id
 }
 
-func dbTagDelete(db *sql.DB, id int) {
+func TagDelete(db *sql.DB, id int) {
 	log.Printf("%v", id)
 	stmt, err := db.Prepare("DELETE FROM tags WHERE id = ?")
 	checkErr(err)
@@ -100,7 +100,7 @@ type TagRank struct {
 	Overall int
 }
 
-func dbTagRank(db *sql.DB) (found bool, tags map[int]TagRank) {
+func GetTagRank(db *sql.DB) (found bool, tags map[int]TagRank) {
 	found = false
 
 	rows, err := db.Query("SELECT DISTINCT name, (SELECT COUNT(id) FROM tags t2 WHERE t1.name = t2.name) as overall FROM tags t1 ORDER BY overall DESC")

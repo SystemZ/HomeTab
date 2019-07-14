@@ -1,4 +1,4 @@
-package main
+package model
 
 import (
 	"database/sql"
@@ -18,7 +18,7 @@ type DistanceRank struct {
 
 const DistanceIdDelimiter string = "-"
 
-func dbDistanceTopFind(db *sql.DB, a int) (found bool, rank map[int]DistanceRank) {
+func DistanceTopFind(db *sql.DB, a int) (found bool, rank map[int]DistanceRank) {
 	//FIXME placeholder didn't work :(
 	//rows, err := db.Query(`SELECT a_b, distance FROM files_distance WHERE a_b LIKE "?-%" ORDER BY distance ASC LIMIT 10`, a)
 	aStr := strconv.Itoa(a)
@@ -39,7 +39,7 @@ func dbDistanceTopFind(db *sql.DB, a int) (found bool, rank map[int]DistanceRank
 		res := strings.Split(aB, DistanceIdDelimiter)
 		a, _ := strconv.Atoi(res[0])
 		b, _ := strconv.Atoi(res[1])
-		_, file := dbFindById(db, b)
+		_, file := FindById(db, b)
 
 		rank[i] = DistanceRank{a, b, distance, file.Sha256}
 
@@ -49,7 +49,7 @@ func dbDistanceTopFind(db *sql.DB, a int) (found bool, rank map[int]DistanceRank
 	return found, rank
 }
 
-func dbDistanceTopFindSimilar(db *sql.DB, a int) (found bool, rank map[int]DistanceRank) {
+func DistanceTopFindSimilar(db *sql.DB, a int) (found bool, rank map[int]DistanceRank) {
 	//FIXME placeholder didn't work :(
 	//rows, err := db.Query(`SELECT a_b, distance FROM files_distance WHERE a_b LIKE "?-%" ORDER BY distance ASC LIMIT 10`, a)
 	aStr := strconv.Itoa(a)
@@ -70,7 +70,7 @@ func dbDistanceTopFindSimilar(db *sql.DB, a int) (found bool, rank map[int]Dista
 		res := strings.Split(aB, DistanceIdDelimiter)
 		a, _ := strconv.Atoi(res[0])
 		b, _ := strconv.Atoi(res[1])
-		_, file := dbFindById(db, b)
+		_, file := FindById(db, b)
 
 		rank[i] = DistanceRank{a, b, distance, file.Sha256}
 
@@ -80,7 +80,7 @@ func dbDistanceTopFindSimilar(db *sql.DB, a int) (found bool, rank map[int]Dista
 	return found, rank
 }
 
-func dbDistanceInsertPrepare(db *sql.DB) (tx *sql.Tx, stmt *sql.Stmt) {
+func DistanceInsertPrepare(db *sql.DB) (tx *sql.Tx, stmt *sql.Stmt) {
 	tx, err := db.Begin()
 	stmt, err = tx.Prepare("INSERT OR IGNORE INTO files_distance (a_b, distance) VALUES(?,?)")
 	if err != nil {
@@ -90,7 +90,7 @@ func dbDistanceInsertPrepare(db *sql.DB) (tx *sql.Tx, stmt *sql.Stmt) {
 	return tx, stmt
 }
 
-func dbDistanceInsert(stmt *sql.Stmt, a int, b int, dist int) {
+func DistanceInsert(stmt *sql.Stmt, a int, b int, dist int) {
 	aStr := strconv.Itoa(a)
 	bStr := strconv.Itoa(b)
 	a_b := aStr + DistanceIdDelimiter + bStr
@@ -99,6 +99,6 @@ func dbDistanceInsert(stmt *sql.Stmt, a int, b int, dist int) {
 	checkErr(err)
 }
 
-func dbDistanceInsertEnd(tx *sql.Tx) {
+func DistanceInsertEnd(tx *sql.Tx) {
 	tx.Commit()
 }

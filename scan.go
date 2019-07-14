@@ -13,6 +13,8 @@ import (
 	"path/filepath"
 	"runtime/debug"
 	"strconv"
+
+	"gitlab.com/systemz/gotag/model"
 )
 
 func scan(dir string, scanFunction filepath.WalkFunc) {
@@ -185,7 +187,7 @@ func visit(db *sql.DB, generateThumbs bool) filepath.WalkFunc {
 		//TODO use size for fast check
 		sha256sum, _ := hashFileSha256(path)
 		log.Printf("SHA256: %s\n", sha256sum)
-		alreadyInDb, _, _, mime := dbFindSha256(db, sha256sum)
+		alreadyInDb, _, _, mime := model.FindSha256(db, sha256sum)
 
 		// thumbs for files already in DB
 		if generateThumbs && alreadyInDb {
@@ -196,10 +198,10 @@ func visit(db *sql.DB, generateThumbs bool) filepath.WalkFunc {
 			log.Printf("%s\n", "Thumb generation not enabled, skipping...")
 		}
 
-		_, fileInDb := dbFind(db, sha256sum)
+		_, fileInDb := model.Find(db, sha256sum)
 		if alreadyInDb && fileInDb.Name != path {
 			log.Printf("Updating path from %s to %s ...", fileInDb.Name, path)
-			dbUpdatePath(db, sha256sum, path)
+			model.UpdatePath(db, sha256sum, path)
 			log.Printf("%s\n", "Updating path done")
 		} else if alreadyInDb && fileInDb.Name == path {
 			log.Printf("%s\n", "File path is up to date")
@@ -207,25 +209,25 @@ func visit(db *sql.DB, generateThumbs bool) filepath.WalkFunc {
 
 		log.Println("Calculating similarity to other images, this may take a while")
 		// calc and add perceptual hash to DB for images
-		pHashFound := dbFindPHash(db, sha256sum)
+		pHashFound := model.FindPHash(db, sha256sum)
 		if (mime == "image/jpeg" || mime == "image/png") && !pHashFound {
 			log.Printf("%s\n", "pHash not found, calculating...")
 			pHash := getPHash(path)
 			log.Printf("%s %s\n", "pHash:", pHash)
-			dbUpdatePHash(db, sha256sum, pHash)
+			model.UpdatePHash(db, sha256sum, pHash)
 		}
 
 		// calc distance between this and rest of images
 		// FIXME support more than 1m rows with count rows before starting
 		//start := timeStart()
-		distances := dbFilesWithPHash(db, 1, sha256sum)
-		tx, stmt := dbDistanceInsertPrepare(db)
+		distances := model.FilesWithPHash(db, 1, sha256sum)
+		tx, stmt := model.DistanceInsertPrepare(db)
 		//i := 0
 		for _, v := range distances {
-			dbDistanceInsert(stmt, v.IdA, v.IdB, v.Dist)
+			model.DistanceInsert(stmt, v.IdA, v.IdB, v.Dist)
 			//i++
 		}
-		dbDistanceInsertEnd(tx)
+		model.DistanceInsertEnd(tx)
 		log.Println("Calculating similarity done")
 		//timeStop(start)
 		//fmt.Printf("%d queries\n", i)
@@ -251,7 +253,7 @@ func visit(db *sql.DB, generateThumbs bool) filepath.WalkFunc {
 		log.Printf("SHA1: %s\n", sha1sum)
 
 		log.Printf("%s", "Writing to DB...")
-		dbFindSert(db, path, size, mime, md5sum, sha1sum, sha256sum)
+		model.FindSert(db, path, size, mime, md5sum, sha1sum, sha256sum)
 		log.Printf("%s", "...done\n")
 
 		// thumbs for new files

@@ -1,11 +1,11 @@
-package main
+package model
 
 import (
 	"database/sql"
 	"path/filepath"
 )
 
-func dbFileTagSearchByName(db *sql.DB, page int64, tag string) (found bool, sha256s map[int]File) {
+func FileTagSearchByName(db *sql.DB, page int64, tag string) (found bool, sha256s map[int]File) {
 	found = false
 
 	limit := int64(15)
@@ -41,7 +41,7 @@ func dbFileTagSearchByName(db *sql.DB, page int64, tag string) (found bool, sha2
 	return found, sha256s
 }
 
-func dbFilesWithoutTags(db *sql.DB, page int64) (found bool, sha256s map[int]File) {
+func FilesWithoutTags(db *sql.DB, page int64) (found bool, sha256s map[int]File) {
 	found = false
 
 	limit := int64(15)
@@ -78,7 +78,7 @@ func dbFilesWithoutTags(db *sql.DB, page int64) (found bool, sha256s map[int]Fil
 	return found, sha256s
 }
 
-func dbFilesWithoutTagsRandom(db *sql.DB, page int64) (found bool, sha256s map[int]File) {
+func FilesWithoutTagsRandom(db *sql.DB, page int64) (found bool, sha256s map[int]File) {
 	found = false
 
 	limit := int64(15)

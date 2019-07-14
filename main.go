@@ -6,14 +6,16 @@ import (
 	"log"
 	"os"
 	"strconv"
+
+	"gitlab.com/systemz/gotag/model"
 )
 
 func main() {
 	flag.Parse()
 
 	// DB stuff
-	db := dbInit()
-	allFiles := dbCountAllFiles(db)
+	db := model.DbInit()
+	allFiles := model.CountAllFiles(db)
 	log.Printf("All files in DB: %d \n", allFiles)
 
 	if flag.Arg(0) == "scan" {
