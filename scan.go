@@ -171,6 +171,103 @@ func makeThumbs(path string, sha256sum string, mime string) {
 	debug.FreeOSMemory()
 }
 
+type AddFileOptions struct {
+	generateThumbs bool
+	calcSimilarity bool
+	tags           []string
+}
+
+func addFile(db *sql.DB, path string, options AddFileOptions) {
+	log.Printf("Checking: %s\n", path)
+
+	//TODO use size for fast check
+	log.Printf("%s\n", "Calculating SHA256...")
+	sha256sum, _ := hashFileSha256(path)
+	log.Printf("SHA256: %s\n", sha256sum)
+	isInDb, _, _, mime := model.FindSha256(db, sha256sum)
+
+	// check if it's already in DB
+	_, fileInDb := model.Find(db, sha256sum)
+
+	// add new file to DB if needed
+	if !isInDb {
+		log.Printf("%s\n", "File not in DB, check info and add to DB!")
+
+		fileInfo, err := os.Stat(path)
+		if err != nil {
+			log.Printf("Error when getting info for %v: %v", path, err)
+			return
+		}
+
+		name := fileInfo.Name()
+		log.Printf("Name: %s\n", name)
+		size := fileInfo.Size()
+		log.Printf("Size: %d\n", size)
+		mime, _ = getType(path)
+		log.Printf("MIME: %s\n", mime)
+		log.Printf("%s\n", "Calculating MD5...")
+		md5sum, _ := hashFileMd5(path)
+		log.Printf("MD5: %s\n", md5sum)
+		log.Printf("%s\n", "Calculating SHA1...")
+		sha1sum, _ := hashFileSha1(path)
+		log.Printf("SHA1: %s\n", sha1sum)
+
+		log.Printf("%s", "Writing to DB...")
+		model.FindSert(db, path, size, mime, md5sum, sha1sum, sha256sum)
+		log.Printf("%s", "...done\n")
+	}
+
+	// apply tags if provided
+	for _, tag := range options.tags {
+		model.TagFindSert(db, tag, fileInDb.Fid)
+	}
+
+	// update path to file if necessary
+	if isInDb && fileInDb.Name != path {
+		log.Printf("Updating path from %s to %s ...", fileInDb.Name, path)
+		model.UpdatePath(db, sha256sum, path)
+		log.Printf("%s\n", "Updating path done")
+	} else if isInDb && fileInDb.Name == path {
+		log.Printf("%s\n", "File path is up to date")
+	}
+
+	// check similarity to other images
+	if options.calcSimilarity {
+		log.Println("Calculating similarity to other images, this may take a while")
+		// calc and add perceptual hash to DB for images
+		pHashFound := model.FindPHash(db, sha256sum)
+		if (mime == "image/jpeg" || mime == "image/png") && !pHashFound {
+			log.Printf("%s\n", "pHash not found, calculating...")
+			pHash := getPHash(path)
+			log.Printf("%s %s\n", "pHash:", pHash)
+			model.UpdatePHash(db, sha256sum, pHash)
+		}
+
+		// calc distance between this and rest of images
+		// FIXME support more than 1m rows with count rows before starting
+		//start := timeStart()
+		distances := model.FilesWithPHash(db, 1, sha256sum)
+		tx, stmt := model.DistanceInsertPrepare(db)
+		//i := 0
+		for _, v := range distances {
+			model.DistanceInsert(stmt, v.IdA, v.IdB, v.Dist)
+			//i++
+		}
+		model.DistanceInsertEnd(tx)
+		log.Println("Calculating similarity done")
+	}
+
+	// thumbs creation
+	if options.generateThumbs {
+		log.Printf("%s\n", "Creating thumbs...")
+		makeThumbs(path, sha256sum, mime)
+		log.Printf("%s\n", "Thumbs work done")
+	}
+
+}
+
+// code below is almost duplicate of addFile()
+
 func visit(db *sql.DB, generateThumbs bool) filepath.WalkFunc {
 	return func(path string, info os.FileInfo, err error) error {
 		log.Printf("Visiting: %s\n", path)

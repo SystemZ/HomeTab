@@ -3,8 +3,10 @@ package main
 import (
 	"bytes"
 	"database/sql"
+	"encoding/json"
 	"image"
 	"image/jpeg"
+	"io/ioutil"
 	"log"
 	"net/http"
 	"os"
@@ -121,6 +123,11 @@ func server(db *sql.DB) {
 	router.Get("/", func(w traffic.ResponseWriter, req *traffic.Request) {
 		r.HTML(w, http.StatusOK, "home", nil)
 	})
+
+	type FileScanRequestBody struct {
+		FilePath string   `json:"filePath"`
+		Tags     []string `json:"tags"`
+	}
 
 	router.Get("/tags", func(w traffic.ResponseWriter, req *traffic.Request) {
 		_, tags := model.GetTagRank(db)
@@ -271,6 +278,27 @@ func server(db *sql.DB) {
 
 	router.Get("/", func(w traffic.ResponseWriter, req *traffic.Request) {
 		r.JSON(w, http.StatusOK, map[string]string{"welcome": "This is rendered JSON!"})
+	})
+
+	// API
+	router.Post("/api/v1/file/scan", func(w traffic.ResponseWriter, req *traffic.Request) {
+		// parse JSON
+		body, err := ioutil.ReadAll(req.Body)
+		if err != nil {
+			panic(err)
+		}
+		var requestBody FileScanRequestBody
+		err = json.Unmarshal(body, &requestBody)
+		if err != nil {
+			log.Printf("Error when handling file scan: %v", err.Error())
+			panic(err)
+		}
+		addFile(db, requestBody.FilePath, AddFileOptions{
+			calcSimilarity: true,
+			generateThumbs: true,
+			tags:           requestBody.Tags,
+		})
+		w.Write([]byte{})
 	})
 
 	router.Run()
