@@ -29,10 +29,13 @@ func DbInit() (db *sql.DB) {
 }
 
 type File struct {
-	Fid    int
-	Name   string
-	Size   int
-	Sha256 string
+	Fid      int    `json:"id"`
+	Name     string `json:"name"`
+	Size     int    `json:"size"`
+	Sha256   string `json:"sha256"`
+	LastPath string `json:"lastPath"`
+	Mime     string `json:"mime"`
+	ParentId int    `json:"parentId"`
 }
 
 type Files []File
@@ -65,7 +68,7 @@ func List(db *sql.DB, page int64) (found bool, sha256s map[int]File) {
 		if sha256s == nil {
 			sha256s = make(map[int]File)
 		}
-		sha256s[id] = File{id, filename, size, sha256}
+		sha256s[id] = File{Fid: id, LastPath: filename, Size: size, Sha256: sha256}
 
 		if !found {
 			found = true
@@ -102,7 +105,7 @@ func ListRandom(db *sql.DB, page int64) (found bool, sha256s map[int]File) {
 		if sha256s == nil {
 			sha256s = make(map[int]File)
 		}
-		sha256s[id] = File{id, filename, size, sha256}
+		sha256s[id] = File{Fid: id, LastPath: filename, Size: size, Sha256: sha256}
 
 		if !found {
 			found = true
@@ -131,7 +134,7 @@ func ListSha256(db *sql.DB, search string) (found bool, sha256s map[int]File) {
 		if sha256s == nil {
 			sha256s = make(map[int]File)
 		}
-		sha256s[id] = File{id, filename, size, sha256}
+		sha256s[id] = File{Fid: id, LastPath: filename, Size: size, Sha256: sha256}
 
 		if !found {
 			found = true
@@ -153,7 +156,7 @@ func Find(db *sql.DB, sha256 string) (found bool, file File) {
 		err = rows.Scan(&id, &last_path, &size)
 		checkErr(err)
 		found = true
-		file = File{id, last_path, size, sha256}
+		file = File{Fid: id, LastPath: last_path, Size: size, Sha256: sha256}
 		break
 	}
 	return found, file
@@ -172,7 +175,7 @@ func FindById(db *sql.DB, fileId int) (found bool, file File) {
 		err = rows.Scan(&last_path, &size, &sha256)
 		checkErr(err)
 		found = true
-		file = File{fileId, last_path, size, sha256}
+		file = File{Fid: fileId, LastPath: last_path, Size: size, Sha256: sha256}
 		break
 	}
 	return found, file
@@ -229,6 +232,24 @@ func UpdatePath(db *sql.DB, sha256sum string, newPath string) {
 		fmt.Println(err)
 	}
 	_, err = tx.Stmt(trashSQL).Exec(newPath, sha256sum)
+	if err != nil {
+		fmt.Println("Doing rollback")
+		tx.Rollback()
+	} else {
+		tx.Commit()
+	}
+}
+
+func UpdateParentId(db *sql.DB, sha256sum string, parentId int) {
+	trashSQL, err := db.Prepare("UPDATE files SET parent_id=? WHERE sha256=?")
+	if err != nil {
+		fmt.Println(err)
+	}
+	tx, err := db.Begin()
+	if err != nil {
+		fmt.Println(err)
+	}
+	_, err = tx.Stmt(trashSQL).Exec(parentId, sha256sum)
 	if err != nil {
 		fmt.Println("Doing rollback")
 		tx.Rollback()

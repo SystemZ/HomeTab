@@ -175,9 +175,10 @@ type AddFileOptions struct {
 	generateThumbs bool
 	calcSimilarity bool
 	tags           []string
+	parentId       int
 }
 
-func addFile(db *sql.DB, path string, options AddFileOptions) {
+func addFile(db *sql.DB, path string, options AddFileOptions) (dbFile model.File) {
 	log.Printf("Checking: %s\n", path)
 
 	//TODO use size for fast check
@@ -231,6 +232,11 @@ func addFile(db *sql.DB, path string, options AddFileOptions) {
 		log.Printf("%s\n", "File path is up to date")
 	}
 
+	//// update parent id
+	//if isInDb && fileInDb.ParentId != options.parentId {
+	//	model.UpdateParentId(db, fileInDb.Sha256, options.parentId)
+	//}
+
 	// check similarity to other images
 	if options.calcSimilarity {
 		log.Println("Calculating similarity to other images, this may take a while")
@@ -264,6 +270,7 @@ func addFile(db *sql.DB, path string, options AddFileOptions) {
 		log.Printf("%s\n", "Thumbs work done")
 	}
 
+	return fileInDb
 }
 
 // code below is almost duplicate of addFile()

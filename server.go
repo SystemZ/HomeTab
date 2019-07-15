@@ -124,11 +124,6 @@ func server(db *sql.DB) {
 		r.HTML(w, http.StatusOK, "home", nil)
 	})
 
-	type FileScanRequestBody struct {
-		FilePath string   `json:"filePath"`
-		Tags     []string `json:"tags"`
-	}
-
 	router.Get("/tags", func(w traffic.ResponseWriter, req *traffic.Request) {
 		_, tags := model.GetTagRank(db)
 		r.HTML(w, http.StatusOK, "tag_rank", tags)
@@ -281,6 +276,12 @@ func server(db *sql.DB) {
 	})
 
 	// API
+	type FileScanRequestBody struct {
+		FilePath string   `json:"filePath"`
+		Tags     []string `json:"tags"`
+		ParentId int      `json:"parentId"`
+	}
+
 	router.Post("/api/v1/file/scan", func(w traffic.ResponseWriter, req *traffic.Request) {
 		// parse JSON
 		body, err := ioutil.ReadAll(req.Body)
@@ -293,12 +294,18 @@ func server(db *sql.DB) {
 			log.Printf("Error when handling file scan: %v", err.Error())
 			panic(err)
 		}
-		addFile(db, requestBody.FilePath, AddFileOptions{
+
+		// make all hard work
+		fileInDb := addFile(db, requestBody.FilePath, AddFileOptions{
 			calcSimilarity: true,
 			generateThumbs: true,
 			tags:           requestBody.Tags,
+			parentId:       requestBody.ParentId,
 		})
-		w.Write([]byte{})
+
+		// send reponse to user
+		jsonResponse, err := json.Marshal(fileInDb)
+		w.Write(jsonResponse)
 	})
 
 	router.Run()
