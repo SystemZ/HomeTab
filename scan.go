@@ -206,15 +206,9 @@ func addFile(db *sql.DB, path string, options AddFileOptions) (dbFile model.File
 		log.Printf("Size: %d\n", size)
 		mime, _ = getType(path)
 		log.Printf("MIME: %s\n", mime)
-		log.Printf("%s\n", "Calculating MD5...")
-		md5sum, _ := hashFileMd5(path)
-		log.Printf("MD5: %s\n", md5sum)
-		log.Printf("%s\n", "Calculating SHA1...")
-		sha1sum, _ := hashFileSha1(path)
-		log.Printf("SHA1: %s\n", sha1sum)
 
 		log.Printf("%s", "Writing to DB...")
-		model.FindSert(db, path, size, mime, md5sum, sha1sum, sha256sum)
+		model.FindSert(db, path, size, mime, sha256sum)
 		log.Printf("%s", "...done\n")
 	}
 
@@ -357,7 +351,7 @@ func visit(db *sql.DB, generateThumbs bool) filepath.WalkFunc {
 		log.Printf("SHA1: %s\n", sha1sum)
 
 		log.Printf("%s", "Writing to DB...")
-		model.FindSert(db, path, size, mime, md5sum, sha1sum, sha256sum)
+		model.FindSert(db, path, size, mime, sha256sum)
 		log.Printf("%s", "...done\n")
 
 		// thumbs for new files

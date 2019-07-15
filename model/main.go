@@ -202,11 +202,11 @@ func FindSha256(db *sql.DB, sha string) (found bool, res int, lastPath string, m
 	return found, result, lastPath, mime
 }
 
-func Insert(db *sql.DB, lastPath string, size int64, mime string, md5 string, sha1 string, sha256 string) (id int64) {
-	stmt, err := db.Prepare("INSERT INTO files(last_path, size, mime, md5, sha1, sha256) VALUES(?,?,?,?,?,?)")
+func Insert(db *sql.DB, lastPath string, size int64, mime string, sha256 string) (id int64) {
+	stmt, err := db.Prepare("INSERT INTO files(last_path, size, mime, md5, sha1, sha256) VALUES(?,?,?,?)")
 	checkErr(err)
 
-	res, err := stmt.Exec(lastPath, size, mime, md5, sha1, sha256)
+	res, err := stmt.Exec(lastPath, size, mime, sha256)
 	checkErr(err)
 
 	id, err = res.LastInsertId()
@@ -215,10 +215,10 @@ func Insert(db *sql.DB, lastPath string, size int64, mime string, md5 string, sh
 	return id
 }
 
-func FindSert(db *sql.DB, lastPath string, size int64, mime string, md5 string, sha1 string, sha256 string) {
+func FindSert(db *sql.DB, lastPath string, size int64, mime string, sha256 string) {
 	found, _ := Find(db, sha256)
 	if !found {
-		Insert(db, lastPath, size, mime, md5, sha1, sha256)
+		Insert(db, lastPath, size, mime, sha256)
 	}
 }
 
