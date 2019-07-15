@@ -203,7 +203,7 @@ func FindSha256(db *sql.DB, sha string) (found bool, res int, lastPath string, m
 }
 
 func Insert(db *sql.DB, lastPath string, size int64, mime string, sha256 string) (id int64) {
-	stmt, err := db.Prepare("INSERT INTO files(last_path, size, mime, md5, sha1, sha256) VALUES(?,?,?,?)")
+	stmt, err := db.Prepare("INSERT INTO files(last_path, size, mime, sha256) VALUES(?,?,?,?)")
 	checkErr(err)
 
 	res, err := stmt.Exec(lastPath, size, mime, sha256)
