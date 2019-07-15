@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"log"
 	"os"
-	"strconv"
 
 	"gitlab.com/systemz/gotag/model"
 )
@@ -24,8 +23,9 @@ func main() {
 			os.Exit(1)
 		}
 		dir := flag.Arg(1)
-		generateThumbs, _ := strconv.ParseBool(flag.Arg(2))
-		scan(dir, visit(db, generateThumbs))
+		//generateThumbs, _ := strconv.ParseBool(flag.Arg(2))
+		//scan(dir, visit(db, generateThumbs))
+		scanNg(db, dir)
 		os.Exit(0)
 	} else if flag.Arg(0) == "serve" {
 		server(db)

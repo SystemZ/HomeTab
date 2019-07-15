@@ -1,18 +1,19 @@
 package main
 
 import (
-	"crypto/md5"
-	"crypto/sha1"
 	"crypto/sha256"
 	"database/sql"
 	"encoding/hex"
+	"fmt"
 	"io"
 	"log"
 	"net/http"
 	"os"
 	"path/filepath"
+	"runtime"
 	"runtime/debug"
 	"strconv"
+	"time"
 
 	"gitlab.com/systemz/gotag/model"
 )
@@ -23,66 +24,44 @@ func scan(dir string, scanFunction filepath.WalkFunc) {
 	//fmt.Printf("filepath.Walk() returned %v\n", err)
 }
 
-// http://www.mrwaggel.be/post/generate-md5-hash-of-a-file-in-golang/
-func hashFileMd5(filePath string) (string, error) {
-	//Initialize variable returnMD5String now in case an error has to be returned
-	var returnMD5String string
+func scanNg(db *sql.DB, dir string) {
+	//log.Printf("Will work with %v threads", runtime.GOMAXPROCS(0))
+	log.Printf("Scanning...")
+	var fileList []string
+	_ = filepath.Walk(dir, func(path string, f os.FileInfo, err error) error {
+		fileList = append(fileList, path)
+		return nil
+	})
+	log.Printf("Scanning complete")
 
-	//Open the passed argument and check for any error
-	file, err := os.Open(filePath)
-	if err != nil {
-		return returnMD5String, err
+	//maxGoroutines := 2
+	maxGoroutines := runtime.GOMAXPROCS(0)
+	guard := make(chan struct{}, maxGoroutines)
+	// other implementation of concurrency:
+	// https://stackoverflow.com/questions/43789362/is-it-possible-to-limit-how-many-goroutines-run-per-second/43792222#43792222
+
+	// limit concurrency
+	start := time.Now()
+	fmt.Println("getting ready to do some work...")
+
+	for _, file := range fileList {
+		log.Printf("%v", file)
+		guard <- struct{}{} // would block if guard channel is already filled
+
+		go func() {
+			log.Printf("Starting work...")
+			addFile(db, file, AddFileOptions{
+				generateThumbs: true,
+				calcSimilarity: true,
+				onlyAddNew:     true,
+			})
+			fmt.Println("Finished work:", time.Now())
+			<-guard
+		}()
 	}
 
-	//Tell the program to call the following function when the current function returns
-	defer file.Close()
-
-	//Open a new hash interface to write to
-	hash := md5.New()
-
-	//Copy the file in the hash interface and check for any error
-	if _, err := io.Copy(hash, file); err != nil {
-		return returnMD5String, err
-	}
-
-	//Get the 16 bytes hash
-	hashInBytes := hash.Sum(nil)[:16]
-
-	//Convert the bytes to a string
-	returnMD5String = hex.EncodeToString(hashInBytes)
-
-	return returnMD5String, nil
-
-}
-
-func hashFileSha1(filePath string) (string, error) {
-	//Initialize variable returnMD5String now in case an error has to be returned
-	var returnString string
-
-	//Open the passed argument and check for any error
-	file, err := os.Open(filePath)
-	if err != nil {
-		return returnString, err
-	}
-
-	//Tell the program to call the following function when the current function returns
-	defer file.Close()
-
-	//Open a new hash interface to write to
-	hash := sha1.New()
-
-	//Copy the file in the hash interface and check for any error
-	if _, err := io.Copy(hash, file); err != nil {
-		return returnString, err
-	}
-
-	//Get the 20 bytes hash
-	hashInBytes := hash.Sum(nil)[:20]
-
-	//Convert the bytes to a string
-	returnString = hex.EncodeToString(hashInBytes)
-
-	return returnString, nil
+	dur := time.Since(start)
+	fmt.Println("scanned in", dur)
 
 }
 
@@ -172,6 +151,7 @@ func makeThumbs(path string, sha256sum string, mime string) {
 }
 
 type AddFileOptions struct {
+	onlyAddNew     bool
 	generateThumbs bool
 	calcSimilarity bool
 	tags           []string
@@ -180,6 +160,26 @@ type AddFileOptions struct {
 
 func addFile(db *sql.DB, path string, options AddFileOptions) (dbFile model.File) {
 	log.Printf("Checking: %s\n", path)
+
+	// don't continue if folder
+	info, nil := os.Stat(path)
+	if info.IsDir() {
+		log.Printf("%s\n", "It's a dir, skipping...")
+		return
+	}
+
+	fileInfo, err := os.Stat(path)
+	size := fileInfo.Size()
+	log.Printf("Size: %d\n", size)
+
+	if options.onlyAddNew {
+		isInDb, fileInDb := model.FindByFile(db, path)
+		if isInDb && fileInDb.Size == int(size) {
+			// this file already exists in DB, skip it
+			log.Printf("Skipping...")
+			return
+		}
+	}
 
 	//TODO use size for fast check
 	log.Printf("%s\n", "Calculating SHA256...")
@@ -194,7 +194,6 @@ func addFile(db *sql.DB, path string, options AddFileOptions) (dbFile model.File
 	if !isInDb {
 		log.Printf("%s\n", "File not in DB, check info and add to DB!")
 
-		fileInfo, err := os.Stat(path)
 		if err != nil {
 			log.Printf("Error when getting info for %v: %v", path, err)
 			return
@@ -202,8 +201,6 @@ func addFile(db *sql.DB, path string, options AddFileOptions) (dbFile model.File
 
 		name := fileInfo.Name()
 		log.Printf("Name: %s\n", name)
-		size := fileInfo.Size()
-		log.Printf("Size: %d\n", size)
 		mime, _ = getType(path)
 		log.Printf("MIME: %s\n", mime)
 
@@ -341,7 +338,7 @@ func visit(db *sql.DB, generateThumbs bool) filepath.WalkFunc {
 		log.Printf("Name: %s\n", name)
 		size := info.Size()
 		mime, _ = getType(path)
-		log.Printf("Size: %d\n MIME: %s", size, mime)
+		log.Printf("Size: %d, MIME: %s\n ", size, mime)
 
 		log.Printf("%s", "Writing to DB...")
 		model.FindSert(db, path, size, mime, sha256sum)
