@@ -136,7 +136,7 @@ func createThumb(pathToImg string, sha256 string, mime string, maxWidth uint, ma
 	case "video/mp4":
 		log.Println("Creating .mp4 thumb...")
 	default:
-		log.Printf("%s", "This file type is not supported yet, sorry :(")
+		log.Printf("This MIME is not supported yet: %v", mime)
 		done <- true
 		// exit this function if not jpg,png,webm or mp4
 		return
