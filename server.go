@@ -182,6 +182,16 @@ func server(db *sql.DB) {
 		r.HTML(w, http.StatusOK, "file", FileView{file, tags, similar})
 	})
 
+	router.Get("/fileid/:fid", func(w traffic.ResponseWriter, req *traffic.Request) {
+		params := req.URL.Query()
+		fid, _ := strconv.Atoi(params.Get("fid"))
+		_, file := model.FindById(db, fid)
+		_, tags := model.TagList(db, file.Fid)
+		_, similar := model.DistanceTopFindSimilar(db, file.Fid)
+
+		r.HTML(w, http.StatusOK, "file", FileView{file, tags, similar})
+	})
+
 	router.Post("/file/:sha256/tag/add", func(w traffic.ResponseWriter, req *traffic.Request) {
 		params := req.URL.Query()
 		found, files := model.ListSha256(db, params.Get("sha256"))

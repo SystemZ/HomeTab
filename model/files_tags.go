@@ -32,7 +32,7 @@ func FileTagSearchByName(db *sql.DB, page int64, tag string) (found bool, sha256
 		if sha256s == nil {
 			sha256s = make(map[int]File)
 		}
-		sha256s[id] = File{Fid: id, LastPath: filename, Size: size, Sha256: sha256}
+		sha256s[id] = File{Fid: id, Name: filename, Size: size, Sha256: sha256}
 
 		if !found {
 			found = true
@@ -69,7 +69,7 @@ func FilesWithoutTags(db *sql.DB, page int64) (found bool, sha256s map[int]File)
 		if sha256s == nil {
 			sha256s = make(map[int]File)
 		}
-		sha256s[id] = File{Fid: id, LastPath: filename, Size: size, Sha256: sha256}
+		sha256s[id] = File{Fid: id, Name: filename, Size: size, Sha256: sha256}
 
 		if !found {
 			found = true
@@ -106,7 +106,7 @@ func FilesWithoutTagsRandom(db *sql.DB, page int64) (found bool, sha256s map[int
 		if sha256s == nil {
 			sha256s = make(map[int]File)
 		}
-		sha256s[id] = File{Fid: id, LastPath: filename, Size: size, Sha256: sha256}
+		sha256s[id] = File{Fid: id, Name: filename, Size: size, Sha256: sha256}
 
 		if !found {
 			found = true

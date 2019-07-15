@@ -30,10 +30,9 @@ func DbInit() (db *sql.DB) {
 
 type File struct {
 	Fid      int    `json:"id"`
-	Name     string `json:"name"`
+	Name     string `json:"lastPath"`
 	Size     int    `json:"size"`
 	Sha256   string `json:"sha256"`
-	LastPath string `json:"lastPath"`
 	Mime     string `json:"mime"`
 	ParentId int    `json:"parentId"`
 }
@@ -68,7 +67,7 @@ func List(db *sql.DB, page int64) (found bool, sha256s map[int]File) {
 		if sha256s == nil {
 			sha256s = make(map[int]File)
 		}
-		sha256s[id] = File{Fid: id, LastPath: filename, Size: size, Sha256: sha256}
+		sha256s[id] = File{Fid: id, Name: filename, Size: size, Sha256: sha256}
 
 		if !found {
 			found = true
@@ -105,7 +104,7 @@ func ListRandom(db *sql.DB, page int64) (found bool, sha256s map[int]File) {
 		if sha256s == nil {
 			sha256s = make(map[int]File)
 		}
-		sha256s[id] = File{Fid: id, LastPath: filename, Size: size, Sha256: sha256}
+		sha256s[id] = File{Fid: id, Name: filename, Size: size, Sha256: sha256}
 
 		if !found {
 			found = true
@@ -134,7 +133,7 @@ func ListSha256(db *sql.DB, search string) (found bool, sha256s map[int]File) {
 		if sha256s == nil {
 			sha256s = make(map[int]File)
 		}
-		sha256s[id] = File{Fid: id, LastPath: filename, Size: size, Sha256: sha256}
+		sha256s[id] = File{Fid: id, Name: filename, Size: size, Sha256: sha256}
 
 		if !found {
 			found = true
@@ -156,7 +155,7 @@ func Find(db *sql.DB, sha256 string) (found bool, file File) {
 		err = rows.Scan(&id, &last_path, &size)
 		checkErr(err)
 		found = true
-		file = File{Fid: id, LastPath: last_path, Size: size, Sha256: sha256}
+		file = File{Fid: id, Name: last_path, Size: size, Sha256: sha256}
 		break
 	}
 	return found, file
@@ -175,7 +174,7 @@ func FindById(db *sql.DB, fileId int) (found bool, file File) {
 		err = rows.Scan(&last_path, &size, &sha256)
 		checkErr(err)
 		found = true
-		file = File{Fid: fileId, LastPath: last_path, Size: size, Sha256: sha256}
+		file = File{Fid: fileId, Name: last_path, Size: size, Sha256: sha256}
 		break
 	}
 	return found, file
@@ -200,6 +199,22 @@ func FindSha256(db *sql.DB, sha string) (found bool, res int, lastPath string, m
 		break
 	}
 	return found, result, lastPath, mime
+}
+
+func FindByFile(db *sql.DB, filePath string) (found bool, result File) {
+	rows, err := db.Query("SELECT id, size FROM files WHERE last_path = ?", filePath)
+	checkErr(err)
+	defer rows.Close()
+	found = false
+	var f File
+
+	for rows.Next() {
+		err = rows.Scan(&f.Fid, &f.Size)
+		checkErr(err)
+		return true, f
+		break
+	}
+	return found, File{}
 }
 
 func Insert(db *sql.DB, lastPath string, size int64, mime string, sha256 string) (id int64) {
