@@ -1,4 +1,4 @@
-package main
+package web
 
 import (
 	"bytes"
@@ -11,6 +11,8 @@ import (
 	"net/http"
 	"os"
 	"strconv"
+
+	"gitlab.com/systemz/gotag/core"
 
 	"gitlab.com/systemz/gotag/model"
 
@@ -112,7 +114,7 @@ func writeRawFile(w http.ResponseWriter, r *traffic.Request, filePath string, mi
 	}
 }
 
-func server(db *sql.DB) {
+func Server(db *sql.DB) {
 	r := render.New(render.Options{
 		IndentJSON: true,
 		Extensions: []string{".tmpl", ".html"},
@@ -235,12 +237,12 @@ func server(db *sql.DB) {
 
 		// create thumb on disk if needed
 		done := make(chan bool)
-		go createThumb(imgPath, sha256sum, mime, width, height, done)
+		go core.CreateThumb(imgPath, sha256sum, mime, width, height, done)
 		<-done
 		debug.FreeOSMemory()
 
 		// push thumb to browser, thumb will be always .jpg
-		writeRawFile(w, req, thumbPath(sha256sum, width, height), "image/jpeg")
+		writeRawFile(w, req, core.ThumbPath(sha256sum, width, height), "image/jpeg")
 	})
 
 	router.Get("/img/thumbs/:w/:h/:sha256", func(w traffic.ResponseWriter, req *traffic.Request) {
@@ -306,11 +308,11 @@ func server(db *sql.DB) {
 		}
 
 		// make all hard work
-		fileInDb := addFile(db, requestBody.FilePath, AddFileOptions{
-			calcSimilarity: true,
-			generateThumbs: true,
-			tags:           requestBody.Tags,
-			parentId:       requestBody.ParentId,
+		fileInDb := core.AddFile(db, requestBody.FilePath, core.AddFileOptions{
+			CalcSimilarity: true,
+			GenerateThumbs: true,
+			Tags:           requestBody.Tags,
+			ParentId:       requestBody.ParentId,
 		})
 
 		// send reponse to user

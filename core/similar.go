@@ -1,4 +1,4 @@
-package main
+package core
 
 import (
 	"log"
@@ -8,7 +8,7 @@ import (
 )
 
 // https://stackoverflow.com/a/38469006/1351857
-func getPHash(filename string) string {
+func GetPHash(filename string) string {
 	img, err := os.Open(filename)
 	if err != nil {
 		log.Fatal(err)

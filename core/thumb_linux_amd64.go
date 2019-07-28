@@ -1,4 +1,4 @@
-package main
+package core
 
 import (
 	"image"
@@ -23,7 +23,7 @@ var EncodeOptions = map[string]map[int]int{
 // https://github.com/discordapp/lilliput/blob/c86952445060cf68db423d77ce52ee4d4dbc819c/examples/main.go
 func createVideoThumb(inputFilename string, sha256 string, mime string, maxWidth uint, maxHeight uint) {
 
-	outputFilename := thumbPath(sha256, maxWidth, maxHeight)
+	outputFilename := ThumbPath(sha256, maxWidth, maxHeight)
 
 	outputWidth := int(maxWidth)
 	outputHeight := int(maxHeight)
@@ -96,10 +96,10 @@ func createVideoThumb(inputFilename string, sha256 string, mime string, maxWidth
 
 }
 
-func createThumb(pathToImg string, sha256 string, mime string, maxWidth uint, maxHeight uint, done chan bool) {
+func CreateThumb(pathToImg string, sha256 string, mime string, maxWidth uint, maxHeight uint, done chan bool) {
 	// don't overwrite current file
 	// TODO check if image is ok then rewrite if needed
-	imgThumbPath := thumbPath(sha256, maxWidth, maxHeight)
+	imgThumbPath := ThumbPath(sha256, maxWidth, maxHeight)
 	if _, err := os.Stat(imgThumbPath); !os.IsNotExist(err) {
 		log.Printf("Creating %d x %d thumb is not needed, skipping...\n", maxWidth, maxHeight)
 		done <- true
@@ -148,7 +148,7 @@ func createThumb(pathToImg string, sha256 string, mime string, maxWidth uint, ma
 
 	if mime == "image/jpeg" || mime == "image/png" {
 		// open thumb file to write
-		fileWrite, err := os.Create(thumbPath(sha256, maxWidth, maxHeight))
+		fileWrite, err := os.Create(ThumbPath(sha256, maxWidth, maxHeight))
 		if err != nil {
 			log.Fatalln(err)
 		}

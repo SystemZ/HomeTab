@@ -11,5 +11,7 @@ require (
 	github.com/nfnt/resize v0.0.0-20180221191011-83c6a9932646
 	github.com/pilu/config v0.0.0-20131214182432-3eb99e6c0b9a // indirect
 	github.com/pilu/traffic v0.5.3
+	github.com/spf13/cobra v0.0.5
+	github.com/spf13/viper v1.4.0
 	github.com/unrolled/render v1.0.0
 )
