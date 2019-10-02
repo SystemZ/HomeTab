@@ -22,7 +22,7 @@ type Project struct {
 	UpdatedAt *time.Time `gorm:"column:updated_at" json:"updated_at"`
 }
 
-func CreateProject(name string, groupId uint) {
+func CreateProject(name string, groupId uint) uint {
 	var project Project
 
 	project.Name = name
@@ -36,4 +36,6 @@ func CreateProject(name string, groupId uint) {
 	if err != nil {
 		log.Printf("%v", err)
 	}
+
+	return project.Id
 }

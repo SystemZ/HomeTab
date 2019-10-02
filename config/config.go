@@ -7,13 +7,14 @@ import (
 )
 
 var (
-	DB_HOST        string
-	DB_PORT        string
-	DB_NAME        string
-	DB_USERNAME    string
-	DB_PASSWORD    string
-	REDIS_HOST     string
-	REDIS_PASSWORD string
+	DB_HOST         string
+	DB_PORT         string
+	DB_NAME         string
+	DB_USERNAME     string
+	DB_PASSWORD     string
+	REDIS_HOST      string
+	REDIS_PASSWORD  string
+	SESSION_VALID_S int
 )
 
 func init() {
@@ -38,4 +39,6 @@ func init() {
 	REDIS_HOST = viper.GetString("REDIS_HOST")
 	viper.SetDefault("REDIS_PASSWORD", "")
 	REDIS_PASSWORD = viper.GetString("REDIS_PASSWORD")
+	viper.SetDefault("SESSION_VALID_S", 15)
+	SESSION_VALID_S = viper.GetInt("SESSION_VALID_S")
 }
