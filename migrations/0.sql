@@ -23,12 +23,12 @@ DROP TABLE IF EXISTS `actions`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `actions` (
-                           `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
-                           `task_id` int(10) unsigned NOT NULL,
-                           `action` int(10) unsigned NOT NULL,
-                           `val` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
-                           `created_at` date NOT NULL,
-                           PRIMARY KEY (`id`)
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `task_id` int(10) unsigned NOT NULL,
+  `action` int(10) unsigned NOT NULL,
+  `val` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `created_at` date NOT NULL,
+  PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -40,12 +40,12 @@ DROP TABLE IF EXISTS `comments`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `comments` (
-                            `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
-                            `task_id` int(10) unsigned NOT NULL,
-                            `content` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
-                            `created_at` date NOT NULL,
-                            `updated_at` date NOT NULL,
-                            PRIMARY KEY (`id`)
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `task_id` int(10) unsigned NOT NULL,
+  `content` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `created_at` date NOT NULL,
+  `updated_at` date NOT NULL,
+  PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -57,12 +57,12 @@ DROP TABLE IF EXISTS `counters`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `counters` (
-                            `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
-                            `name` varchar(160) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
-                            `project_id` int(10) unsigned NOT NULL,
-                            `created_at` datetime NOT NULL,
-                            `updated_at` datetime NOT NULL,
-                            PRIMARY KEY (`id`)
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `name` varchar(160) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `project_id` int(10) unsigned NOT NULL,
+  `created_at` datetime NOT NULL,
+  `updated_at` datetime NOT NULL,
+  PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -74,12 +74,12 @@ DROP TABLE IF EXISTS `events`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `events` (
-                          `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
-                          `user_id` int(10) unsigned NOT NULL,
-                          `task_id` int(10) unsigned NOT NULL,
-                          `action` smallint(5) unsigned NOT NULL,
-                          `created_at` datetime NOT NULL,
-                          PRIMARY KEY (`id`)
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `user_id` int(10) unsigned NOT NULL,
+  `task_id` int(10) unsigned NOT NULL,
+  `action` smallint(5) unsigned NOT NULL,
+  `created_at` datetime NOT NULL,
+  PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -91,10 +91,11 @@ DROP TABLE IF EXISTS `groups`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `groups` (
-                          `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
-                          `name` varchar(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
-                          `created_at` date NOT NULL,
-                          PRIMARY KEY (`id`)
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `name` varchar(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `created_at` date NOT NULL,
+  `updated_at` datetime NOT NULL,
+  PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -106,12 +107,12 @@ DROP TABLE IF EXISTS `projects`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `projects` (
-                            `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
-                            `name` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
-                            `group_id` int(11) unsigned NOT NULL,
-                            `created_at` date NOT NULL,
-                            `updated_at` date NOT NULL,
-                            PRIMARY KEY (`id`)
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `name` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `group_id` int(11) unsigned NOT NULL,
+  `created_at` date NOT NULL,
+  `updated_at` date NOT NULL,
+  PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -123,23 +124,23 @@ DROP TABLE IF EXISTS `tasks`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `tasks` (
-                         `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
-                         `subject` varchar(160) CHARACTER SET utf8 COLLATE utf8_unicode_ci NOT NULL,
-                         `project_id` int(10) unsigned NOT NULL,
-                         `assigned_user_id` int(10) unsigned NOT NULL,
-                         `repeating` tinyint(3) unsigned NOT NULL,
-                         `never_ending` tinyint(3) unsigned NOT NULL,
-                         `repeat_unit` char(1) NOT NULL,
-                         `repeat_min` int(10) unsigned NOT NULL,
-                         `repeat_best` int(10) unsigned NOT NULL,
-                         `repeat_max` int(10) unsigned NOT NULL,
-                         `repeat_from` date NOT NULL,
-                         `estimate_s` int(10) unsigned NOT NULL,
-                         `master_task_id` int(10) unsigned NOT NULL,
-                         `separate_children` tinyint(3) unsigned NOT NULL,
-                         `created_at` date NOT NULL,
-                         `updated_at` date NOT NULL,
-                         PRIMARY KEY (`id`)
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `subject` varchar(160) CHARACTER SET utf8 COLLATE utf8_unicode_ci NOT NULL,
+  `project_id` int(10) unsigned NOT NULL,
+  `assigned_user_id` int(10) unsigned NOT NULL,
+  `repeating` tinyint(3) unsigned NOT NULL,
+  `never_ending` tinyint(3) unsigned NOT NULL,
+  `repeat_unit` char(1) NOT NULL,
+  `repeat_min` int(10) unsigned NOT NULL,
+  `repeat_best` int(10) unsigned NOT NULL,
+  `repeat_max` int(10) unsigned NOT NULL,
+  `repeat_from` date NOT NULL,
+  `estimate_s` int(10) unsigned NOT NULL,
+  `master_task_id` int(10) unsigned NOT NULL,
+  `separate_children` tinyint(3) unsigned NOT NULL,
+  `created_at` date NOT NULL,
+  `updated_at` date NOT NULL,
+  PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -151,11 +152,11 @@ DROP TABLE IF EXISTS `user_groups`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `user_groups` (
-                               `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
-                               `user_id` int(10) unsigned NOT NULL,
-                               `group_id` int(10) unsigned NOT NULL,
-                               `created_at` date NOT NULL,
-                               PRIMARY KEY (`id`)
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `user_id` int(10) unsigned NOT NULL,
+  `group_id` int(10) unsigned NOT NULL,
+  `created_at` date NOT NULL,
+  PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -167,15 +168,16 @@ DROP TABLE IF EXISTS `users`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `users` (
-                         `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
-                         `username` varchar(24) NOT NULL,
-                         `email` varchar(254) NOT NULL,
-                         `hash` char(60) NOT NULL COMMENT 'bcrypt.GenerateFromPassword',
-                         `created_at` datetime NOT NULL,
-                         PRIMARY KEY (`id`),
-                         UNIQUE KEY `username` (`username`),
-                         UNIQUE KEY `email` (`email`)
-) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=latin1;
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `username` varchar(24) NOT NULL,
+  `email` varchar(254) NOT NULL,
+  `hash` char(60) NOT NULL COMMENT 'bcrypt.GenerateFromPassword',
+  `created_at` datetime NOT NULL,
+  `updated_at` datetime NOT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `username` (`username`),
+  UNIQUE KEY `email` (`email`)
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
@@ -187,4 +189,4 @@ CREATE TABLE `users` (
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2019-10-02 18:17:32
+-- Dump completed on 2019-10-02 19:10:07

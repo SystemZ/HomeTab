@@ -22,6 +22,7 @@ type User struct {
 	Email     string     `gorm:"column:email" json:"email"`
 	Hash      string     `gorm:"column:hash" json:"hash"`
 	CreatedAt *time.Time `gorm:"column:created_at" json:"created_at"`
+	UpdatedAt *time.Time `gorm:"column:updated_at" json:"updated_at"`
 }
 
 func HashPassword(password string) (string, error) {
