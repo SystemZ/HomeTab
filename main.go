@@ -8,4 +8,5 @@ import (
 func main() {
 	model.InitMysql()
 	model.CreateUser(fake.UserName(), fake.EmailAddress(), fake.SimplePassword())
+	model.CreateProject("Test project", 1)
 }
