@@ -6,16 +6,14 @@ function help {
     compgen -A function | cat -n
 }
 
+function dump_schema {
+  sudo docker-compose exec db /bin/sh -c "/usr/bin/mysqldump -udev -pdev --no-data dev --result-file=/dump/schema.sql"
+}
 function build {
     docker build -t tasktab .
 }
-function build-frontend {
-    docker build -f frontend.Dockerfile -t tasktab/frontend .
-}
 function up {
     docker-compose up -d
-    cd frontend
-    npm run dev
 }
 function stop {
     docker-compose stop

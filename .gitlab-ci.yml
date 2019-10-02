@@ -16,7 +16,7 @@ stages:
     - build
     - docker
 
-compile-backend:
+.compile-backend:
     image: golang:latest
     stage: build
     script:
@@ -33,20 +33,7 @@ compile-backend:
       paths:
         - $GOPATH/src/github.com/
 
-build-frontend:
-    stage: build
-    image: node:9
-    script:
-      - npm --prefix frontend --quiet install
-      - npm --prefix frontend --quiet run build
-    artifacts:
-      paths:
-        - frontend/dist
-    cache:
-      paths:
-        - frontend/node_modules/
-
-backend:
+.backend:
     stage: docker
     image: docker:stable
     services:
@@ -57,15 +44,3 @@ backend:
     - docker build --cache-from $CI_REGISTRY_IMAGE:latest --tag $CI_REGISTRY_IMAGE:pipeline-$CI_PIPELINE_ID --tag $CI_REGISTRY_IMAGE:latest .
     - docker push $CI_REGISTRY_IMAGE:pipeline-$CI_PIPELINE_ID
     - docker push $CI_REGISTRY_IMAGE:latest
-
-frontend:
-    stage: docker
-    image: docker:stable
-    services:
-    - docker:stable-dind
-    script:
-    - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY
-    - docker pull $CI_REGISTRY_IMAGE/frontend:latest || true
-    - docker build -f frontend.Dockerfile --cache-from $CI_REGISTRY_IMAGE/frontend:latest --tag $CI_REGISTRY_IMAGE/frontend:pipeline-$CI_PIPELINE_ID --tag $CI_REGISTRY_IMAGE/frontend:latest .
-    - docker push $CI_REGISTRY_IMAGE/frontend:pipeline-$CI_PIPELINE_ID
-    - docker push $CI_REGISTRY_IMAGE/frontend:latest
