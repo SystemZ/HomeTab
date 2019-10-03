@@ -58,14 +58,12 @@ func CheckAuth(w http.ResponseWriter, r *http.Request) (ok bool, user model.User
 	// We then get the name of the user from our cache, where we set the session token
 	res := model.Redis.Get(sessionToken)
 
-	//response, err := cache.Do("GET", sessionToken)
-	//if err != nil {
-	//	// If there is an error fetching from cache, return an internal server error status
-	//	w.WriteHeader(http.StatusInternalServerError)
-	//	return
-	//}
+	_, err = res.Result()
+	if res.Err() != nil {
+		http.Redirect(w, r, "/login", http.StatusTemporaryRedirect)
+		return
+	}
 
-	//if response == nil {
 	if len(res.String()) < 1 {
 		// If the session token is not present in cache, return an unauthorized error
 		//w.WriteHeader(http.StatusUnauthorized)

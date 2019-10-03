@@ -29,7 +29,7 @@ func InitMysql() {
 
 	//https://github.com/go-sql-driver/mysql/issues/257
 	db.DB().SetMaxIdleConns(0)
-	db.LogMode(true)
+	//db.LogMode(true)
 	logrus.Info("Connection to database seems OK!")
 
 	DB = db
