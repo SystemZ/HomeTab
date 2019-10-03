@@ -18,11 +18,12 @@ type User struct {
 	// Username
 	//
 	// required: true
-	Username  string     `gorm:"column:username" json:"username"`
-	Email     string     `gorm:"column:email" json:"email"`
-	Hash      string     `gorm:"column:hash" json:"hash"`
-	CreatedAt *time.Time `gorm:"column:created_at" json:"created_at"`
-	UpdatedAt *time.Time `gorm:"column:updated_at" json:"updated_at"`
+	Username         string     `gorm:"column:username" json:"username"`
+	Email            string     `gorm:"column:email" json:"email"`
+	Hash             string     `gorm:"column:hash" json:"hash"`
+	DefaultProjectId uint       `gorm:"column:default_project_id"`
+	CreatedAt        *time.Time `gorm:"column:created_at" json:"created_at"`
+	UpdatedAt        *time.Time `gorm:"column:updated_at" json:"updated_at"`
 }
 
 func HashPassword(password string) (string, error) {

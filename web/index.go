@@ -8,10 +8,12 @@ import (
 )
 
 type TasksPage struct {
-	AuthOk  bool
-	Tasks   []model.Task
-	User    model.User
-	Inspire string
+	AuthOk     bool
+	Tasks      []model.Task
+	TasksCount uint
+	User       model.User
+	Project    model.Project
+	Inspire    string
 }
 
 func Index(w http.ResponseWriter, r *http.Request) {
@@ -21,7 +23,7 @@ func Index(w http.ResponseWriter, r *http.Request) {
 	if r.Method == http.MethodPost {
 		task := model.Task{
 			Subject:          r.FormValue("newTask"),
-			ProjectId:        0,
+			ProjectId:        user.DefaultProjectId,
 			AssignedUserId:   0,
 			Repeating:        0,
 			NeverEnding:      0,
@@ -38,12 +40,17 @@ func Index(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// get stuff from DB
 	var tasks []model.Task
-	model.DB.Order("updated_at desc").Limit(10).Find(&tasks)
+	model.DB.Order("updated_at desc").Where(&model.Task{ProjectId: user.DefaultProjectId}).Find(&tasks)
+	var project model.Project
+	model.DB.Where(&model.Project{Id: user.DefaultProjectId}).First(&project)
 
 	var templateVars TasksPage
 	templateVars.Tasks = tasks
+	templateVars.TasksCount = uint(len(tasks))
 	templateVars.User = user
+	templateVars.Project = project
 	templateVars.AuthOk = authOk
 
 	inspirePool := []string{
