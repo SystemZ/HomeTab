@@ -11,6 +11,8 @@ require (
 	github.com/go-sql-driver/mysql v1.4.1
 	github.com/go-vgo/robotgo v0.0.0-20190926173521-f981187a7aea
 	github.com/google/go-cmp v0.3.0 // indirect
+	github.com/gorilla/handlers v1.4.2
+	github.com/gorilla/mux v1.7.3
 	github.com/icrowley/fake v0.0.0-20180203215853-4178557ae428
 	github.com/jinzhu/gorm v1.9.11
 	github.com/onsi/ginkgo v1.10.2 // indirect

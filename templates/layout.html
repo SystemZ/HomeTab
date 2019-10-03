@@ -13,10 +13,16 @@
         .task .details {
 
         }
+        #newTask input:not([type="checkbox"]):not([type="radio"]) {
+            display:inline!important;
+        }
     </style>
 </head>
 <body>
 <h1><a href="/">TaskTab</a></h1>
-<small>Keep tab on your tasks</small>
+<small>Keep tab on your tasks{{if .AuthOk}}, <a href="/account">{{.User.Username}}</a>{{end}}</small>
 <br>
 <br>
+{{ yield }}
+</body>
+</html>

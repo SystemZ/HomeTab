@@ -39,6 +39,6 @@ func init() {
 	REDIS_HOST = viper.GetString("REDIS_HOST")
 	viper.SetDefault("REDIS_PASSWORD", "")
 	REDIS_PASSWORD = viper.GetString("REDIS_PASSWORD")
-	viper.SetDefault("SESSION_VALID_S", 15)
+	viper.SetDefault("SESSION_VALID_S", 3600)
 	SESSION_VALID_S = viper.GetInt("SESSION_VALID_S")
 }

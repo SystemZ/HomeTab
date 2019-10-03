@@ -54,3 +54,19 @@ func CreateUser(username string, email string, password string) {
 		log.Printf("%v", err)
 	}
 }
+
+func IsPasswordOk(username string, password string) (ok bool, usr User) {
+	DB.Where(&User{Username: username}).First(&usr)
+	if CheckPasswordHash(password, usr.Hash) {
+		return true, usr
+	}
+	return false, usr
+}
+
+func GetUserById(id uint) (ok bool, usr User) {
+	res := DB.Where(&User{Id: id}).First(&usr)
+	if res.RowsAffected > 0 {
+		return true, usr
+	}
+	return false, usr
+}

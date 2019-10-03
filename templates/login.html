@@ -1,11 +1,15 @@
-{{ template "parts/up" }}
-<h2>Auth</h2>
+<h2>Log in</h2>
 <form method="POST">
-    <label>Username:</label><br>
-    <input type="text" name="username"><br>
-    <label>Password:</label><br>
-    <input type="password" name="password"><br>
-    <input type="submit" value="Log in">
+    <label for='username'>Username</label>
+    {{/*    <input type='email' name='username' id='email' placeholder='john.doe@gmail.com'/>*/}}
+    <input type='text' name='username' id='email' placeholder='john.doe@gmail.com'/>
+    <label for='password'>Password</label>
+    <input type='password' name='password' placeholder='password'/>
+    <p>
+        <input type='checkbox' name='remember' id='remember' checked/>
+        <label for='remember'>Remember me</label>
+    </p>
+    <input type='submit' value="Log in"/>
     {{if .AuthFailed}}
         <br><br>
         Login failed. Try again!

@@ -1,3 +1,33 @@
-{{ template "parts/up" }}
-<h2>Home</h2>
-<a href="/tasks">Tasks</a>
+<form id="newTask" method="POST">
+    <input type='text' name='newTask' placeholder='Take a walk' autocomplete="off"/>
+    <input type='submit' value="Add"/>
+</form>
+
+<table>
+    <thead>
+    <tr>
+        <th>TODO (10)</th>
+    </tr>
+    </thead>
+    <tbody>
+    {{range .Tasks}}
+        <tr>
+            <td>
+                <details class="task">
+                    <summary class="title">
+                        <small>{{.Id}}</small> {{.Subject}}
+                    </summary>
+                    <div class="details">
+                        <p>
+                            <input type="checkbox" name="remember" id="remember">
+                            <label for="remember">Done</label>
+                        </p>
+                        <small>Created: {{.CreatedAt}}</small><br>
+                        <small>Updated: {{.UpdatedAt}}</small>
+                    </div>
+                </details>
+            </td>
+        </tr>
+    {{end}}
+    </tbody>
+</table>
