@@ -7,14 +7,16 @@ import (
 )
 
 var (
-	DB_HOST         string
-	DB_PORT         string
-	DB_NAME         string
-	DB_USERNAME     string
-	DB_PASSWORD     string
-	REDIS_HOST      string
-	REDIS_PASSWORD  string
-	SESSION_VALID_S int
+	DB_HOST            string
+	DB_PORT            string
+	DB_NAME            string
+	DB_USERNAME        string
+	DB_PASSWORD        string
+	REDIS_HOST         string
+	REDIS_PASSWORD     string
+	SESSION_VALID_S    int
+	REGISTER_WHITELIST bool
+	REGISTER_TOKEN     string
 )
 
 func init() {
@@ -24,7 +26,7 @@ func init() {
 		log.Println("Production env detected")
 	}
 	viper.AutomaticEnv()
-
+	// DB stuff
 	viper.SetDefault("DB_HOST", "localhost")
 	DB_HOST = viper.GetString("DB_HOST")
 	viper.SetDefault("DB_PORT", "3306")
@@ -39,6 +41,11 @@ func init() {
 	REDIS_HOST = viper.GetString("REDIS_HOST")
 	viper.SetDefault("REDIS_PASSWORD", "")
 	REDIS_PASSWORD = viper.GetString("REDIS_PASSWORD")
+	// TaskTab specific
 	viper.SetDefault("SESSION_VALID_S", 3600)
 	SESSION_VALID_S = viper.GetInt("SESSION_VALID_S")
+	viper.SetDefault("REGISTER_WHITELIST", true)
+	REGISTER_WHITELIST = viper.GetBool("REGISTER_WHITELIST")
+	viper.SetDefault("REGISTER_TOKEN", "unknown")
+	REGISTER_TOKEN = viper.GetString("REGISTER_TOKEN")
 }

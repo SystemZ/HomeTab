@@ -29,9 +29,9 @@ func StartWebInterface() {
 	r := mux.NewRouter()
 	r.HandleFunc("/", Index)
 	r.HandleFunc("/login", Login)
+	r.HandleFunc("/register", Register)
 	r.HandleFunc("/account", Account)
-	r.HandleFunc("/refresh", Refresh)
-
+	r.HandleFunc("/refresh", Refresh) // FIXME
 	// start internal http server with logging
 	loggedRouter := handlers.LoggingHandler(os.Stdout, r)
 	log.Println("HTTP server started on :8000")
