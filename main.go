@@ -16,7 +16,7 @@ func main() {
 	projectId := model.CreateProject("Test project", groupId)
 	now := time.Now()
 	task := model.Task{
-		Subject:          "Test task",
+		Subject:          fake.Sentence(),
 		ProjectId:        projectId,
 		AssignedUserId:   0,
 		Repeating:        0,

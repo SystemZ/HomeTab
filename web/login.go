@@ -4,7 +4,6 @@ import (
 	"github.com/satori/go.uuid"
 	"gitlab.com/systemz/tasktab/config"
 	"gitlab.com/systemz/tasktab/model"
-	"html/template"
 	"net/http"
 	"time"
 )
@@ -16,10 +15,14 @@ type Credentials struct {
 	Username string `json:"username"`
 }
 
+type LoginPage struct {
+	AuthFailed bool
+}
+
 func Login(w http.ResponseWriter, r *http.Request) {
+	page := LoginPage{}
 	if r.Method != http.MethodPost {
-		tmpl := template.Must(template.ParseFiles("templates/login.html"))
-		tmpl.Execute(w, nil)
+		display.HTML(w, http.StatusOK, "login", nil)
 		return
 	}
 
@@ -42,7 +45,9 @@ func Login(w http.ResponseWriter, r *http.Request) {
 	// AND, if it is the same as the password we received, the we can move ahead
 	// if NOT, then we return an "Unauthorized" status
 	if !ok || expectedPassword != creds.Password {
-		w.WriteHeader(http.StatusUnauthorized)
+		//w.WriteHeader(http.StatusUnauthorized)
+		page.AuthFailed = true
+		display.HTML(w, http.StatusUnauthorized, "login", page)
 		return
 	}
 
@@ -67,5 +72,5 @@ func Login(w http.ResponseWriter, r *http.Request) {
 		Expires: time.Now().Add(sessionDuration),
 	})
 
-	http.Redirect(w, r, "/welcome", http.StatusTemporaryRedirect)
+	http.Redirect(w, r, "/tasks", http.StatusTemporaryRedirect)
 }
