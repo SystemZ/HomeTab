@@ -1,14 +1,13 @@
 package model
 
 import (
-	"github.com/jinzhu/gorm"
 	"log"
+	"time"
 )
 
 // Host represents the host for this application
 // swagger:model user
 type Project struct {
-	gorm.Model
 	// ID
 	//
 	// required: true
@@ -17,8 +16,11 @@ type Project struct {
 	// Username
 	//
 	// required: true
-	Name    string `gorm:"column:name" json:"username"`
-	GroupId uint   `gorm:"column:group_id" json:"group_id"`
+	Name      string     `gorm:"column:name" json:"username"`
+	GroupId   uint       `gorm:"column:group_id" json:"group_id"`
+	CreatedAt *time.Time `gorm:"column:created_at" json:"created_at"`
+	UpdatedAt *time.Time `gorm:"column:updated_at" json:"updated_at"`
+	DeletedAt *time.Time `gorm:"column:deleted_at" json:"deleted_at"`
 }
 
 func CreateProject(name string, groupId uint) uint {
@@ -27,6 +29,9 @@ func CreateProject(name string, groupId uint) uint {
 	project.Name = name
 	project.GroupId = groupId
 	//FIXME timezones
+	now := time.Now()
+	project.CreatedAt = &now
+	project.UpdatedAt = &now
 
 	err := DB.Save(&project).Error
 	if err != nil {
