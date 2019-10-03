@@ -29,6 +29,7 @@ func StartWebInterface() {
 	r := mux.NewRouter()
 	r.HandleFunc("/", Index)
 	r.HandleFunc("/login", Login)
+	r.HandleFunc("/logout", Logout)
 	r.HandleFunc("/register", Register)
 	r.HandleFunc("/account", Account)
 	r.HandleFunc("/refresh", Refresh) // FIXME
