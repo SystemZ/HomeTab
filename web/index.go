@@ -2,13 +2,16 @@ package web
 
 import (
 	"gitlab.com/systemz/tasktab/model"
+	"math/rand"
 	"net/http"
+	"time"
 )
 
 type TasksPage struct {
-	AuthOk bool
-	Tasks  []model.Task
-	User   model.User
+	AuthOk  bool
+	Tasks   []model.Task
+	User    model.User
+	Inspire string
 }
 
 func Index(w http.ResponseWriter, r *http.Request) {
@@ -21,6 +24,19 @@ func Index(w http.ResponseWriter, r *http.Request) {
 	templateVars.Tasks = tasks
 	templateVars.User = user
 	templateVars.AuthOk = authOk
+
+	inspirePool := []string{
+		"Take a walk",
+		"Take a shower",
+		"Buy a yacht",
+		"Brush your teeth",
+		"Clean your desk",
+		"Pet a cat",
+	}
+
+	rand.Seed(time.Now().UnixNano())
+	luckyNum := rand.Intn(len(inspirePool) - 1)
+	templateVars.Inspire = inspirePool[luckyNum]
 
 	display.HTML(w, http.StatusOK, "index", templateVars)
 }
