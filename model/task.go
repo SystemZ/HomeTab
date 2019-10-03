@@ -17,6 +17,7 @@ type Task struct {
 	RepeatBest     uint       `gorm:"column:repeat_best"`
 	RepeatMax      uint       `gorm:"column:repeat_max"`
 	RepeatFrom     *time.Time `gorm:"column:repeat_from"`
+	SnoozeTo       *time.Time `gorm:"column:snooze_to"`
 	// RepeatFrom       mysql.NullTime `gorm:"column:repeat_from"`
 	EstimateS        uint       `gorm:"column:estimate_s"`
 	MasterTaskId     uint       `gorm:"column:master_task_id"`

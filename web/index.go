@@ -2,8 +2,10 @@ package web
 
 import (
 	"gitlab.com/systemz/tasktab/model"
+	"log"
 	"math/rand"
 	"net/http"
+	"strconv"
 	"time"
 )
 
@@ -19,7 +21,7 @@ type TasksPage struct {
 func Index(w http.ResponseWriter, r *http.Request) {
 	authOk, user := CheckAuth(w, r)
 
-	// if new task was added via form
+	// new task was added via form
 	if r.Method == http.MethodPost && len(r.FormValue("newTask")) > 0 {
 		task := model.Task{
 			Subject:          r.FormValue("newTask"),
@@ -37,15 +39,39 @@ func Index(w http.ResponseWriter, r *http.Request) {
 		}
 		model.CreateTask(task)
 	}
+	// task action via form
+	if r.Method == http.MethodPost && len(r.FormValue("taskAction")) > 0 {
+		//r.ParseForm() // Required if you don't call r.FormValue()
+		taskAction := r.FormValue("taskAction")
+		//FIXME validation
+		for _, taskId := range r.Form["taskId"] {
+			// TODO add actions to log for creating task timeline
+			log.Printf("action: %v, taskId: %v", taskAction, taskId)
+			if taskAction == "delete" {
+				model.DB.Where("id = ?", taskId).Delete(&model.Task{})
+			} else if taskAction == "snooze" {
+				now := time.Now()
+				snoozeTime := now.Add(time.Second * 10)
+				taskIdInt, err := strconv.Atoi(taskId)
+				if err != nil {
+					// skip this task if something is wrong
+					continue
+				}
+				model.DB.Model(&model.Task{Id: uint(taskIdInt)}).Update("SnoozeTo", &snoozeTime)
+			}
+		}
+	}
 
 	// always redirect from POST to prevent F5 problems
 	if r.Method == http.MethodPost {
-		http.Redirect(w, r, "/", 301)
+		http.Redirect(w, r, "/", 302)
+		return
 	}
 
 	// get stuff from DB
 	var tasks []model.Task
-	model.DB.Order("updated_at desc").Where(&model.Task{ProjectId: user.DefaultProjectId}).Find(&tasks)
+	model.DB.Order("updated_at desc").Where("project_id = ? AND snooze_to <= ?", user.DefaultProjectId, time.Now()).Find(&tasks)
+	//model.DB.Order("updated_at desc").Where(&model.Task{ProjectId: user.DefaultProjectId}).Find(&tasks)
 	var project model.Project
 	model.DB.Where(&model.Project{Id: user.DefaultProjectId}).First(&project)
 

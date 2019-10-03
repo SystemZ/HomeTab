@@ -110,8 +110,8 @@ CREATE TABLE `projects` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `name` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
   `group_id` int(11) unsigned NOT NULL,
-  `created_at` date NOT NULL,
-  `updated_at` date NOT NULL,
+  `created_at` datetime NOT NULL,
+  `updated_at` datetime NOT NULL,
   `deleted_at` datetime DEFAULT NULL,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
@@ -136,6 +136,7 @@ CREATE TABLE `tasks` (
   `repeat_best` int(10) unsigned NOT NULL,
   `repeat_max` int(10) unsigned NOT NULL,
   `repeat_from` date NOT NULL,
+  `snooze_to` datetime DEFAULT NULL,
   `estimate_s` int(10) unsigned NOT NULL,
   `master_task_id` int(10) unsigned NOT NULL,
   `separate_children` tinyint(3) unsigned NOT NULL,
@@ -174,6 +175,7 @@ CREATE TABLE `users` (
   `username` varchar(24) NOT NULL,
   `email` varchar(254) NOT NULL,
   `hash` char(60) NOT NULL COMMENT 'bcrypt.GenerateFromPassword',
+  `default_project_id` int(10) unsigned NOT NULL DEFAULT '0',
   `created_at` datetime NOT NULL,
   `updated_at` datetime NOT NULL,
   PRIMARY KEY (`id`),
@@ -191,4 +193,4 @@ CREATE TABLE `users` (
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2019-10-03 14:57:24
+-- Dump completed on 2019-10-03 19:16:04
