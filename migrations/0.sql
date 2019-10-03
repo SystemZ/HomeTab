@@ -112,6 +112,7 @@ CREATE TABLE `projects` (
   `group_id` int(11) unsigned NOT NULL,
   `created_at` date NOT NULL,
   `updated_at` date NOT NULL,
+  `deleted_at` datetime DEFAULT NULL,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
@@ -138,8 +139,9 @@ CREATE TABLE `tasks` (
   `estimate_s` int(10) unsigned NOT NULL,
   `master_task_id` int(10) unsigned NOT NULL,
   `separate_children` tinyint(3) unsigned NOT NULL,
-  `created_at` date NOT NULL,
-  `updated_at` date NOT NULL,
+  `created_at` datetime NOT NULL,
+  `updated_at` datetime NOT NULL,
+  `deleted_at` datetime DEFAULT NULL,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
@@ -189,4 +191,4 @@ CREATE TABLE `users` (
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2019-10-02 19:10:07
+-- Dump completed on 2019-10-03 14:57:24
