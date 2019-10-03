@@ -27,8 +27,15 @@ type Task struct {
 
 func CreateTask(task Task) {
 	now := time.Now()
-	task.CreatedAt = &now
-	task.UpdatedAt = &now
+	if task.CreatedAt == nil {
+		task.CreatedAt = &now
+	}
+	if task.UpdatedAt == nil {
+		task.UpdatedAt = &now
+	}
+	if task.RepeatFrom == nil {
+		task.RepeatFrom = &now
+	}
 
 	err := DB.Save(&task).Error
 	if err != nil {

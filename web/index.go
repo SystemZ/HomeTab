@@ -17,6 +17,27 @@ type TasksPage struct {
 func Index(w http.ResponseWriter, r *http.Request) {
 	authOk, user := CheckAuth(w, r)
 
+	// if new task was added via form
+	if r.Method == http.MethodPost {
+		task := model.Task{
+			Subject:          r.FormValue("newTask"),
+			ProjectId:        0,
+			AssignedUserId:   0,
+			Repeating:        0,
+			NeverEnding:      0,
+			RepeatUnit:       "",
+			RepeatMin:        0,
+			RepeatBest:       0,
+			RepeatMax:        0,
+			EstimateS:        0,
+			MasterTaskId:     0,
+			SeparateChildren: 0,
+		}
+		model.CreateTask(task)
+		http.Redirect(w, r, "/", 302)
+		return
+	}
+
 	var tasks []model.Task
 	model.DB.Order("updated_at desc").Limit(10).Find(&tasks)
 
