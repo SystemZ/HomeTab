@@ -70,7 +70,7 @@ func Index(w http.ResponseWriter, r *http.Request) {
 
 	// get stuff from DB
 	var tasks []model.Task
-	model.DB.Order("updated_at desc").Where("project_id = ? AND snooze_to <= ?", user.DefaultProjectId, time.Now()).Find(&tasks)
+	model.DB.Order("updated_at desc").Where("project_id = ? AND (snooze_to <= ? OR snooze_to IS NULL)", user.DefaultProjectId, time.Now()).Find(&tasks)
 	//model.DB.Order("updated_at desc").Where(&model.Task{ProjectId: user.DefaultProjectId}).Find(&tasks)
 	var project model.Project
 	model.DB.Where(&model.Project{Id: user.DefaultProjectId}).First(&project)

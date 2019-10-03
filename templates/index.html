@@ -29,7 +29,9 @@
         {{end}}
         </tbody>
     </table>
-    <button type="submit" name="taskAction" value="done">Done</button>
-    <button type="submit" name="taskAction" value="delete">Delete</button>
-    <button type="submit" name="taskAction" value="snooze">Snooze</button>
+    {{if ne .TasksCount 0 }}
+        <button type="submit" name="taskAction" value="done">Done</button>
+        <button type="submit" name="taskAction" value="delete">Delete</button>
+        <button type="submit" name="taskAction" value="snooze">Snooze</button>
+    {{end}}
 </form>
