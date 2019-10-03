@@ -6,7 +6,7 @@ function help {
     compgen -A function | cat -n
 }
 
-function dump_schema {
+function dump-schema {
   sudo docker-compose exec db /bin/sh -c "/usr/bin/mysqldump -udev -pdev --no-data dev" | grep -v "Using a password on the command line interface can be insecure" | sed 's/ AUTO_INCREMENT=[0-9]*//g' > migrations/0.sql
 }
 function build {
