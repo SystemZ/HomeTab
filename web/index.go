@@ -20,7 +20,7 @@ func Index(w http.ResponseWriter, r *http.Request) {
 	authOk, user := CheckAuth(w, r)
 
 	// if new task was added via form
-	if r.Method == http.MethodPost {
+	if r.Method == http.MethodPost && len(r.FormValue("newTask")) > 0 {
 		task := model.Task{
 			Subject:          r.FormValue("newTask"),
 			ProjectId:        user.DefaultProjectId,
@@ -36,8 +36,11 @@ func Index(w http.ResponseWriter, r *http.Request) {
 			SeparateChildren: 0,
 		}
 		model.CreateTask(task)
-		http.Redirect(w, r, "/", 302)
-		return
+	}
+
+	// always redirect from POST to prevent F5 problems
+	if r.Method == http.MethodPost {
+		http.Redirect(w, r, "/", 301)
 	}
 
 	// get stuff from DB
