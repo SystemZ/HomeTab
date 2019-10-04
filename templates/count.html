@@ -1,0 +1,41 @@
+<h2>(Ac)count time</h2>
+
+<h3>New</h3>
+
+<form id="newTask" method="POST">
+    <input type='text' name='newCounter' autocomplete="off"/>
+    <input type='submit' value="Add"/>
+</form>
+
+<h3>Counters</h3>
+
+
+<table>
+    <thead>
+    <tr>
+        <th>Counter</th>
+    </tr>
+    </thead>
+    <tbody>
+    {{range .Counters}}
+        <tr>
+            <td>
+                <details class="task">
+                    <summary class="title">
+                        <small>{{.Id}}</small> {{.Name}}
+                    </summary>
+                    <div class="details">
+                        <br>
+                        <br>
+                        <button>Start</button>
+                        <br>
+                        <br>
+                        <small>Created: {{.CreatedAt}}</small><br>
+                        <small>Updated: {{.UpdatedAt}}</small>
+                    </div>
+                </details>
+            </td>
+        </tr>
+    {{end}}
+    </tbody>
+</table>

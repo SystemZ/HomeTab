@@ -27,12 +27,16 @@ func init() {
 func StartWebInterface() {
 	// create multiple routes
 	r := mux.NewRouter()
+	// main course
 	r.HandleFunc("/", Index)
+	r.HandleFunc("/count", Count)
+	// auth
 	r.HandleFunc("/login", Login)
 	r.HandleFunc("/logout", Logout)
 	r.HandleFunc("/register", Register)
-	r.HandleFunc("/account", Account)
 	r.HandleFunc("/refresh", Refresh) // FIXME
+	// settings
+	r.HandleFunc("/account", Account)
 	// start internal http server with logging
 	loggedRouter := handlers.LoggingHandler(os.Stdout, r)
 	log.Println("HTTP server started on :8000")
