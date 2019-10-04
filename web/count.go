@@ -7,9 +7,10 @@ import (
 )
 
 type CountPage struct {
-	AuthOk   bool
-	User     model.User
-	Counters []model.CounterList
+	AuthOk         bool
+	User           model.User
+	Counters       []model.CounterList
+	CounterRunning bool
 }
 
 func Count(w http.ResponseWriter, r *http.Request) {
@@ -51,7 +52,12 @@ func Count(w http.ResponseWriter, r *http.Request) {
 	}
 	// get data from DB
 	page.Counters = model.CountersLongList(user.Id)
-	//model.DB.Order("created_at desc").Find(&page.Counters)
+	for _, counter := range page.Counters {
+		if counter.Running == 1 {
+			page.CounterRunning = true
+			break
+		}
+	}
 	//display HTML
 	page.User = user
 	page.AuthOk = authOk

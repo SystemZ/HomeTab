@@ -3,16 +3,65 @@
 <h3>New</h3>
 
 <form id="newTask" method="POST">
-    <input type='text' name='newCounter' autocomplete="off"/>
+    <input type='text' name='newCounter' placeholder="TimeDestroyer 9000" autocomplete="off"/>
     <input type='submit' value="Add"/>
 </form>
 
-<h3>Counters</h3>
+<h3>Currently running</h3>
+
+{{if .CounterRunning}}
+    <table>
+        <thead>
+        <tr>
+            <th>Counter</th>
+            <th>All time</th>
+        </tr>
+        </thead>
+        <tbody>
+        {{range .Counters}}
+            {{if eq .Running 1}}
+                <tr>
+                    <td>
+                        <details class="task">
+                            <summary class="title">
+                                >>> <strong><small>{{.Id}}</small> {{.Name}}</strong>
+                            </summary>
+                            <div class="details">
+                                <br>
+                                <br>
+                                {{if eq .Running 1}}
+                                    <form method="POST">
+                                        <input type="hidden" name="stopCounter" value="{{.Id}}"/>
+                                        <input type='submit' value="Stop"/>
+                                    </form>
+                                {{end}}
+                                <br>
+                                <br>
+                                <small>Created: {{.CreatedAt}}</small><br>
+                                <small>Updated: {{.UpdatedAt}}</small>
+                            </div>
+                        </details>
+                    </td>
+                    <td>
+                        {{.TimeFormatted}}
+                    </td>
+                </tr>
+            {{end}}
+        {{end}}
+        </tbody>
+    </table>
+{{else}}
+    Nada ¯\_(ツ)_/¯
+{{end}}
+
+<h3>All of them</h3>
 
 <table>
     <thead>
     <tr>
-        <th>Counter</th>
+        <th>Name</th>
+        <th>Last 7d</th>
+        <th>Last 30d</th>
         <th>All time</th>
     </tr>
     </thead>
@@ -22,19 +71,26 @@
             <td>
                 <details class="task">
                     <summary class="title">
-                        <small>{{.Id}}</small> {{.Name}}
+                        {{if eq .Running 1}}
+                            >>> <strong><small>{{.Id}}</small> {{.Name}}</strong>
+                        {{else}}
+                            <small>{{.Id}}</small> {{.Name}}
+                        {{end}}
                     </summary>
                     <div class="details">
                         <br>
                         <br>
-                        <form method="POST">
-                            <input type="hidden" name="startCounter" value="{{.Id}}"/>
-                            <input type='submit' value="Start"/>
-                        </form>
-                        <form method="POST">
-                            <input type="hidden" name="stopCounter" value="{{.Id}}"/>
-                            <input type='submit' value="Stop"/>
-                        </form>
+                        {{if eq .Running 1}}
+                            <form method="POST">
+                                <input type="hidden" name="stopCounter" value="{{.Id}}"/>
+                                <input type='submit' value="Stop"/>
+                            </form>
+                        {{else}}
+                            <form method="POST">
+                                <input type="hidden" name="startCounter" value="{{.Id}}"/>
+                                <input type='submit' value="Start"/>
+                            </form>
+                        {{end}}
                         <br>
                         <br>
                         <small>Created: {{.CreatedAt}}</small><br>
@@ -42,6 +98,8 @@
                     </div>
                 </details>
             </td>
+            <td></td>
+            <td></td>
             <td>
                 {{.TimeFormatted}}
             </td>

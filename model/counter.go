@@ -72,6 +72,7 @@ type CounterList struct {
 	Counter
 	Seconds       uint
 	TimeFormatted string
+	Running       uint
 }
 
 func CountersLongList(userId uint) (result []CounterList) {
@@ -79,11 +80,26 @@ func CountersLongList(userId uint) (result []CounterList) {
 SELECT
   counters.id,
   counters.name,
+  counters.created_at,
+  counters.updated_at,
   IFNULL((
     SELECT SUM(TIMESTAMPDIFF(SECOND, counter_sessions.started_at,IFNULL(counter_sessions.ended_at, NOW())))
     FROM counter_sessions
-    WHERE counters.id = counter_sessions.counter_id AND counter_sessions.user_id = ?
-  ), 0) AS seconds
+    WHERE
+      counters.id = counter_sessions.counter_id
+    AND
+      counter_sessions.user_id = ?
+  ), 0) AS seconds,
+  (
+    SELECT COUNT(*)
+    FROM counter_sessions
+    WHERE
+      counters.id = counter_sessions.counter_id
+    AND
+      counter_sessions.user_id = ?
+    AND
+      counter_sessions.ended_at IS NULL
+  ) AS running
 FROM counters
 GROUP BY counters.id
 `
@@ -92,14 +108,14 @@ GROUP BY counters.id
 		return
 	}
 	defer stmt.Close()
-	rows, err := stmt.Query(userId)
+	rows, err := stmt.Query(userId, userId)
 	if err != nil {
 		return
 	}
 	defer rows.Close()
 	for rows.Next() {
 		var list CounterList
-		err := rows.Scan(&list.Id, &list.Name, &list.Seconds)
+		err := rows.Scan(&list.Id, &list.Name, &list.CreatedAt, &list.UpdatedAt, &list.Seconds, &list.Running)
 		if err != nil {
 			return
 		}
