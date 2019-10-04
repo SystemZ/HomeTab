@@ -60,11 +60,11 @@ CREATE TABLE `counter_sessions` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `counter_id` int(10) unsigned NOT NULL,
   `user_id` int(10) unsigned NOT NULL,
-  `started` int(11) NOT NULL,
-  `ended` int(11) NOT NULL,
-  `created_at` int(11) NOT NULL,
-  `updated_at` int(11) NOT NULL,
-  `deleted_at` int(11) NOT NULL,
+  `started_at` datetime NOT NULL,
+  `ended_at` datetime DEFAULT NULL,
+  `created_at` datetime NOT NULL,
+  `updated_at` datetime NOT NULL,
+  `deleted_at` datetime DEFAULT NULL,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
@@ -232,4 +232,4 @@ CREATE TABLE `users` (
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2019-10-04 10:24:00
+-- Dump completed on 2019-10-04 11:53:29

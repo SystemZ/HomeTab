@@ -9,7 +9,6 @@
 
 <h3>Counters</h3>
 
-
 <table>
     <thead>
     <tr>
@@ -27,7 +26,14 @@
                     <div class="details">
                         <br>
                         <br>
-                        <button>Start</button>
+                        <form method="POST">
+                            <input type="hidden" name="startCounter" value="{{.Id}}"/>
+                            <input type='submit' value="Start"/>
+                        </form>
+                        <form method="POST">
+                            <input type="hidden" name="stopCounter" value="{{.Id}}"/>
+                            <input type='submit' value="Stop"/>
+                        </form>
                         <br>
                         <br>
                         <small>Created: {{.CreatedAt}}</small><br>

@@ -3,6 +3,7 @@ package web
 import (
 	"gitlab.com/systemz/tasktab/model"
 	"net/http"
+	"strconv"
 )
 
 type CountPage struct {
@@ -17,9 +18,34 @@ func Count(w http.ResponseWriter, r *http.Request) {
 
 	//FIXME validation
 	//FIXME possible race condition
-	// project was created via form
+
+	// counter was created via form
 	if r.Method == http.MethodPost && len(r.FormValue("newCounter")) > 0 {
 		model.CreateCounter(r.FormValue("newCounter"))
+		http.Redirect(w, r, "/count", 302)
+		return
+	}
+	// counter start via form
+	if r.Method == http.MethodPost && len(r.FormValue("startCounter")) > 0 {
+		counterId, err := strconv.Atoi(r.FormValue("startCounter"))
+		// something wrong with counter ID
+		if err != nil {
+			http.Redirect(w, r, "/count", 302)
+			return
+		}
+		model.StartCounterSession(uint(counterId), user.Id)
+		http.Redirect(w, r, "/count", 302)
+		return
+	}
+	// counter stop via form
+	if r.Method == http.MethodPost && len(r.FormValue("stopCounter")) > 0 {
+		counterId, err := strconv.Atoi(r.FormValue("stopCounter"))
+		// something wrong with counter ID
+		if err != nil {
+			http.Redirect(w, r, "/count", 302)
+			return
+		}
+		model.StopCounterSession(uint(counterId), user.Id)
 		http.Redirect(w, r, "/count", 302)
 		return
 	}
