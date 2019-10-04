@@ -50,7 +50,7 @@ func Count(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	// get data from DB
-	page.Counters = model.CountersLongList()
+	page.Counters = model.CountersLongList(user.Id)
 	//model.DB.Order("created_at desc").Find(&page.Counters)
 	//display HTML
 	page.User = user

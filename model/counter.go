@@ -74,28 +74,25 @@ type CounterList struct {
 	TimeFormatted string
 }
 
-func CountersLongList() (result []CounterList) {
+func CountersLongList(userId uint) (result []CounterList) {
 	query := `
-	   SELECT
-	   counters.id,
-	   counters.name,
-	   IFNULL(
-	     IFNULL(
-	         SUM(TIMESTAMPDIFF(SECOND,counter_sessions.started_at, counter_sessions.ended_at)),
-	         SUM(TIMESTAMPDIFF(SECOND,counter_sessions.started_at, NOW()))
-	      ),
-	      0
-	   ) AS seconds
-	   FROM counters
-	   LEFT JOIN counter_sessions
-	   ON counters.id = counter_sessions.counter_id
-	   GROUP BY counters.id`
+SELECT
+  counters.id,
+  counters.name,
+  IFNULL((
+    SELECT SUM(TIMESTAMPDIFF(SECOND, counter_sessions.started_at,IFNULL(counter_sessions.ended_at, NOW())))
+    FROM counter_sessions
+    WHERE counters.id = counter_sessions.counter_id AND counter_sessions.user_id = ?
+  ), 0) AS seconds
+FROM counters
+GROUP BY counters.id
+`
 	stmt, err := DB.DB().Prepare(query)
 	if err != nil {
 		return
 	}
 	defer stmt.Close()
-	rows, err := stmt.Query() //
+	rows, err := stmt.Query(userId)
 	if err != nil {
 		return
 	}
