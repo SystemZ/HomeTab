@@ -2,6 +2,7 @@ package model
 
 import (
 	"log"
+	"strconv"
 	"time"
 )
 
@@ -56,7 +57,10 @@ func StartCounterSession(counterId uint, userId uint) {
 
 func StopCounterSession(counterId uint, userId uint) {
 	var session CounterSession
-	DB.Where(&CounterSession{UserId: userId, CounterId: counterId}).First(&session)
+	res := DB.Order("ended_at asc").Where("user_id = ? AND counter_id = ? AND ended_at IS NULL", userId, counterId).First(&session)
+	if res.RowsAffected < 1 {
+		return
+	}
 	//FIXME timezones
 	now := time.Now()
 	session.EndedAt = &now
@@ -64,5 +68,61 @@ func StopCounterSession(counterId uint, userId uint) {
 	DB.Save(&session)
 }
 
-// SELECT TIMESTAMPDIFF(SECOND,started_at, ended_at) AS time_diff FROM `counter_sessions`
-// SELECT SUM(TIMESTAMPDIFF(SECOND,started_at, ended_at)) AS time_diff FROM `counter_sessions`
+type CounterList struct {
+	Counter
+	Seconds       uint
+	TimeFormatted string
+}
+
+func CountersLongList() (result []CounterList) {
+	query := `
+	   SELECT
+	   counters.id,
+	   counters.name,
+	   IFNULL(
+	     IFNULL(
+	         SUM(TIMESTAMPDIFF(SECOND,counter_sessions.started_at, counter_sessions.ended_at)),
+	         SUM(TIMESTAMPDIFF(SECOND,counter_sessions.started_at, NOW()))
+	      ),
+	      0
+	   ) AS seconds
+	   FROM counters
+	   LEFT JOIN counter_sessions
+	   ON counters.id = counter_sessions.counter_id
+	   GROUP BY counters.id`
+	stmt, err := DB.DB().Prepare(query)
+	if err != nil {
+		return
+	}
+	defer stmt.Close()
+	rows, err := stmt.Query() //
+	if err != nil {
+		return
+	}
+	defer rows.Close()
+	for rows.Next() {
+		var list CounterList
+		err := rows.Scan(&list.Id, &list.Name, &list.Seconds)
+		if err != nil {
+			return
+		}
+
+		list.TimeFormatted = PrettyTime(list.Seconds)
+		result = append(result, list)
+	}
+	return result
+}
+
+func PrettyTime(s uint) string {
+	var h int
+	var m int
+	for s >= 3600 {
+		s -= 3600
+		h++
+	}
+	for s >= 60 {
+		s -= 60
+		m++
+	}
+	return strconv.Itoa(h) + "h " + strconv.Itoa(m) + "m " + strconv.Itoa(int(s)) + "s"
+}

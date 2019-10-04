@@ -13,6 +13,7 @@
     <thead>
     <tr>
         <th>Counter</th>
+        <th>All time</th>
     </tr>
     </thead>
     <tbody>
@@ -40,6 +41,9 @@
                         <small>Updated: {{.UpdatedAt}}</small>
                     </div>
                 </details>
+            </td>
+            <td>
+                {{.TimeFormatted}}
             </td>
         </tr>
     {{end}}
