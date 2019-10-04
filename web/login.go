@@ -4,7 +4,6 @@ import (
 	"github.com/satori/go.uuid"
 	"gitlab.com/systemz/tasktab/config"
 	"gitlab.com/systemz/tasktab/model"
-	"log"
 	"net/http"
 	"time"
 )
@@ -23,8 +22,6 @@ func Login(w http.ResponseWriter, r *http.Request) {
 
 	//TODO check length of credentials first
 	passOk, user := model.IsPasswordOk(r.FormValue("username"), r.FormValue("password"))
-	log.Printf("ok: %v, username: %v", passOk, user.Username)
-
 	if !passOk {
 		page.AuthFailed = true
 		display.HTML(w, http.StatusUnauthorized, "login", page)
