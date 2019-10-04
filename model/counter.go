@@ -70,9 +70,13 @@ func StopCounterSession(counterId uint, userId uint) {
 
 type CounterList struct {
 	Counter
-	Seconds       uint
-	TimeFormatted string
-	Running       uint
+	Seconds7d           uint
+	Seconds30d          uint
+	SecondsAll          uint
+	Seconds7dFormatted  string
+	Seconds30dFormatted string
+	SecondsAllFormatted string
+	Running             uint
 }
 
 func CountersLongList(userId uint) (result []CounterList) {
@@ -89,7 +93,27 @@ SELECT
       counters.id = counter_sessions.counter_id
     AND
       counter_sessions.user_id = ?
-  ), 0) AS seconds,
+    AND
+      counter_sessions.started_at > NOW() - INTERVAL 7 DAY
+  ), 0) AS seconds_7d,
+  IFNULL((
+    SELECT SUM(TIMESTAMPDIFF(SECOND, counter_sessions.started_at,IFNULL(counter_sessions.ended_at, NOW())))
+    FROM counter_sessions
+    WHERE
+      counters.id = counter_sessions.counter_id
+    AND
+      counter_sessions.user_id = ?
+    AND
+      counter_sessions.started_at > NOW() - INTERVAL 30 DAY
+  ), 0) AS seconds_30d,
+  IFNULL((
+    SELECT SUM(TIMESTAMPDIFF(SECOND, counter_sessions.started_at,IFNULL(counter_sessions.ended_at, NOW())))
+    FROM counter_sessions
+    WHERE
+      counters.id = counter_sessions.counter_id
+    AND
+      counter_sessions.user_id = ?
+  ), 0) AS seconds_all,
   (
     SELECT COUNT(*)
     FROM counter_sessions
@@ -108,19 +132,21 @@ GROUP BY counters.id
 		return
 	}
 	defer stmt.Close()
-	rows, err := stmt.Query(userId, userId)
+	rows, err := stmt.Query(userId, userId, userId, userId)
 	if err != nil {
 		return
 	}
 	defer rows.Close()
 	for rows.Next() {
 		var list CounterList
-		err := rows.Scan(&list.Id, &list.Name, &list.CreatedAt, &list.UpdatedAt, &list.Seconds, &list.Running)
+		err := rows.Scan(&list.Id, &list.Name, &list.CreatedAt, &list.UpdatedAt, &list.Seconds7d, &list.Seconds30d, &list.SecondsAll, &list.Running)
 		if err != nil {
 			return
 		}
 
-		list.TimeFormatted = PrettyTime(list.Seconds)
+		list.Seconds7dFormatted = PrettyTime(list.Seconds7d)
+		list.Seconds30dFormatted = PrettyTime(list.Seconds30d)
+		list.SecondsAllFormatted = PrettyTime(list.SecondsAll)
 		result = append(result, list)
 	}
 	return result
