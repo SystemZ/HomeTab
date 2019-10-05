@@ -5,19 +5,13 @@ import (
 	"fmt"
 	"io/ioutil"
 	"log"
+	"sort"
 	"time"
 )
 
-type ZfireGame struct {
-	ID struct {
-		Oid string `json:"$oid"`
-	} `json:"_id"`
-	Name  string   `json:"name"`
-	TimeP int      `json:"time_p"`
-	TimeS int      `json:"time_s"`
-	Tags  []string `json:"tags"`
-}
-
+// store game sessions
+// this log doesn't have entries pre 2012-10-03 -
+// instead it's counted in time_p and time_s as a summary
 type ZfireLog []struct {
 	Name  string    `json:"name"`
 	TimeP int       `json:"time_p"`
@@ -25,11 +19,32 @@ type ZfireLog []struct {
 	Date  time.Time `json:"date"`
 }
 
+// sorting functions
+func (a ZfireLog) Len() int           { return len(a) }
+func (a ZfireLog) Swap(i, j int)      { a[i], a[j] = a[j], a[i] }
+func (a ZfireLog) Less(i, j int) bool { return a[i].Date.Before(a[j].Date) }
+
+// store complete game list with game time summary
+type ZfireGame []struct {
+	Date  time.Time `json:"date"`
+	Name  string    `json:"name"`
+	TimeP int       `json:"time_p"`
+	TimeS int       `json:"time_s"`
+	Tags  []string  `json:"tags"`
+}
+
+// sorting functions
+func (a ZfireGame) Len() int           { return len(a) }
+func (a ZfireGame) Swap(i, j int)      { a[i], a[j] = a[j], a[i] }
+func (a ZfireGame) Less(i, j int) bool { return a[i].Date.Before(a[j].Date) }
+
+// temp local store
 type ZfireLogGameList struct {
 	Name string
 	Date time.Time
 }
 
+// helper
 func IsInList(list []ZfireLogGameList, name string) bool {
 	for _, v := range list {
 		if v.Name == name {
@@ -39,6 +54,7 @@ func IsInList(list []ZfireLogGameList, name string) bool {
 	return false
 }
 
+// helper
 func IsInArray(list []string, name string) bool {
 	for _, v := range list {
 		if v == name {
@@ -49,39 +65,63 @@ func IsInArray(list []string, name string) bool {
 }
 
 func ImportZfire(pathToJson string) {
-	// load data //
+	// 1. Load
 	//
-	// parse zfireLog
+
+	//read zfire game log from disk
 	zfireLogRaw, err := ioutil.ReadFile(pathToJson + "/log.json")
 	if err != nil {
 		log.Printf("%v", err)
 	}
+	//parse zfire game log from json
 	var zfireLog ZfireLog
 	err = json.Unmarshal(zfireLogRaw, &zfireLog)
 	if err != nil {
 		fmt.Println("error:", err)
 	}
-	// parse zfireGames
+
+	//read zfire game list from disk
 	zfireGamesRaw, err := ioutil.ReadFile(pathToJson + "/games.json")
 	if err != nil {
 		log.Printf("%v", err)
 	}
-	var zfireGames []ZfireGame
+	//parse zfire game log from json
+	var zfireGames ZfireGame
 	err = json.Unmarshal(zfireGamesRaw, &zfireGames)
 	if err != nil {
 		fmt.Println("error:", err)
 	}
 
-	var zfireGamesDuplicate []string
-	var zfireGamesParsed []string
+	// 2. Sort
+	//
+
+	// sort zfire game log from oldest to newest entries
+	sort.Sort(zfireLog)
+	sort.Sort(zfireGames)
+
+	// 3.Analyze
+	//
+
+	// check for game duplicates
+	var gameListDuplicates []string
+	var zfireGamesParsedTmp []string
 	// detect duplicate/cross platform games
 	log.Printf("%v", "Checking for duplicates...")
 	for _, game := range zfireGames {
-		if IsInArray(zfireGamesParsed, game.Name) {
-			zfireGamesDuplicate = append(zfireGamesDuplicate, game.Name)
+		if IsInArray(zfireGamesParsedTmp, game.Name) {
+			gameListDuplicates = append(gameListDuplicates, game.Name)
 			log.Printf("dup: %v", game.Name)
 		} else {
-			zfireGamesParsed = append(zfireGamesParsed, game.Name)
+			zfireGamesParsedTmp = append(zfireGamesParsedTmp, game.Name)
+		}
+	}
+
+	//check game list for lacking creation date
+	log.Printf("%v", "Checking dates in game list...")
+	var gameListLackingCreationDates []string
+	for _, game := range zfireGames {
+		if game.Date.IsZero() {
+			gameListLackingCreationDates = append(gameListLackingCreationDates, game.Name)
 		}
 	}
 
@@ -111,16 +151,6 @@ func ImportZfire(pathToJson string) {
 		//log.Printf("%v", earliestDate)
 		uniqueGameList = append(uniqueGameList, ZfireLogGameList{Name: game.Name, Date: earliestDate})
 
-		//var counter Counter
-		//counter.Name = game.Name
-		////FIXME timezones
-		//counter.CreatedAt = &game.Date
-		//counter.UpdatedAt = &game.Date
-		//
-		//err := DB.Save(&counter).Error
-		//if err != nil {
-		//	log.Printf("%v", err)
-		//}
 	}
 
 	var differenceGamesList []string
@@ -137,15 +167,36 @@ func ImportZfire(pathToJson string) {
 		}
 	}
 
-	log.Printf("Games duplicated: %v", len(zfireGamesDuplicate))
-	log.Printf("Games with log: %v", len(uniqueGameList))
+	log.Printf("Games duplicated: %v", len(gameListDuplicates))
+	//log.Printf("Games with log: %v", len(uniqueGameList))
 	log.Printf("Games without log: %v", len(differenceGamesList))
 	log.Printf("All games: %v", len(zfireGames))
 	//log.Printf("%v", differenceGamesList)
-	//log.Printf("%v", zfireGamesDuplicate)
+	//log.Printf("%v", gameListDuplicates)
 
 	// all games in Zfire: 678
 
+	// export converted json
+	//
+
+	zfireGameListByte, err := json.MarshalIndent(zfireGames, "", "  ")
+	ioutil.WriteFile("export/zfireGames.json", zfireGameListByte, 0644)
+	zfireLogByte, err := json.MarshalIndent(zfireLog, "", "  ")
+	ioutil.WriteFile("export/zfireLog.json", zfireLogByte, 0644)
+
 	diffGameListByte, err := json.MarshalIndent(differenceGamesList, "", "  ")
-	ioutil.WriteFile("export/gameList.json", diffGameListByte, 0644)
+	ioutil.WriteFile("export/zfireGamesWithoutLogs.json", diffGameListByte, 0644)
+	gameListLackingCreationDatesByte, err := json.MarshalIndent(gameListLackingCreationDates, "", "  ")
+	ioutil.WriteFile("export/zfireGamesLackingCreationDates.json", gameListLackingCreationDatesByte, 0644)
+
+	//var counter Counter
+	//counter.Name = game.Name
+	////FIXME timezones
+	//counter.CreatedAt = &game.Date
+	//counter.UpdatedAt = &game.Date
+	//
+	//err := DB.Save(&counter).Error
+	//if err != nil {
+	//	log.Printf("%v", err)
+	//}
 }
