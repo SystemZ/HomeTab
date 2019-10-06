@@ -126,6 +126,7 @@ SELECT
   ) AS running
 FROM counters
 GROUP BY counters.id
+ORDER BY counters.id DESC
 `
 	stmt, err := DB.DB().Prepare(query)
 	if err != nil {
