@@ -22,7 +22,12 @@ func Count(w http.ResponseWriter, r *http.Request) {
 
 	// counter was created via form
 	if r.Method == http.MethodPost && len(r.FormValue("newCounter")) > 0 {
-		model.CreateCounter(r.FormValue("newCounter"))
+		counterId := model.CreateCounter(r.FormValue("newCounter"))
+		newTag := model.CounterTag{
+			CounterId: counterId,
+			Name:      r.FormValue("newCounterTag"),
+		}
+		model.DB.Save(&newTag)
 		http.Redirect(w, r, "/count", 302)
 		return
 	}

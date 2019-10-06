@@ -42,6 +42,7 @@ func CreateCounter(name string) uint {
 	counter.Name = name
 	//FIXME timezones
 	now := time.Now()
+	counter.ProjectId = 1
 	counter.CreatedAt = &now
 	counter.UpdatedAt = &now
 
@@ -59,6 +60,7 @@ func StartCounterSession(counterId uint, userId uint) {
 	now := time.Now()
 	session.CounterId = counterId
 	session.UserId = userId
+	session.Precise = 1
 	session.StartedAt = &now
 	session.CreatedAt = &now
 	session.UpdatedAt = &now
