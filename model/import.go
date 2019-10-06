@@ -235,7 +235,7 @@ func ImportZfire(pathToJson string) {
 		warsaw, _ := time.LoadLocation("Europe/Warsaw")
 		endedAtReconstructed := time.Date(2012, 10, 1, 0, 0, 0, 0, warsaw)
 		if taskTabTimeSumS != uint(game.TimeS) {
-			startedAt := endedAtReconstructed.Add(-time.Second * time.Duration(game.TimeS))
+			startedAt := endedAtReconstructed.Add(-time.Second * time.Duration(game.TimeS-int(taskTabTimeSumS)))
 			sessionsS = append(sessionsS, TaskTabExportSession{
 				StartedAt: startedAt,
 				EndedAt:   endedAtReconstructed,
@@ -247,7 +247,7 @@ func ImportZfire(pathToJson string) {
 			finalExportRecounstructed++
 		}
 		if taskTabTimeSumP != uint(game.TimeP) {
-			startedAt := endedAtReconstructed.Add(-time.Second * time.Duration(game.TimeP))
+			startedAt := endedAtReconstructed.Add(-time.Second * time.Duration(game.TimeP-int(taskTabTimeSumP)))
 			sessionsP = append(sessionsP, TaskTabExportSession{
 				StartedAt: startedAt,
 				EndedAt:   endedAtReconstructed,
