@@ -20,5 +20,5 @@ func importExec(cmd *cobra.Command, args []string) {
 	log.Println("Connecting to DB...")
 	model.InitMysql()
 	log.Println("Connected to DB")
-	model.ImportZfire("./import")
+	model.ImportCountersFromJson("./export/export.json")
 }
