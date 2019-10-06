@@ -250,29 +250,29 @@ func ImportZfire(pathToJson string) {
 		//add one big session ending at 01.10.2012
 		//first real logs starts at 03.10.2012 so this prevent conflicts
 		warsaw, _ := time.LoadLocation("Europe/Warsaw")
-		endedAtReconstructed := time.Date(2012, 10, 1, 0, 0, 0, 0, warsaw)
+		zfireTimestamp := time.Date(2012, 10, 1, 0, 0, 0, 0, warsaw)
 		if taskTabTimeSumS != uint(game.TimeS) {
-			startedAt := endedAtReconstructed.Add(-time.Second * time.Duration(game.TimeS-int(taskTabTimeSumS)))
-			duration := endedAtReconstructed.Sub(startedAt).Seconds()
+			startedAt := zfireTimestamp.Add(-time.Second * time.Duration(game.TimeS-int(taskTabTimeSumS)))
+			duration := zfireTimestamp.Sub(startedAt).Seconds()
 			sessionsS = append(sessionsS, struct {
 				Duration  int
 				StartedAt time.Time
 				EndedAt   time.Time
 				Precise   uint
-			}{Duration: int(duration), StartedAt: startedAt, EndedAt: endedAtReconstructed, Precise: 0})
-			taskTabTimeSumS += uint(endedAtReconstructed.Sub(startedAt).Seconds())
+			}{Duration: int(duration), StartedAt: startedAt, EndedAt: zfireTimestamp, Precise: 0})
+			taskTabTimeSumS += uint(zfireTimestamp.Sub(startedAt).Seconds())
 			finalExportRecounstructed++
 		}
 		if taskTabTimeSumP != uint(game.TimeP) {
-			startedAt := endedAtReconstructed.Add(-time.Second * time.Duration(game.TimeP-int(taskTabTimeSumP)))
-			duration := endedAtReconstructed.Sub(startedAt).Seconds()
+			startedAt := zfireTimestamp.Add(-time.Second * time.Duration(game.TimeP-int(taskTabTimeSumP)))
+			duration := zfireTimestamp.Sub(startedAt).Seconds()
 			sessionsP = append(sessionsP, struct {
 				Duration  int
 				StartedAt time.Time
 				EndedAt   time.Time
 				Precise   uint
-			}{Duration: int(duration), StartedAt: startedAt, EndedAt: endedAtReconstructed, Precise: 0})
-			taskTabTimeSumP += uint(endedAtReconstructed.Sub(startedAt).Seconds())
+			}{Duration: int(duration), StartedAt: startedAt, EndedAt: zfireTimestamp, Precise: 0})
+			taskTabTimeSumP += uint(zfireTimestamp.Sub(startedAt).Seconds())
 			finalExportRecounstructed++
 		}
 
@@ -280,14 +280,17 @@ func ImportZfire(pathToJson string) {
 		sort.Sort(sessionsP)
 		sort.Sort(sessionsS)
 
-		// reconstruct game creation date
+		// reconstruct game creation date from oldest log entry
+		if game.Date.IsZero() && (sessionsS.Len() > 0 || sessionsP.Len() > 0) {
+			if sessionsS.Len() > sessionsP.Len() {
+				game.Date = sessionsS[0].StartedAt
+			} else if sessionsP.Len() > sessionsS.Len() {
+				game.Date = sessionsP[0].StartedAt
+			}
+		}
+		// for games never played on zfire and created on firez, set constant date as a fallback
 		if game.Date.IsZero() {
-			tmpSessions := sessionsP
-			tmpSessions = append(tmpSessions, sessionsS...)
-			//sort.Sort(tmpSessions) //FIXME
-			//if tmpSessions.Len() > 0 {
-			//	game.Date = tmpSessions[0].StartedAt
-			//}
+			game.Date = zfireTimestamp
 		}
 
 		// write all game sessions
