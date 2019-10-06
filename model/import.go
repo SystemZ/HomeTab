@@ -176,6 +176,7 @@ func ImportZfire(pathToJson string) {
 	}
 
 	var finalExport []TaskTabExport
+	var finalExportErrors int
 	// Export
 	for _, game := range zfireGames {
 		// skip duplicated games for now
@@ -183,10 +184,6 @@ func ImportZfire(pathToJson string) {
 		var skipGame bool
 		for _, dupGame := range gameListDuplicates {
 			if game.Name == dupGame {
-				skipGame = true
-			}
-			//FIXME just for test
-			if game.Name != "Untitled Goose Game" {
 				skipGame = true
 			}
 		}
@@ -203,8 +200,7 @@ func ImportZfire(pathToJson string) {
 				continue
 			}
 			if gameInLog.TimeS != 0 {
-				startedAt := gameInLog.Date.Truncate(time.Second * time.Duration(gameInLog.TimeS))
-				log.Printf("StartedAt S: %v", startedAt)
+				startedAt := gameInLog.Date.Add(-time.Second * time.Duration(gameInLog.TimeS))
 				sessionsS = append(sessionsS, TaskTabExportSession{
 					StartedAt: startedAt,
 					EndedAt:   gameInLog.Date,
@@ -212,8 +208,7 @@ func ImportZfire(pathToJson string) {
 				taskTabTimeSumS += uint(gameInLog.Date.Sub(startedAt).Seconds())
 			}
 			if gameInLog.TimeP != 0 {
-				startedAt := gameInLog.Date.Truncate(time.Second * time.Duration(gameInLog.TimeP))
-				log.Printf("StartedAt P: %v", startedAt)
+				startedAt := gameInLog.Date.Add(-time.Second * time.Duration(gameInLog.TimeP))
 				sessionsP = append(sessionsP, TaskTabExportSession{
 					StartedAt: startedAt,
 					EndedAt:   gameInLog.Date,
@@ -231,12 +226,21 @@ func ImportZfire(pathToJson string) {
 			SessionsS:       sessionsS,
 			SessionsP:       sessionsP,
 		})
+
+		// warning
+		if taskTabTimeSumP != uint(game.TimeP) || taskTabTimeSumS != uint(game.TimeS) {
+			log.Printf("Errors in %v", game.Name)
+			finalExportErrors++
+		}
 	}
 
 	// show stats
-	log.Printf("Stats")
-	log.Printf("Duplicates: %v, No logs: %v", len(gameListDuplicates), len(differenceGamesList))
-	log.Printf("Games exported: %v/%v", len(finalExport), len(zfireGames))
+	log.Printf("= Stats =")
+	log.Printf("Errors with time: %v, Duplicates: %v, No logs: %v", finalExportErrors, len(gameListDuplicates), len(differenceGamesList))
+	log.Printf("Games exported without errors: %v/%v", len(finalExport)-finalExportErrors, len(zfireGames))
+	var percentage float32
+	percentage = (float32(len(finalExport)) - float32(finalExportErrors)) / float32(len(zfireGames))
+	log.Printf("Integrity %v%%", percentage*100)
 
 	// export converted json
 	zfireGameListByte, err := json.MarshalIndent(zfireGames, "", "  ")
