@@ -1,11 +1,11 @@
 stages:
+  - compile
   - build
-  - docker
-  #- deploy
+  - deploy
 
 compile:
   image: golang:latest
-  stage: build
+  stage: compile
   script:
     - go test -race $(go list ./... | grep -v /vendor/ | grep -v "/tasktab/agent")
     - CGO_ENABLED=0 go build -o $CI_PROJECT_DIR/tasktab
@@ -19,8 +19,8 @@ compile:
   tags:
     - docker
 
-build-image:
-  stage: docker
+build:
+  stage: build
   image: docker:stable
   services:
     - docker:stable-dind
@@ -30,3 +30,12 @@ build-image:
     - docker push $CI_REGISTRY_IMAGE:pipeline-$CI_PIPELINE_ID
   tags:
     - docker
+
+deploy:
+  stage: deploy
+  image: alpine:latest
+  script:
+    - apk add --no-cache curl
+    - curl -X POST -F token=$INFRA_TOKEN -F "ref=master" -F "variables[SERVICE_NAME]=tasktab" -F "variables[SERVICE_VERSION]=pipeline-$CI_PIPELINE_ID" https://gitlab.com/api/v4/projects/6986946/trigger/pipeline
+  only:
+    - master
