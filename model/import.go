@@ -46,22 +46,26 @@ type ZfireLogGameList struct {
 
 // final export json
 type TaskTabExport struct {
-	Name            string                 `json:"name"`
-	Tags            []string               `json:"tags"`
-	ZfireTimeSumS   uint                   `json:"zfireTimeSummaryS"`
-	TaskTabTimeSumS uint                   `json:"taskTabTimeSummaryS"`
-	ZfireTimeSumP   uint                   `json:"zfireTimeSummaryP"`
-	TaskTabTimeSumP uint                   `json:"taskTabTimeSummaryP"`
-	SessionsS       []TaskTabExportSession `json:"sessionsS"`
-	SessionsP       []TaskTabExportSession `json:"sessionsP"`
+	Name            string               `json:"name"`
+	Tags            []string             `json:"tags"`
+	ZfireTimeSumS   uint                 `json:"zfireTimeSummaryS"`
+	TaskTabTimeSumS uint                 `json:"taskTabTimeSummaryS"`
+	ZfireTimeSumP   uint                 `json:"zfireTimeSummaryP"`
+	TaskTabTimeSumP uint                 `json:"taskTabTimeSummaryP"`
+	SessionsS       TaskTabExportSession `json:"sessionsS"`
+	SessionsP       TaskTabExportSession `json:"sessionsP"`
 }
-type TaskTabExportSession struct {
+type TaskTabExportSession []struct {
 	StartedAt time.Time
 	EndedAt   time.Time
 	CreatedAt time.Time
 	UpdatedAt time.Time
 	Precise   uint
 }
+
+func (a TaskTabExportSession) Len() int           { return len(a) }
+func (a TaskTabExportSession) Swap(i, j int)      { a[i], a[j] = a[j], a[i] }
+func (a TaskTabExportSession) Less(i, j int) bool { return a[i].StartedAt.Before(a[j].StartedAt) }
 
 // helper
 func IsInList(list []ZfireLogGameList, name string) bool {
@@ -195,8 +199,8 @@ func ImportZfire(pathToJson string) {
 			continue
 		}
 
-		var sessionsS []TaskTabExportSession
-		var sessionsP []TaskTabExportSession
+		var sessionsS TaskTabExportSession
+		var sessionsP TaskTabExportSession
 		var taskTabTimeSumS uint
 		var taskTabTimeSumP uint
 		for _, gameInLog := range zfireLog {
@@ -207,24 +211,24 @@ func ImportZfire(pathToJson string) {
 			// work on proper and precise game logs
 			if gameInLog.TimeS != 0 {
 				startedAt := gameInLog.Date.Add(-time.Second * time.Duration(gameInLog.TimeS))
-				sessionsS = append(sessionsS, TaskTabExportSession{
-					StartedAt: startedAt,
-					EndedAt:   gameInLog.Date,
-					CreatedAt: startedAt,
-					UpdatedAt: gameInLog.Date,
-					Precise:   1,
-				})
+				sessionsS = append(sessionsS, struct {
+					StartedAt time.Time
+					EndedAt   time.Time
+					CreatedAt time.Time
+					UpdatedAt time.Time
+					Precise   uint
+				}{StartedAt: startedAt, EndedAt: gameInLog.Date, CreatedAt: startedAt, UpdatedAt: gameInLog.Date, Precise: 1})
 				taskTabTimeSumS += uint(gameInLog.Date.Sub(startedAt).Seconds())
 			}
 			if gameInLog.TimeP != 0 {
 				startedAt := gameInLog.Date.Add(-time.Second * time.Duration(gameInLog.TimeP))
-				sessionsP = append(sessionsP, TaskTabExportSession{
-					StartedAt: startedAt,
-					EndedAt:   gameInLog.Date,
-					CreatedAt: startedAt,
-					UpdatedAt: gameInLog.Date,
-					Precise:   1,
-				})
+				sessionsP = append(sessionsP, struct {
+					StartedAt time.Time
+					EndedAt   time.Time
+					CreatedAt time.Time
+					UpdatedAt time.Time
+					Precise   uint
+				}{StartedAt: startedAt, EndedAt: gameInLog.Date, CreatedAt: startedAt, UpdatedAt: gameInLog.Date, Precise: 1})
 				taskTabTimeSumP += uint(gameInLog.Date.Sub(startedAt).Seconds())
 			}
 		}
@@ -236,28 +240,32 @@ func ImportZfire(pathToJson string) {
 		endedAtReconstructed := time.Date(2012, 10, 1, 0, 0, 0, 0, warsaw)
 		if taskTabTimeSumS != uint(game.TimeS) {
 			startedAt := endedAtReconstructed.Add(-time.Second * time.Duration(game.TimeS-int(taskTabTimeSumS)))
-			sessionsS = append(sessionsS, TaskTabExportSession{
-				StartedAt: startedAt,
-				EndedAt:   endedAtReconstructed,
-				CreatedAt: startedAt,
-				UpdatedAt: endedAtReconstructed,
-				Precise:   0,
-			})
+			sessionsS = append(sessionsS, struct {
+				StartedAt time.Time
+				EndedAt   time.Time
+				CreatedAt time.Time
+				UpdatedAt time.Time
+				Precise   uint
+			}{StartedAt: startedAt, EndedAt: endedAtReconstructed, CreatedAt: startedAt, UpdatedAt: endedAtReconstructed, Precise: 0})
 			taskTabTimeSumS += uint(endedAtReconstructed.Sub(startedAt).Seconds())
 			finalExportRecounstructed++
 		}
 		if taskTabTimeSumP != uint(game.TimeP) {
 			startedAt := endedAtReconstructed.Add(-time.Second * time.Duration(game.TimeP-int(taskTabTimeSumP)))
-			sessionsP = append(sessionsP, TaskTabExportSession{
-				StartedAt: startedAt,
-				EndedAt:   endedAtReconstructed,
-				CreatedAt: startedAt,
-				UpdatedAt: endedAtReconstructed,
-				Precise:   0,
-			})
+			sessionsP = append(sessionsP, struct {
+				StartedAt time.Time
+				EndedAt   time.Time
+				CreatedAt time.Time
+				UpdatedAt time.Time
+				Precise   uint
+			}{StartedAt: startedAt, EndedAt: endedAtReconstructed, CreatedAt: startedAt, UpdatedAt: endedAtReconstructed, Precise: 0})
 			taskTabTimeSumP += uint(endedAtReconstructed.Sub(startedAt).Seconds())
 			finalExportRecounstructed++
 		}
+
+		// sort sessions after reconstruction
+		sort.Sort(sessionsP)
+		sort.Sort(sessionsS)
 
 		// write all game sessions
 		finalExport = append(finalExport, TaskTabExport{
