@@ -47,6 +47,7 @@ type ZfireLogGameList struct {
 // final export json
 type TaskTabExport struct {
 	Name            string               `json:"name"`
+	CreatedAt       time.Time            `json:"createdAt"`
 	Tags            []string             `json:"tags"`
 	ZfireTimeSumS   uint                 `json:"zfireTimeSummaryS"`
 	TaskTabTimeSumS uint                 `json:"taskTabTimeSummaryS"`
@@ -58,8 +59,6 @@ type TaskTabExport struct {
 type TaskTabExportSession []struct {
 	StartedAt time.Time
 	EndedAt   time.Time
-	CreatedAt time.Time
-	UpdatedAt time.Time
 	Precise   uint
 }
 
@@ -214,10 +213,8 @@ func ImportZfire(pathToJson string) {
 				sessionsS = append(sessionsS, struct {
 					StartedAt time.Time
 					EndedAt   time.Time
-					CreatedAt time.Time
-					UpdatedAt time.Time
 					Precise   uint
-				}{StartedAt: startedAt, EndedAt: gameInLog.Date, CreatedAt: startedAt, UpdatedAt: gameInLog.Date, Precise: 1})
+				}{StartedAt: startedAt, EndedAt: gameInLog.Date, Precise: 1})
 				taskTabTimeSumS += uint(gameInLog.Date.Sub(startedAt).Seconds())
 			}
 			if gameInLog.TimeP != 0 {
@@ -225,10 +222,8 @@ func ImportZfire(pathToJson string) {
 				sessionsP = append(sessionsP, struct {
 					StartedAt time.Time
 					EndedAt   time.Time
-					CreatedAt time.Time
-					UpdatedAt time.Time
 					Precise   uint
-				}{StartedAt: startedAt, EndedAt: gameInLog.Date, CreatedAt: startedAt, UpdatedAt: gameInLog.Date, Precise: 1})
+				}{StartedAt: startedAt, EndedAt: gameInLog.Date, Precise: 1})
 				taskTabTimeSumP += uint(gameInLog.Date.Sub(startedAt).Seconds())
 			}
 		}
@@ -243,10 +238,8 @@ func ImportZfire(pathToJson string) {
 			sessionsS = append(sessionsS, struct {
 				StartedAt time.Time
 				EndedAt   time.Time
-				CreatedAt time.Time
-				UpdatedAt time.Time
 				Precise   uint
-			}{StartedAt: startedAt, EndedAt: endedAtReconstructed, CreatedAt: startedAt, UpdatedAt: endedAtReconstructed, Precise: 0})
+			}{StartedAt: startedAt, EndedAt: endedAtReconstructed, Precise: 0})
 			taskTabTimeSumS += uint(endedAtReconstructed.Sub(startedAt).Seconds())
 			finalExportRecounstructed++
 		}
@@ -255,10 +248,8 @@ func ImportZfire(pathToJson string) {
 			sessionsP = append(sessionsP, struct {
 				StartedAt time.Time
 				EndedAt   time.Time
-				CreatedAt time.Time
-				UpdatedAt time.Time
 				Precise   uint
-			}{StartedAt: startedAt, EndedAt: endedAtReconstructed, CreatedAt: startedAt, UpdatedAt: endedAtReconstructed, Precise: 0})
+			}{StartedAt: startedAt, EndedAt: endedAtReconstructed, Precise: 0})
 			taskTabTimeSumP += uint(endedAtReconstructed.Sub(startedAt).Seconds())
 			finalExportRecounstructed++
 		}
@@ -267,9 +258,20 @@ func ImportZfire(pathToJson string) {
 		sort.Sort(sessionsP)
 		sort.Sort(sessionsS)
 
+		// reconstruct game creation date
+		if game.Date.IsZero() {
+			tmpSessions := sessionsP
+			tmpSessions = append(tmpSessions, sessionsS...)
+			sort.Sort(tmpSessions)
+			if tmpSessions.Len() > 0 {
+				game.Date = tmpSessions[0].StartedAt
+			}
+		}
+
 		// write all game sessions
-		finalExport = append(finalExport, TaskTabExport{
+		dataToWrite := TaskTabExport{
 			Name:            game.Name,
+			CreatedAt:       game.Date,
 			Tags:            game.Tags,
 			ZfireTimeSumS:   uint(game.TimeS),
 			ZfireTimeSumP:   uint(game.TimeP),
@@ -277,10 +279,11 @@ func ImportZfire(pathToJson string) {
 			TaskTabTimeSumP: taskTabTimeSumP,
 			SessionsS:       sessionsS,
 			SessionsP:       sessionsP,
-		})
+		}
+		finalExport = append(finalExport, dataToWrite)
 
 		// warning
-		if taskTabTimeSumP != uint(game.TimeP) || taskTabTimeSumS != uint(game.TimeS) {
+		if dataToWrite.CreatedAt.IsZero() || taskTabTimeSumP != uint(game.TimeP) || taskTabTimeSumS != uint(game.TimeS) {
 			log.Printf("Errors in %v", game.Name)
 			finalExportErrors++
 		}
