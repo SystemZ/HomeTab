@@ -212,8 +212,11 @@ func ImportZfire(pathToJson string) {
 		for _, dupGame := range gameListDuplicates {
 			if game.Name == dupGame {
 				skipGame = true
+				log.Printf("dup: %v", game.Name)
 			}
 		}
+
+		// skip game for various reasons
 		if skipGame {
 			continue
 		}
