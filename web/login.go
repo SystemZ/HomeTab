@@ -12,10 +12,12 @@ import (
 type LoginPage struct {
 	AuthFailed bool
 	RegisterOn bool
+	AuthOk     bool
 }
 
 func Login(w http.ResponseWriter, r *http.Request) {
 	page := LoginPage{}
+	page.AuthOk = false
 	if config.REGISTER_ON {
 		page.RegisterOn = true
 	}
