@@ -14,6 +14,4 @@
         <br><br>
         Login failed. Try again!
     {{end}}
-</form>
-<br>
-or <a href="/register">register</a>
+</form>{{if .RegisterOn}}<br>or <a href="/register">register</a>{{end}}

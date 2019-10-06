@@ -15,6 +15,7 @@ var (
 	REDIS_HOST         string
 	REDIS_PASSWORD     string
 	SESSION_VALID_S    int
+	REGISTER_ON        bool
 	REGISTER_WHITELIST bool
 	REGISTER_TOKEN     string
 )
@@ -46,6 +47,8 @@ func init() {
 	SESSION_VALID_S = viper.GetInt("SESSION_VALID_S")
 	viper.SetDefault("REGISTER_WHITELIST", true)
 	REGISTER_WHITELIST = viper.GetBool("REGISTER_WHITELIST")
+	viper.SetDefault("REGISTER_ON", false)
+	REGISTER_ON = viper.GetBool("REGISTER_ON")
 	viper.SetDefault("REGISTER_TOKEN", "unknown")
 	REGISTER_TOKEN = viper.GetString("REGISTER_TOKEN")
 }

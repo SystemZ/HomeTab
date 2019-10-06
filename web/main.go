@@ -4,6 +4,7 @@ import (
 	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
 	"github.com/unrolled/render"
+	"gitlab.com/systemz/tasktab/config"
 	"gitlab.com/systemz/tasktab/model"
 	"log"
 	"net/http"
@@ -31,9 +32,11 @@ func StartWebInterface() {
 	r.HandleFunc("/", Index)
 	r.HandleFunc("/count", Count)
 	// auth
+	if config.REGISTER_ON {
+		r.HandleFunc("/register", Register)
+	}
 	r.HandleFunc("/login", Login)
 	r.HandleFunc("/logout", Logout)
-	r.HandleFunc("/register", Register)
 	r.HandleFunc("/refresh", Refresh) // FIXME
 	// settings
 	r.HandleFunc("/account", Account)

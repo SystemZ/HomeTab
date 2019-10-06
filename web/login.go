@@ -11,10 +11,14 @@ import (
 // https://www.sohamkamani.com/blog/2018/03/25/golang-session-authentication/
 type LoginPage struct {
 	AuthFailed bool
+	RegisterOn bool
 }
 
 func Login(w http.ResponseWriter, r *http.Request) {
 	page := LoginPage{}
+	if config.REGISTER_ON {
+		page.RegisterOn = true
+	}
 	if r.Method != http.MethodPost {
 		display.HTML(w, http.StatusOK, "login", nil)
 		return
