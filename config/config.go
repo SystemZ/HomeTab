@@ -42,7 +42,7 @@ func init() {
 	viper.SetDefault("REDIS_PASSWORD", "")
 	REDIS_PASSWORD = viper.GetString("REDIS_PASSWORD")
 	// TaskTab specific
-	viper.SetDefault("SESSION_VALID_S", 3600)
+	viper.SetDefault("SESSION_VALID_S", 2592000)
 	SESSION_VALID_S = viper.GetInt("SESSION_VALID_S")
 	viper.SetDefault("REGISTER_WHITELIST", true)
 	REGISTER_WHITELIST = viper.GetBool("REGISTER_WHITELIST")
