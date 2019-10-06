@@ -56,6 +56,12 @@ type TaskTabExport struct {
 	SessionsS       TaskTabExportSession `json:"sessionsS"`
 	SessionsP       TaskTabExportSession `json:"sessionsP"`
 }
+type TaskTabExports []TaskTabExport
+
+func (a TaskTabExports) Len() int           { return len(a) }
+func (a TaskTabExports) Swap(i, j int)      { a[i], a[j] = a[j], a[i] }
+func (a TaskTabExports) Less(i, j int) bool { return a[i].CreatedAt.Before(a[j].CreatedAt) }
+
 type TaskTabExportSession []struct {
 	Duration  int
 	StartedAt time.Time
@@ -313,6 +319,9 @@ func ImportZfire(pathToJson string) {
 			finalExportErrors++
 		}
 	}
+
+	//final sorting by game creation date
+	sort.Sort(TaskTabExports(finalExport))
 
 	// show stats
 	log.Printf("= Stats =")
