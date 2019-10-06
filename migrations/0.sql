@@ -62,6 +62,7 @@ CREATE TABLE `counter_sessions` (
   `user_id` int(10) unsigned NOT NULL,
   `started_at` datetime NOT NULL,
   `ended_at` datetime DEFAULT NULL,
+  `precise` tinyint(3) unsigned NOT NULL DEFAULT '1',
   `created_at` datetime NOT NULL,
   `updated_at` datetime NOT NULL,
   `deleted_at` datetime DEFAULT NULL,
@@ -232,4 +233,4 @@ CREATE TABLE `users` (
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2019-10-04 11:53:29
+-- Dump completed on 2019-10-06 19:29:20

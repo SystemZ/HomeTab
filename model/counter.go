@@ -21,6 +21,7 @@ type CounterSession struct {
 	UserId    uint       `gorm:"column:user_id" json:"user_id"`
 	StartedAt *time.Time `gorm:"column:started_at" json:"started_at"`
 	EndedAt   *time.Time `gorm:"column:ended_at" json:"ended_at"`
+	Precise   uint       `gorm:"column:precise" json:"precise"`
 	CreatedAt *time.Time `gorm:"column:created_at" json:"created_at"`
 	UpdatedAt *time.Time `gorm:"column:updated_at" json:"updated_at"`
 	DeletedAt *time.Time `gorm:"column:deleted_at" json:"deleted_at"`

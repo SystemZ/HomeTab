@@ -44,6 +44,7 @@ func ImportCountersFromJson(pathToFile string) {
 				UserId:    2,
 				StartedAt: &gameSession.StartedAt,
 				EndedAt:   &gameSession.EndedAt,
+				Precise:   gameSession.Precise,
 				CreatedAt: &gameSession.StartedAt,
 				UpdatedAt: &now,
 			}
@@ -61,6 +62,7 @@ func ImportCountersFromJson(pathToFile string) {
 				UserId:    1,
 				StartedAt: &gameSession.StartedAt,
 				EndedAt:   &gameSession.EndedAt,
+				Precise:   gameSession.Precise,
 				CreatedAt: &gameSession.StartedAt,
 				UpdatedAt: &now,
 			}
