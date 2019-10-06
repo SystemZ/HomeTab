@@ -4,63 +4,67 @@
     <title>TaskTab</title>
     <meta name='viewport' content='width=device-width, initial-scale=1.0'/>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/kognise/water.css@latest/dist/dark.min.css">
-    <style>
-        .task .title {
-            cursor: pointer;
-            user-select: none;
-        }
+    {{if .AuthOk}}
+        <style>
+            .task .title {
+                cursor: pointer;
+                user-select: none;
+            }
 
-        .task .details {
+            .task .details {
 
-        }
+            }
 
-        #newTask input:not([type="checkbox"]):not([type="radio"]) {
-            display: inline !important;
-        }
+            #newTask input:not([type="checkbox"]):not([type="radio"]) {
+                display: inline !important;
+            }
 
-        /* easy clicking on tasks */
-        summary {
-            display: block;
-        }
+            /* easy clicking on tasks */
+            summary {
+                display: block;
+            }
 
-        summary input {
-            margin-right: 15px;
-        }
+            summary input {
+                margin-right: 15px;
+            }
 
-        /* pretty big checkbox https://stackoverflow.com/a/54804563 */
-        input[type=checkbox] {
-            width: 10mm;
-            -webkit-appearance: none;
-            -moz-appearance: none;
-            height: 10mm;
-            border: 0.1mm solid black;
-        }
+            /* pretty big checkbox https://stackoverflow.com/a/54804563 */
+            input[type=checkbox] {
+                width: 10mm;
+                -webkit-appearance: none;
+                -moz-appearance: none;
+                height: 10mm;
+                border: 0.1mm solid black;
+            }
 
-        input[type=checkbox]:checked {
-            background-color: lightblue;
-        }
+            input[type=checkbox]:checked {
+                background-color: lightblue;
+            }
 
-        input[type=checkbox]:checked:after {
-            margin-left: 3.0mm;
-            margin-top: -0.4mm;
-            width: 2mm;
-            height: 7mm;
-            border: solid white;
-            border-width: 0 2mm 2mm 0;
-            -webkit-transform: rotate(45deg);
-            -moz-transform: rotate(45deg);
-            -ms-transform: rotate(45deg);
-            transform: rotate(45deg);
-            content: "";
-            display: inline-block;
-        }
-    </style>
+            input[type=checkbox]:checked:after {
+                margin-left: 3.0mm;
+                margin-top: -0.4mm;
+                width: 2mm;
+                height: 7mm;
+                border: solid white;
+                border-width: 0 2mm 2mm 0;
+                -webkit-transform: rotate(45deg);
+                -moz-transform: rotate(45deg);
+                -ms-transform: rotate(45deg);
+                transform: rotate(45deg);
+                content: "";
+                display: inline-block;
+            }
+        </style>
+    {{end}}
 </head>
 <body>
-<h1><a href="/">Tasks</a> / <a href="/count">Counters</a></h1>
-<small>Keep tab on your tasks{{if .AuthOk}}, <a href="/account">{{.User.Username}}</a>{{end}}</small>
-<br>
-<br>
+{{if .AuthOk}}
+    <h1><a href="/">Tasks</a> / <a href="/count">Counters</a></h1>
+    <small>Keep tab on your tasks, <a href="/account">{{.User.Username}}</a></small>
+    <br>
+    <br>
+{{end}}
 {{ yield }}
 </body>
 </html>
