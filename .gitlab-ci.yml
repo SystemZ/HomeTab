@@ -1,0 +1,32 @@
+stages:
+  - build
+  - docker
+  #- deploy
+
+compile:
+  image: golang:latest
+  stage: build
+  script:
+    - go test -race $(go list ./... | grep -v /vendor/)
+    - CGO_ENABLED=0 go build -o $CI_PROJECT_DIR/tasktab
+    - ls -alh $CI_PROJECT_DIR/
+  artifacts:
+    paths:
+      - $CI_PROJECT_DIR/tasktab
+  #cache:
+  #  paths:
+  #    - $GOPATH/src/github.com/
+  tags:
+    - docker
+
+build-image:
+  stage: docker
+  image: docker:stable
+  services:
+    - docker:stable-dind
+  script:
+    - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY
+    - docker build --tag $CI_REGISTRY_IMAGE:pipeline-$CI_PIPELINE_ID --tag $CI_REGISTRY_IMAGE:latest .
+    - docker push $CI_REGISTRY_IMAGE:pipeline-$CI_PIPELINE_ID
+  tags:
+    - docker
