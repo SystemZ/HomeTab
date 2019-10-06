@@ -186,9 +186,22 @@ func ImportZfire(pathToJson string) {
 	var finalExportRecounstructed int
 	// Export
 	for _, game := range zfireGames {
+		var skipGame bool
+
+		// skip empty games
+		gamesToSkip := []string{
+			"Warhammer 40,000: Dawn of War GOTY",
+			"Toki Tori 2+",
+			"Halo 4",
+		}
+		for _, emptyGame := range gamesToSkip {
+			if game.Name == emptyGame {
+				skipGame = true
+			}
+		}
+
 		// skip duplicated games for now
 		// we resolve platform tags later
-		var skipGame bool
 		for _, dupGame := range gameListDuplicates {
 			if game.Name == dupGame {
 				skipGame = true
