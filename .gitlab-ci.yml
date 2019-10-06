@@ -7,7 +7,7 @@ compile:
   image: golang:latest
   stage: build
   script:
-    - go test -race $(go list ./... | grep -v /vendor/)
+    - go test -race $(go list ./... | grep -v /vendor/ | grep -v "/tasktab/agent")
     - CGO_ENABLED=0 go build -o $CI_PROJECT_DIR/tasktab
     - ls -alh $CI_PROJECT_DIR/
   artifacts:
