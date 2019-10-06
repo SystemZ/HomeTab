@@ -58,6 +58,9 @@ type TaskTabExport struct {
 type TaskTabExportSession struct {
 	StartedAt time.Time
 	EndedAt   time.Time
+	CreatedAt time.Time
+	UpdatedAt time.Time
+	Precise   uint
 }
 
 // helper
@@ -177,6 +180,7 @@ func ImportZfire(pathToJson string) {
 
 	var finalExport []TaskTabExport
 	var finalExportErrors int
+	var finalExportRecounstructed int
 	// Export
 	for _, game := range zfireGames {
 		// skip duplicated games for now
@@ -199,11 +203,16 @@ func ImportZfire(pathToJson string) {
 			if gameInLog.Name != game.Name {
 				continue
 			}
+
+			// work on proper and precise game logs
 			if gameInLog.TimeS != 0 {
 				startedAt := gameInLog.Date.Add(-time.Second * time.Duration(gameInLog.TimeS))
 				sessionsS = append(sessionsS, TaskTabExportSession{
 					StartedAt: startedAt,
 					EndedAt:   gameInLog.Date,
+					CreatedAt: startedAt,
+					UpdatedAt: gameInLog.Date,
+					Precise:   1,
 				})
 				taskTabTimeSumS += uint(gameInLog.Date.Sub(startedAt).Seconds())
 			}
@@ -212,10 +221,45 @@ func ImportZfire(pathToJson string) {
 				sessionsP = append(sessionsP, TaskTabExportSession{
 					StartedAt: startedAt,
 					EndedAt:   gameInLog.Date,
+					CreatedAt: startedAt,
+					UpdatedAt: gameInLog.Date,
+					Precise:   1,
 				})
 				taskTabTimeSumP += uint(gameInLog.Date.Sub(startedAt).Seconds())
 			}
 		}
+
+		// reconstruction of time
+		//add one big session ending at 01.10.2012
+		//first real logs starts at 03.10.2012 so this prevent conflicts
+		warsaw, _ := time.LoadLocation("Europe/Warsaw")
+		endedAtReconstructed := time.Date(2012, 10, 1, 0, 0, 0, 0, warsaw)
+		if taskTabTimeSumS != uint(game.TimeS) {
+			startedAt := endedAtReconstructed.Add(-time.Second * time.Duration(game.TimeS))
+			sessionsS = append(sessionsS, TaskTabExportSession{
+				StartedAt: startedAt,
+				EndedAt:   endedAtReconstructed,
+				CreatedAt: startedAt,
+				UpdatedAt: endedAtReconstructed,
+				Precise:   0,
+			})
+			taskTabTimeSumS += uint(endedAtReconstructed.Sub(startedAt).Seconds())
+			finalExportRecounstructed++
+		}
+		if taskTabTimeSumP != uint(game.TimeP) {
+			startedAt := endedAtReconstructed.Add(-time.Second * time.Duration(game.TimeP))
+			sessionsP = append(sessionsP, TaskTabExportSession{
+				StartedAt: startedAt,
+				EndedAt:   endedAtReconstructed,
+				CreatedAt: startedAt,
+				UpdatedAt: endedAtReconstructed,
+				Precise:   0,
+			})
+			taskTabTimeSumP += uint(endedAtReconstructed.Sub(startedAt).Seconds())
+			finalExportRecounstructed++
+		}
+
+		// write all game sessions
 		finalExport = append(finalExport, TaskTabExport{
 			Name:            game.Name,
 			Tags:            game.Tags,
