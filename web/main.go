@@ -39,8 +39,8 @@ func StartWebInterface() {
 	r.HandleFunc("/account", Account)
 	// start internal http server with logging
 	loggedRouter := handlers.LoggingHandler(os.Stdout, r)
-	log.Println("HTTP server started on :8000")
-	log.Fatal(http.ListenAndServe(":8000", loggedRouter))
+	log.Println("HTTP server started on :3000")
+	log.Fatal(http.ListenAndServe(":3000", loggedRouter))
 }
 
 func CheckAuth(w http.ResponseWriter, r *http.Request) (ok bool, user model.User) {
