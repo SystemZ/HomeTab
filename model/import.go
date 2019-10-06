@@ -21,12 +21,13 @@ func ImportCountersFromJson(pathToFile string) {
 		fmt.Println("error:", err)
 	}
 
-	// add counter (game)
 	var gamesAdded int
 	var gameSessionAdded int
+	var gameTagAdded int
 	for _, game := range export {
 		//log.Printf("Adding %v ...", game.Name)
 		now := time.Now()
+		// add counter (game)
 		newGame := Counter{
 			Name:      game.Name,
 			ProjectId: 1,
@@ -74,8 +75,24 @@ func ImportCountersFromJson(pathToFile string) {
 			}
 		}
 
+		// add tag
+		if len(game.Tags) > 0 {
+			newTag := CounterTag{
+				CounterId: newGame.Id,
+				Name:      game.Tags[0],
+				CreatedAt: &now,
+				UpdatedAt: &now,
+			}
+			res := DB.Save(&newTag)
+			if res.Error != nil {
+				log.Printf("Error adding session to %v", game.Name)
+			} else {
+				gameTagAdded++
+			}
+		}
 		gamesAdded++
 	}
 	log.Printf("Games added: %v", gamesAdded)
 	log.Printf("Sessions added: %v", gameSessionAdded)
+	log.Printf("Tags added: %v", gameTagAdded)
 }

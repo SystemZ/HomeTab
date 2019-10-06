@@ -27,6 +27,15 @@ type CounterSession struct {
 	DeletedAt *time.Time `gorm:"column:deleted_at" json:"deleted_at"`
 }
 
+type CounterTag struct {
+	Id        uint       `json:"id" gorm:"primary_key;type:uint(10)" json:"id"`
+	CounterId uint       `gorm:"column:counter_id" json:"counter_id"`
+	Name      string     `gorm:"column:name" json:"name"`
+	CreatedAt *time.Time `gorm:"column:created_at" json:"created_at"`
+	UpdatedAt *time.Time `gorm:"column:updated_at" json:"updated_at"`
+	DeletedAt *time.Time `gorm:"column:deleted_at" json:"deleted_at"`
+}
+
 func CreateCounter(name string) uint {
 	var counter Counter
 
