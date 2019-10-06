@@ -21,7 +21,7 @@ var wwwCmd = &cobra.Command{
 func wwwExec(cmd *cobra.Command, args []string) {
 	log.Println("Wild TaskTab appears!")
 	model.InitMysql()
-	model.InitRedis()
+	//model.InitRedis()
 	web.StartWebInterface()
 	log.Println("Dying...")
 }
