@@ -44,6 +44,22 @@ type ZfireLogGameList struct {
 	Date time.Time
 }
 
+// final export json
+type TaskTabExport struct {
+	Name            string                 `json:"name"`
+	Tags            []string               `json:"tags"`
+	ZfireTimeSumS   uint                   `json:"zfireTimeSummaryS"`
+	TaskTabTimeSumS uint                   `json:"taskTabTimeSummaryS"`
+	ZfireTimeSumP   uint                   `json:"zfireTimeSummaryP"`
+	TaskTabTimeSumP uint                   `json:"taskTabTimeSummaryP"`
+	SessionsS       []TaskTabExportSession `json:"sessionsS"`
+	SessionsP       []TaskTabExportSession `json:"sessionsP"`
+}
+type TaskTabExportSession struct {
+	StartedAt time.Time
+	EndedAt   time.Time
+}
+
 // helper
 func IsInList(list []ZfireLogGameList, name string) bool {
 	for _, v := range list {
@@ -110,7 +126,6 @@ func ImportZfire(pathToJson string) {
 	for _, game := range zfireGames {
 		if IsInArray(zfireGamesParsedTmp, game.Name) {
 			gameListDuplicates = append(gameListDuplicates, game.Name)
-			log.Printf("dup: %v", game.Name)
 		} else {
 			zfireGamesParsedTmp = append(zfireGamesParsedTmp, game.Name)
 		}
@@ -130,17 +145,11 @@ func ImportZfire(pathToJson string) {
 	var uniqueGameList []ZfireLogGameList
 	// get earliest session of game
 	for _, game := range zfireLog {
-
-		if game.Name == "Zeno Clash" {
-			log.Printf("%v", "-")
-		}
-
 		if IsInList(uniqueGameList, game.Name) {
 			continue
 		}
 
 		var earliestDate time.Time
-		//log.Printf("%v", game.Name)
 		earliestDate = game.Date
 		for _, gamez := range zfireLog {
 			testedDate := gamez.Date
@@ -148,7 +157,6 @@ func ImportZfire(pathToJson string) {
 				earliestDate = gamez.Date
 			}
 		}
-		//log.Printf("%v", earliestDate)
 		uniqueGameList = append(uniqueGameList, ZfireLogGameList{Name: game.Name, Date: earliestDate})
 
 	}
@@ -167,36 +175,80 @@ func ImportZfire(pathToJson string) {
 		}
 	}
 
-	log.Printf("Games duplicated: %v", len(gameListDuplicates))
-	//log.Printf("Games with log: %v", len(uniqueGameList))
-	log.Printf("Games without log: %v", len(differenceGamesList))
-	log.Printf("All games: %v", len(zfireGames))
-	//log.Printf("%v", differenceGamesList)
-	//log.Printf("%v", gameListDuplicates)
+	var finalExport []TaskTabExport
+	// Export
+	for _, game := range zfireGames {
+		// skip duplicated games for now
+		// we resolve platform tags later
+		var skipGame bool
+		for _, dupGame := range gameListDuplicates {
+			if game.Name == dupGame {
+				skipGame = true
+			}
+			//FIXME just for test
+			if game.Name != "Untitled Goose Game" {
+				skipGame = true
+			}
+		}
+		if skipGame {
+			continue
+		}
 
-	// all games in Zfire: 678
+		var sessionsS []TaskTabExportSession
+		var sessionsP []TaskTabExportSession
+		var taskTabTimeSumS uint
+		var taskTabTimeSumP uint
+		for _, gameInLog := range zfireLog {
+			if gameInLog.Name != game.Name {
+				continue
+			}
+			if gameInLog.TimeS != 0 {
+				startedAt := gameInLog.Date.Truncate(time.Second * time.Duration(gameInLog.TimeS))
+				log.Printf("StartedAt S: %v", startedAt)
+				sessionsS = append(sessionsS, TaskTabExportSession{
+					StartedAt: startedAt,
+					EndedAt:   gameInLog.Date,
+				})
+				taskTabTimeSumS += uint(gameInLog.Date.Sub(startedAt).Seconds())
+			}
+			if gameInLog.TimeP != 0 {
+				startedAt := gameInLog.Date.Truncate(time.Second * time.Duration(gameInLog.TimeP))
+				log.Printf("StartedAt P: %v", startedAt)
+				sessionsP = append(sessionsP, TaskTabExportSession{
+					StartedAt: startedAt,
+					EndedAt:   gameInLog.Date,
+				})
+				taskTabTimeSumP += uint(gameInLog.Date.Sub(startedAt).Seconds())
+			}
+		}
+		finalExport = append(finalExport, TaskTabExport{
+			Name:            game.Name,
+			Tags:            game.Tags,
+			ZfireTimeSumS:   uint(game.TimeS),
+			ZfireTimeSumP:   uint(game.TimeP),
+			TaskTabTimeSumS: taskTabTimeSumS,
+			TaskTabTimeSumP: taskTabTimeSumP,
+			SessionsS:       sessionsS,
+			SessionsP:       sessionsP,
+		})
+	}
+
+	// show stats
+	log.Printf("Stats")
+	log.Printf("Duplicates: %v, No logs: %v", len(gameListDuplicates), len(differenceGamesList))
+	log.Printf("Games exported: %v/%v", len(finalExport), len(zfireGames))
 
 	// export converted json
-	//
-
 	zfireGameListByte, err := json.MarshalIndent(zfireGames, "", "  ")
 	ioutil.WriteFile("export/zfireGames.json", zfireGameListByte, 0644)
+
+	// export json helpers
 	zfireLogByte, err := json.MarshalIndent(zfireLog, "", "  ")
 	ioutil.WriteFile("export/zfireLog.json", zfireLogByte, 0644)
-
 	diffGameListByte, err := json.MarshalIndent(differenceGamesList, "", "  ")
 	ioutil.WriteFile("export/zfireGamesWithoutLogs.json", diffGameListByte, 0644)
 	gameListLackingCreationDatesByte, err := json.MarshalIndent(gameListLackingCreationDates, "", "  ")
 	ioutil.WriteFile("export/zfireGamesLackingCreationDates.json", gameListLackingCreationDatesByte, 0644)
-
-	//var counter Counter
-	//counter.Name = game.Name
-	////FIXME timezones
-	//counter.CreatedAt = &game.Date
-	//counter.UpdatedAt = &game.Date
-	//
-	//err := DB.Save(&counter).Error
-	//if err != nil {
-	//	log.Printf("%v", err)
-	//}
+	finalExportByte, err := json.MarshalIndent(finalExport, "", "  ")
+	ioutil.WriteFile("export/export.json", finalExportByte, 0644)
 }
