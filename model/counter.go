@@ -1,6 +1,7 @@
 package model
 
 import (
+	"github.com/go-sql-driver/mysql"
 	"log"
 	"strconv"
 	"time"
@@ -177,4 +178,58 @@ func PrettyTime(s uint) string {
 		m++
 	}
 	return strconv.Itoa(h) + "h " + strconv.Itoa(m) + "m " + strconv.Itoa(int(s)) + "s"
+}
+
+type CounterSessionList struct {
+	Id                uint
+	UserId            uint
+	Name              string
+	StartedAt         time.Time
+	EndedAt           mysql.NullTime
+	Duration          uint
+	DurationFormatted string
+	Running           bool
+}
+
+func CounterLogList(userId uint) (result []CounterSessionList) {
+	query := `
+SELECT 
+  counter_sessions.id,
+  counter_sessions.user_id,
+  counters.name, 
+  counter_sessions.started_at, 
+  counter_sessions.ended_at,
+  TIMESTAMPDIFF(SECOND, counter_sessions.started_at,IFNULL(counter_sessions.ended_at, NOW())) AS duration
+FROM counter_sessions
+JOIN counters ON counters.id = counter_sessions.counter_id
+WHERE counter_sessions.deleted_at IS NULL
+  AND user_id = ?
+ORDER BY counter_sessions.started_at DESC
+LIMIT 100
+`
+
+	stmt, err := DB.DB().Prepare(query)
+	if err != nil {
+		log.Printf("%v", err.Error())
+		return
+	}
+	defer stmt.Close()
+	rows, err := stmt.Query(userId)
+	if err != nil {
+		log.Printf("%v", err.Error())
+		return
+	}
+	defer rows.Close()
+	for rows.Next() {
+		var list CounterSessionList
+		err := rows.Scan(&list.Id, &list.UserId, &list.Name, &list.StartedAt, &list.EndedAt, &list.Duration)
+		if err != nil {
+			log.Printf("%v", err.Error())
+			return
+		}
+		list.DurationFormatted = PrettyTime(list.Duration)
+		list.Running = !list.EndedAt.Valid
+		result = append(result, list)
+	}
+	return result
 }

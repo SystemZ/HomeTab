@@ -1,0 +1,28 @@
+<h2>Counter log</h2>
+
+Last 100 sessions
+
+<table>
+    <thead>
+    <tr>
+        <th>Name</th>
+        <th>Time</th>
+    </tr>
+    </thead>
+    <tbody>
+    {{range .Counters}}
+        <tr>
+            <td>
+                {{if eq .Running true}}
+                    >>> <strong><small>{{.Id}}</small> {{.Name}}</strong>
+                {{else}}
+                    <small>{{.Id}}</small> {{.Name}}
+                {{end}}
+                </summary>
+
+            </td>
+            <td>{{.DurationFormatted}}</td>
+        </tr>
+    {{end}}
+    </tbody>
+</table>

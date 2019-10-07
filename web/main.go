@@ -31,6 +31,7 @@ func StartWebInterface() {
 	// main course
 	r.HandleFunc("/", Index)
 	r.HandleFunc("/count", Count)
+	r.HandleFunc("/count/log", CountLog)
 	// auth
 	if config.REGISTER_ON {
 		r.HandleFunc("/register", Register)
