@@ -64,8 +64,8 @@
 </head>
 <body>
 {{if .AuthOk}}
-    <h1><a href="/">Tasks</a> / <a href="/count">Counters</a></h1>
-    <small>Keep tab on your tasks, <a href="/account">{{.User.Username}}</a></small>
+    <h1><a href="/">Tasks</a> / <a href="/count">Counters</a> / <a href="/account">Settings</a></h1>
+    <small>Keep tab on your tasks, {{.User.Username}}</small>
     <br>
     <br>
 {{end}}
