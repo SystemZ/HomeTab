@@ -51,7 +51,12 @@ func Index(w http.ResponseWriter, r *http.Request) {
 				model.DB.Where("id = ?", taskId).Delete(&model.Task{})
 			} else if taskAction == "snooze" {
 				now := time.Now()
-				snoozeTime := now.Add(time.Second * 10)
+				taskSnoozeSecondsRaw := r.FormValue("taskSnoozeSeconds")
+				taskSnoozeSeconds, err := strconv.Atoi(taskSnoozeSecondsRaw)
+				if err != nil {
+					return
+				}
+				snoozeTime := now.Add(time.Second * time.Duration(taskSnoozeSeconds))
 				taskIdInt, err := strconv.Atoi(taskId)
 				if err != nil {
 					// skip this task if something is wrong

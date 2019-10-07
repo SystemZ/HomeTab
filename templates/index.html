@@ -34,5 +34,13 @@
         <button type="submit" name="taskAction" value="done">Done</button>
         <button type="submit" name="taskAction" value="delete">Delete</button>
         <button type="submit" name="taskAction" value="snooze">Snooze</button>
+        for
+        <select id="snoozeTask" name="taskSnoozeSeconds">
+            <option value="86400">24h</option>
+            <option value="43200">12h</option>
+            <option value="21600">6h</option>
+            <option value="10800">3h</option>
+            <option value="3600">1h</option>
+        </select>
     {{end}}
 </form>
