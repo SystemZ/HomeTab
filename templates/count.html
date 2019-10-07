@@ -27,7 +27,7 @@
                     <td>
                         <details class="task">
                             <summary class="title">
-                                >>> <strong><small>{{.Id}}</small> {{.Name}}</strong>
+                                >>> <strong><small>{{.Id}}</small> {{.Name}}</strong> <code>{{.Tags}}</code>
                             </summary>
                             <div class="details">
                                 <br>
@@ -75,9 +75,9 @@
                 <details class="task">
                     <summary class="title">
                         {{if eq .Running 1}}
-                            >>> <strong><small>{{.Id}}</small> {{.Name}}</strong>
+                            >>> <strong><small>{{.Id}}</small> {{.Name}}</strong> <code>{{.Tags}}</code>
                         {{else}}
-                            <small>{{.Id}}</small> {{.Name}}
+                            <small>{{.Id}}</small> {{.Name}} <code>{{.Tags}}</code>
                         {{end}}
                     </summary>
                     <div class="details">

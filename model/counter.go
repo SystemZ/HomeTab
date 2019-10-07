@@ -83,6 +83,7 @@ func StopCounterSession(counterId uint, userId uint) {
 
 type CounterList struct {
 	Counter
+	Tags                string
 	Seconds7d           uint
 	Seconds30d          uint
 	SecondsAll          uint
@@ -97,6 +98,7 @@ func CountersLongList(userId uint) (result []CounterList) {
 SELECT
   counters.id,
   counters.name,
+  (SELECT GROUP_CONCAT(counter_tags.name SEPARATOR ',') FROM counter_tags WHERE counter_tags.counter_id = counters.id) AS tags,
   counters.created_at,
   counters.updated_at,
   IFNULL((
@@ -153,7 +155,7 @@ ORDER BY counters.id DESC
 	defer rows.Close()
 	for rows.Next() {
 		var list CounterList
-		err := rows.Scan(&list.Id, &list.Name, &list.CreatedAt, &list.UpdatedAt, &list.Seconds7d, &list.Seconds30d, &list.SecondsAll, &list.Running)
+		err := rows.Scan(&list.Id, &list.Name, &list.Tags, &list.CreatedAt, &list.UpdatedAt, &list.Seconds7d, &list.Seconds30d, &list.SecondsAll, &list.Running)
 		if err != nil {
 			return
 		}
@@ -184,6 +186,7 @@ type CounterSessionList struct {
 	Id                uint
 	UserId            uint
 	Name              string
+	Tags              string
 	StartedAt         time.Time
 	EndedAt           mysql.NullTime
 	Duration          uint
@@ -197,6 +200,7 @@ SELECT
   counter_sessions.id,
   counter_sessions.user_id,
   counters.name, 
+  (SELECT GROUP_CONCAT(counter_tags.name SEPARATOR ',') FROM counter_tags WHERE counter_tags.counter_id = counters.id) AS tags,
   counter_sessions.started_at, 
   counter_sessions.ended_at,
   TIMESTAMPDIFF(SECOND, counter_sessions.started_at,IFNULL(counter_sessions.ended_at, NOW())) AS duration
@@ -222,7 +226,7 @@ LIMIT 100
 	defer rows.Close()
 	for rows.Next() {
 		var list CounterSessionList
-		err := rows.Scan(&list.Id, &list.UserId, &list.Name, &list.StartedAt, &list.EndedAt, &list.Duration)
+		err := rows.Scan(&list.Id, &list.UserId, &list.Name, &list.Tags, &list.StartedAt, &list.EndedAt, &list.Duration)
 		if err != nil {
 			log.Printf("%v", err.Error())
 			return

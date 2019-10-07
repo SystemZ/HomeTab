@@ -6,7 +6,7 @@ Last 100 sessions
     <thead>
     <tr>
         <th>Name</th>
-        <th>Time</th>
+        <th>This session</th>
     </tr>
     </thead>
     <tbody>
@@ -14,9 +14,9 @@ Last 100 sessions
         <tr>
             <td>
                 {{if eq .Running true}}
-                    >>> <strong><small>{{.Id}}</small> {{.Name}}</strong>
+                    >>> <strong><small>{{.Id}}</small> {{.Name}}</strong> <code>{{.Tags}}</code>
                 {{else}}
-                    <small>{{.Id}}</small> {{.Name}}
+                    <small>{{.Id}}</small> {{.Name}} <code>{{.Tags}}</code>
                 {{end}}
                 </summary>
 
