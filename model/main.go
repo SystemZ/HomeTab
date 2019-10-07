@@ -2,17 +2,20 @@ package model
 
 import (
 	"fmt"
-	"github.com/go-redis/redis"
+	"github.com/go-redis/redis/v7"
+	"github.com/go-redis/redis_rate/v8"
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/jinzhu/gorm"
 	_ "github.com/jinzhu/gorm/dialects/mysql"
 	"github.com/sirupsen/logrus"
 	"gitlab.com/systemz/tasktab/config"
+	"time"
 )
 
 var (
-	DB    *gorm.DB
-	Redis *redis.Client
+	DB          *gorm.DB
+	Redis       *redis.Client
+	AuthLimiter *redis_rate.Limiter
 )
 
 func InitMysql() {
@@ -54,4 +57,10 @@ func InitRedis() {
 	}
 
 	logrus.Info("Connection to Redis seems OK!")
+	// configure rate limiting
+	AuthLimiter = redis_rate.NewLimiter(Redis, &redis_rate.Limit{
+		Burst:  5,
+		Rate:   5,
+		Period: time.Second * 10,
+	})
 }

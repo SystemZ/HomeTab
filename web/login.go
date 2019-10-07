@@ -1,6 +1,7 @@
 package web
 
 import (
+	"fmt"
 	"github.com/satori/go.uuid"
 	"gitlab.com/systemz/tasktab/config"
 	"gitlab.com/systemz/tasktab/model"
@@ -16,6 +17,16 @@ type LoginPage struct {
 }
 
 func Login(w http.ResponseWriter, r *http.Request) {
+	res, err := model.AuthLimiter.Allow("login")
+	if err != nil {
+		panic(err)
+	}
+	if !res.Allowed {
+		w.WriteHeader(http.StatusTooManyRequests)
+		fmt.Fprint(w, "(╯°□°）╯︵ ┻━┻")
+		return
+	}
+
 	page := LoginPage{}
 	page.AuthOk = false
 	if config.REGISTER_ON {

@@ -7,6 +7,8 @@ require (
 	github.com/getlantern/golog v0.0.0-20190830074920-4ef2e798c2d7 // indirect
 	github.com/getlantern/systray v0.0.0-20190727060347-6f0e5a3c556c
 	github.com/go-redis/redis v6.15.5+incompatible
+	github.com/go-redis/redis/v7 v7.0.0-beta.3
+	github.com/go-redis/redis_rate/v8 v8.0.0-beta
 	github.com/go-sql-driver/mysql v1.4.1
 	github.com/go-vgo/robotgo v0.0.0-20190926173521-f981187a7aea
 	github.com/google/go-cmp v0.3.0 // indirect
