@@ -1,4 +1,4 @@
-<h3>Account info</h3>
+<h2>Account info</h2>
 <table>
     <tr>
         <td>ID</td>
@@ -13,7 +13,23 @@
         <td>{{.User.UpdatedAt}}</td>
     </tr>
 </table>
-<h3>Settings</h3>
+
+<h2>Projects</h2>
+Projects of all users
+
+<table>
+    <tr>
+        <th>ID</th>
+        <th>Name</th>
+    </tr>
+    {{range .Projects}}
+        <tr>
+            <td>{{.Id}}</td>
+            <td>{{.Name}}</td>
+        </tr>
+    {{end}}
+</table>
+
 <form method="POST">
     <label for="defaultProject">Default project</label>
     <select name="defaultProject">
@@ -28,14 +44,40 @@
     <input type="submit" value="Save"/>
 </form>
 
+
 <h3>New Project</h3>
 <form method="POST">
     <label for="newProjectName">Name</label>
-    <input type="text" name="newProjectName" id="email" placeholder="Project name"/>
+    <input type="text" name="newProjectName" placeholder="Yet another project"/>
     <input type="submit" value="Save"/>
 </form>
 
-<h3>Logout</h3>
+<h2>Devices</h2>
+Devices of all users
+
+<table>
+    <tr>
+        <th>ID</th>
+        <th>Name</th>
+        <th>Token</th>
+    </tr>
+    {{range .Devices}}
+        <tr>
+            <td>{{.Id}}</td>
+            <td>{{.Name}}</td>
+            <td>{{.Token}}</td>
+        </tr>
+    {{end}}
+</table>
+
+<h3>New Device</h3>
+<form method="POST">
+    <label for="newDeviceName">Name</label>
+    <input type="text" name="newDeviceName" placeholder="TooSmartForPhone"/>
+    <input type="submit" value="Save"/>
+</form>
+
+<h2>Logout</h2>
 <form method="POST" action="/logout">
     <input type="submit" value="Logout"/>
 </form>

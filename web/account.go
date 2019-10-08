@@ -11,6 +11,7 @@ type AccountPage struct {
 	AuthOk   bool
 	User     model.User
 	Projects []model.Project
+	Devices  []model.Device
 }
 
 func Account(w http.ResponseWriter, r *http.Request) {
@@ -35,22 +36,32 @@ func Account(w http.ResponseWriter, r *http.Request) {
 	}
 	// project was created via form
 	if r.Method == http.MethodPost && len(r.FormValue("newProjectName")) > 0 {
-		model.CreateProject(r.FormValue("newProjectName"), 0)
+		model.CreateProject(r.FormValue("newProjectName"), 0) //FIXME
+		//newProject := model.Project{Name: r.FormValue("newProjectName")}
+		//model.DB.Create(newProject)
+		http.Redirect(w, r, "/account", 302)
+		return
+	}
+	// device was created via form
+	if r.Method == http.MethodPost && len(r.FormValue("newDeviceName")) > 0 {
+		model.CreateDevice(r.FormValue("newDeviceName"), user.Id)
 		//newProject := model.Project{Name: r.FormValue("newProjectName")}
 		//model.DB.Create(newProject)
 		http.Redirect(w, r, "/account", 302)
 		return
 	}
 
-	// get data from DB
-	var projects []model.Project
-	model.DB.Order("created_at desc").Find(&projects)
-	//model.DB.Where(&model.Project{Id: user.DefaultProjectId}).Find(&projects)
-
+	// var for all data from DB
 	var templateVars AccountPage
 	templateVars.User = user
 	templateVars.AuthOk = authOk
-	templateVars.Projects = projects
 
+	// get data from DB
+	var projects []model.Project
+	model.DB.Order("created_at desc").Find(&projects)
+	templateVars.Projects = projects
+	model.DB.Order("created_at desc").Find(&templateVars.Devices)
+
+	// render HTML
 	display.HTML(w, http.StatusOK, "account", templateVars)
 }

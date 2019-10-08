@@ -32,6 +32,9 @@ func StartWebInterface() {
 	r.HandleFunc("/", Index)
 	r.HandleFunc("/count", Count)
 	r.HandleFunc("/count/log", CountLog)
+	r.HandleFunc("/device", Device)
+	// settings
+	r.HandleFunc("/account", Account)
 	// auth
 	if config.REGISTER_ON {
 		r.HandleFunc("/register", Register)
@@ -39,8 +42,8 @@ func StartWebInterface() {
 	r.HandleFunc("/login", Login)
 	r.HandleFunc("/logout", Logout)
 	r.HandleFunc("/refresh", Refresh) // FIXME
-	// settings
-	r.HandleFunc("/account", Account)
+	// API
+	r.HandleFunc("/api/v1/event", ApiEvent)
 	// start internal http server with logging
 	loggedRouter := handlers.LoggingHandler(os.Stdout, r)
 	log.Println("HTTP server started on :3000")
