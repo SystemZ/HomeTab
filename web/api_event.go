@@ -69,7 +69,7 @@ func ApiEvent(w http.ResponseWriter, r *http.Request) {
 		model.DeviceEventAdd(model.DeviceScreenOn, device.UserId, device.Id)
 	}
 	if event.Status.Screen == "off" {
-		model.DeviceEventAdd(model.DeviceScreenOn, device.UserId, device.Id)
+		model.DeviceEventAdd(model.DeviceScreenOff, device.UserId, device.Id)
 	}
 	// music info
 	if event.Music.Track != "%mt_track" {
