@@ -23,6 +23,7 @@ const (
 	DeviceScreenOn
 	DeviceMusicTrack
 	DeviceMusicArtist
+	DeviceScreenOff
 	//DeviceBoot
 	//DeviceShutdown
 	//DeviceGoneSleep
