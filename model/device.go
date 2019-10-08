@@ -31,15 +31,96 @@ func CreateDevice(name string, userId uint) uint {
 	return device.Id
 }
 
-func GetListOfDevices() {
+type DeviceList struct {
+	Id                 uint
+	UserId             uint
+	Name               string
+	CreatedAt          time.Time
+	DisplayState       string
+	DisplayOnLastTime  time.Time
+	DisplayOffLastTime time.Time
+	BatteryLeft        uint
+	Username           string
+}
+
+func GetListOfDevices() (result []DeviceList) {
 	query := `
 SELECT
-id,
-user_id,
-name,
-created_at,
-(SELECT events.val_int FROM events WHERE events.device_id = devices.id ORDER BY events.created_at ASC LIMIT 1) AS battery_left
+  id,
+  user_id,
+  name,
+  created_at,
+  (SELECT
+       IF(events.code=?,'ON','OFF')
+   FROM events
+   WHERE events.device_id = devices.id
+     AND events.code IN (?,?)
+     AND events.val_int IS NULL
+   ORDER BY events.created_at DESC
+   LIMIT 1) AS display_current,
+  (SELECT
+    events.created_at
+   FROM events
+   WHERE events.device_id = devices.id
+   AND events.code = ?
+   AND events.val_int IS NULL
+   ORDER BY events.created_at DESC
+   LIMIT 1) AS last_display_on,
+  (SELECT
+    events.created_at
+   FROM events
+   WHERE events.device_id = devices.id
+   AND events.code = ?
+   AND events.val_int IS NULL
+   ORDER BY events.created_at DESC
+   LIMIT 1) AS last_display_off,
+  (SELECT
+    events.val_int
+   FROM events
+   WHERE events.device_id = devices.id
+     AND events.code = ?
+     AND events.val_int IS NOT NULL
+   ORDER BY events.created_at DESC
+   LIMIT 1) AS battery_left,
+  (SELECT
+    users.username
+    FROM users
+    WHERE users.id = devices.user_id
+  ) AS username
 FROM devices
 `
-	log.Printf("%v", query)
+
+	stmt, err := DB.DB().Prepare(query)
+	if err != nil {
+		log.Printf("%v", err.Error())
+		return
+	}
+	defer stmt.Close()
+	rows, err := stmt.Query(
+		//1q
+		DeviceScreenOn,
+		DeviceScreenOn,
+		DeviceScreenOff,
+		//2q
+		DeviceScreenOn,
+		//3q
+		DeviceScreenOff,
+		//4q
+		DeviceBatteryPercent,
+	)
+	if err != nil {
+		log.Printf("%v", err.Error())
+		return
+	}
+	defer rows.Close()
+	for rows.Next() {
+		var list DeviceList
+		err := rows.Scan(&list.Id, &list.UserId, &list.Name, &list.CreatedAt, &list.DisplayState, &list.DisplayOnLastTime, &list.DisplayOffLastTime, &list.BatteryLeft, &list.Username)
+		if err != nil {
+			return
+		}
+
+		result = append(result, list)
+	}
+	return result
 }

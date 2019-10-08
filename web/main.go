@@ -6,9 +6,11 @@ import (
 	"github.com/unrolled/render"
 	"gitlab.com/systemz/tasktab/config"
 	"gitlab.com/systemz/tasktab/model"
+	"html/template"
 	"log"
 	"net/http"
 	"os"
+	"time"
 )
 
 var (
@@ -21,6 +23,14 @@ func init() {
 		Extensions: []string{".html"},
 		//DisableHTTPErrorRendering: false,
 		Layout: "layout",
+		Funcs: []template.FuncMap{
+			{
+				"formatDate": func(date time.Time) string {
+					loc, _ := time.LoadLocation("Europe/Warsaw")
+					return date.In(loc).Format("15:04:05 02.01.2006")
+				},
+			},
+		},
 	})
 
 }

@@ -1,11 +1,27 @@
 <h2>Devices</h2>
 Devices of all users
 
-<table>
-    {{range .Devices}}
+{{range .Devices}}
+    <table>
         <tr>
-            <td>{{.Id}}</td>
-            <td>{{.Name}}</td>
+            <th>{{.Name}} - {{.Username}}</th>
+            <th></th>
         </tr>
-    {{end}}
-</table>
+        <tr>
+            <td>Battery</td>
+            <td>{{.BatteryLeft}}%</td>
+        </tr>
+        <tr>
+            <td>Display</td>
+            <td>{{.DisplayState}}</td>
+        </tr>
+        <tr>
+            <td>Last display ON</td>
+            <td>{{formatDate .DisplayOnLastTime}}</td>
+        </tr>
+        <tr>
+            <td>Last display OFF</td>
+            <td>{{formatDate .DisplayOffLastTime}}</td>
+        </tr>
+    </table>
+{{end}}
