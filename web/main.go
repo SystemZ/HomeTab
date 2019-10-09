@@ -26,7 +26,10 @@ func init() {
 		Funcs: []template.FuncMap{
 			{
 				"formatDate": func(date time.Time) string {
-					loc, _ := time.LoadLocation("Europe/Warsaw")
+					loc, err := time.LoadLocation("Europe/Warsaw")
+					if err != nil {
+						log.Printf("%v", err)
+					}
 					return date.In(loc).Format("15:04:05 02.01.2006")
 				},
 			},
