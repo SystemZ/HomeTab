@@ -23,5 +23,12 @@ Devices of all users
             <td>Last display OFF</td>
             <td>{{formatDate .DisplayOffLastTime}}</td>
         </tr>
+        <tr>
+            <td>Last track:</td>
+            <td>
+                {{formatDate .MusicLastPlayed}}<br>
+                {{.MusicTrack}} - {{.MusicArtist}}
+            </td>
+        </tr>
     </table>
 {{end}}

@@ -41,6 +41,9 @@ type DeviceList struct {
 	DisplayOffLastTime time.Time
 	BatteryLeft        uint
 	Username           string
+	MusicTrack         string
+	MusicArtist        string
+	MusicLastPlayed    time.Time
 }
 
 func GetListOfDevices() (result []DeviceList) {
@@ -86,8 +89,32 @@ SELECT
     users.username
     FROM users
     WHERE users.id = devices.user_id
-  ) AS username
-FROM devices
+  ) AS username,
+  (SELECT
+    events.val_str
+    FROM events
+    WHERE events.device_id = devices.id
+      AND events.code = ?
+      AND events.val_int IS NULL
+    ORDER BY events.created_at DESC
+    LIMIT 1) AS music_title,
+  (SELECT
+    events.val_str
+    FROM events
+    WHERE events.device_id = devices.id
+      AND events.code = ?
+      AND events.val_int IS NULL
+    ORDER BY events.created_at DESC
+    LIMIT 1) AS music_artist,
+  (SELECT
+    events.created_at
+    FROM events
+    WHERE events.device_id = devices.id
+      AND (events.code = ? OR events.code = ?)
+      AND events.val_int IS NULL
+    ORDER BY events.created_at DESC
+    LIMIT 1) AS music_last_played
+  FROM devices
 `
 
 	stmt, err := DB.DB().Prepare(query)
@@ -107,6 +134,13 @@ FROM devices
 		DeviceScreenOff,
 		//4q
 		DeviceBatteryPercent,
+		//5q
+		DeviceMusicTrack,
+		//6q
+		DeviceMusicArtist,
+		//7q
+		DeviceMusicTrack,
+		DeviceMusicArtist,
 	)
 	if err != nil {
 		log.Printf("%v", err.Error())
@@ -115,7 +149,20 @@ FROM devices
 	defer rows.Close()
 	for rows.Next() {
 		var list DeviceList
-		err := rows.Scan(&list.Id, &list.UserId, &list.Name, &list.CreatedAt, &list.DisplayState, &list.DisplayOnLastTime, &list.DisplayOffLastTime, &list.BatteryLeft, &list.Username)
+		err := rows.Scan(
+			&list.Id,
+			&list.UserId,
+			&list.Name,
+			&list.CreatedAt,
+			&list.DisplayState,
+			&list.DisplayOnLastTime,
+			&list.DisplayOffLastTime,
+			&list.BatteryLeft,
+			&list.Username,
+			&list.MusicTrack,
+			&list.MusicArtist,
+			&list.MusicLastPlayed,
+		)
 		if err != nil {
 			return
 		}
