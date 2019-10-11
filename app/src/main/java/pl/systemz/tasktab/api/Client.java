@@ -1,5 +1,7 @@
 package pl.systemz.tasktab.api;
 
+import android.content.Context;
+
 import java.util.List;
 
 import retrofit2.Call;
@@ -10,6 +12,7 @@ import retrofit2.http.POST;
 import retrofit2.http.Path;
 
 public class Client {
+    Context context;
     public static final String API_URL = "http://192.168.2.88:3000/api/v1/";
     private static Client instance = null;
     private GitHub github;
@@ -76,8 +79,46 @@ public class Client {
         return instance;
     }
 
+//    private SharedPreferences prefs;
+
+//    private String authToken;
+//
+//    public ServiceInterceptor(String authToken) {
+//        this.authToken = authToken;
+//    }
+
+//    class ServiceInterceptor implements Interceptor{
+//        @NonNull
+//        @Override
+//        public okhttp3.Response intercept(@NonNull Chain chain) throws IOException {
+//            Request request = chain.request();
+//            if (request.header("No-Authentication") == null){
+//                SharedPreferences sharedPref = ???.getSharedPreferences(USER, Context.MODE_PRIVATE);
+//                        request = request.newBuilder()
+//                        .addHeader("Authorization", "JWT " + sharedPref.getString("auth_token", null))
+//                        .build();
+//            }
+//            return chain.proceed(request);
+//        }
+//    }
+
+
     private void buildRetrofit(String url) {
+//        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
+//        final String token = prefs.getString("auth_token","testtoken");
+//
+//        OkHttpClient client = new OkHttpClient.Builder().addInterceptor(new Interceptor() {
+//            @Override
+//            public Response intercept(Chain chain) throws IOException {
+//                Request newRequest  = chain.request().newBuilder()
+//                        .addHeader("Authorization", "Bearer " + token)
+//                        .build();
+//                return chain.proceed(newRequest);
+//            }
+//        }).build();
+
         Retrofit retrofit = new Retrofit.Builder()
+//                .client(client)
                 .baseUrl(url)
                 .addConverterFactory(GsonConverterFactory.create())
                 .build();
