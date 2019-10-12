@@ -23,6 +23,5 @@ upload:
   image: alpine:latest
   script:
     - apk --no-cache add bash curl pwgen unzip
-    - echo $RCLONE_CONFIG > /root/.rclone.conf
     - curl https://rclone.org/install.sh | /bin/bash
     - bash upload.sh
