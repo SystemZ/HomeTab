@@ -28,7 +28,6 @@ func ApiCounter(w http.ResponseWriter, r *http.Request) {
 		log.Printf("Wrong counter ID requested")
 		w.WriteHeader(http.StatusBadRequest)
 	}
-	log.Printf("ID: %v", counterId)
 
 	// gather data, convert from DB model to API model
 	var counter CounterApi
@@ -45,8 +44,6 @@ func ApiCounter(w http.ResponseWriter, r *http.Request) {
 			break
 		}
 	}
-
-	log.Printf("%v", counter)
 
 	// prepare JSON
 	counterList, err := json.MarshalIndent(counter, "", "  ")
