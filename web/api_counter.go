@@ -22,6 +22,7 @@ func ApiCounter(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		log.Printf("Wrong counter ID requested")
 		w.WriteHeader(http.StatusBadRequest)
+		return
 	}
 
 	// gather data, convert from DB model to API model
@@ -50,4 +51,48 @@ func ApiCounter(w http.ResponseWriter, r *http.Request) {
 	// all ok, return list
 	w.WriteHeader(http.StatusOK)
 	w.Write(counterList)
+}
+
+func ApiCounterStart(w http.ResponseWriter, r *http.Request) {
+	authOk, userId := ApiCheckAuth(w, r)
+	if !authOk {
+		w.Write([]byte{})
+		return
+	}
+
+	// check ID in URL
+	vars := mux.Vars(r)
+	counterId, err := strconv.Atoi(vars["id"])
+	if err != nil {
+		log.Printf("Wrong counter ID requested")
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
+	//FIXME validation for user permissions
+	model.StartCounterSession(uint(counterId), userId)
+	w.WriteHeader(http.StatusOK)
+	w.Write([]byte{})
+}
+
+func ApiCounterStop(w http.ResponseWriter, r *http.Request) {
+	authOk, userId := ApiCheckAuth(w, r)
+	if !authOk {
+		w.Write([]byte{})
+		return
+	}
+
+	// check ID in URL
+	vars := mux.Vars(r)
+	counterId, err := strconv.Atoi(vars["id"])
+	if err != nil {
+		log.Printf("Wrong counter ID requested")
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
+	//FIXME validation for user permissions
+	model.StopCounterSession(uint(counterId), userId)
+	w.WriteHeader(http.StatusOK)
+	w.Write([]byte{})
 }
