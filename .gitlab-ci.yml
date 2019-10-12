@@ -1,78 +1,29 @@
 stages:
-- environment
 - build
-- test
 - upload
 
-updateContainerJob:
-  image: docker:stable
-  stage: environment
-  services:
-  - docker:dind
-  script:
-  - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY
-  - docker build --tag $CI_REGISTRY_IMAGE:pipeline-$CI_PIPELINE_ID --tag $CI_REGISTRY_IMAGE:latest .
-  - docker push $CI_REGISTRY_IMAGE:pipeline-$CI_PIPELINE_ID
-  - docker push $CI_REGISTRY_IMAGE:latest
-  when: manual
-
-.build_job:
-  image: $CI_REGISTRY_IMAGE:latest
+build:
   stage: build
+  image: jangrewe/gitlab-ci-android
   before_script:
-    #- wget --output-document=artifacts.zip --quiet "https://gitlab.com/gitlab-org/gitter/webapp/-/jobs/artifacts/master/download?job=mobile-asset-build"
-    #- unzip artifacts.zip
-    #- mkdir -p app/src/main/assets/www
-    #- mv output/android/www/* app/src/main/assets/www/
-    # We store this binary file in a variable as hex with this command, `xxd -p gitter-android-app.jks`
-    # Then we convert the hex back to a binary file
-    - echo "$signing_jks_file_hex" | xxd -r -p - > android-signing-keystore.jks
-    # We add 100 to get this high enough above current versionCodes that are published
-    - "export VERSION_CODE=$((100 + $CI_PIPELINE_IID)) && echo $VERSION_CODE"
-    - "export VERSION_SHA=`echo ${CI_COMMIT_SHA:0:8}` && echo $VERSION_SHA"
-    # Make the changelog
-    #- cp ./fastlane/metadata/android/en-GB/changelogs/CURRENT_VERSION.txt "./fastlane/metadata/android/en-GB/changelogs/$VERSION_CODE.txt"
-    # We allow the remote push and MR creation to fail because the other job could create it
-    # and it's not strictly necessary (we just need the file locally for the CI build)
-    - ./ci-scripts/create-changlog-mr.sh || true
-    # Because we allow the MR creation to fail, just make sure we are back in the right repo state
-    - git checkout "$CI_COMMIT_SHA"
-    - mkdir -p /android-sdk-linux/licenses/ || true
-    - echo -e "\nd56f5187479451eabf01fb78af6dfcb131a6481e" > /android-sdk-linux/licenses/android-sdk-license
-    - echo -e "\n24333f8a63b6825ea9c5514f83c2829b004d1fee" >> /android-sdk-linux/licenses/android-sdk-license
-  after_script:
-    - rm -f android-signing-keystore.jks || true
+    - export GRADLE_USER_HOME=$(pwd)/.gradle
+    - chmod +x ./gradlew
+  script:
+    - ./gradlew assembleDebug
   artifacts:
     paths:
-      - app/build/outputs
+      - app/build/outputs/apk/app-debug.apk
+  cache:
+    key: ${CI_PROJECT_ID}
+    paths:
+      - .gradle/
 
-buildDebug:
-  extends: .build_job
-  script:
-  - bundle exec fastlane buildDebug
-
-buildRelease:
-  extends: .build_job
-  script:
-  - bundle exec fastlane buildRelease
-  environment:
-    name: production
-
-testDebug:
-  image: $CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG
-  stage: test
-  dependencies:
-  - buildDebug
-  script:
-  - mkdir -p /android-sdk-linux/licenses/ || true
-  - echo -e "\nd56f5187479451eabf01fb78af6dfcb131a6481e" > /android-sdk-linux/licenses/android-sdk-license
-  - echo -e "\n24333f8a63b6825ea9c5514f83c2829b004d1fee" >> /android-sdk-linux/licenses/android-sdk-license
-  - bundle exec fastlane test
-
-uploadRelease:
+upload:
   stage: upload
   image: rclone/rclone:latest
   script:
     - apk --no-cache add bash curl pwgen
     - echo $RCLONE_CONFIG > /root/.config/rclone
+    - ls -alh .
+    - find .
     - bash upload.sh
