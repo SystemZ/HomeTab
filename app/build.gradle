@@ -19,6 +19,12 @@ else {
 }
 
 android {
+    // used for MQTT lib only
+    compileOptions {
+        sourceCompatibility 1.8
+        targetCompatibility 1.8
+    }
+    //
     compileSdkVersion 28
     defaultConfig {
         applicationId "pl.systemz.tasktab"
