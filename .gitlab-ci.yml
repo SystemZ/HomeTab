@@ -21,13 +21,13 @@ updateContainerJob:
   when: manual
 
 .updateContainer:
-  extends: .updateContainerJob
+  extends: updateContainerJob
   only:
     changes:
     - Dockerfile
 
 .ensureContainer:
-  extends: .updateContainerJob
+  extends: updateContainerJob
   allow_failure: true
   before_script:
   - "mkdir -p ~/.docker && echo '{\"experimental\": \"enabled\"}' > ~/.docker/config.json"
