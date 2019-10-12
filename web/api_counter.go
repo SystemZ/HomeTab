@@ -10,14 +10,9 @@ import (
 )
 
 func ApiCounter(w http.ResponseWriter, r *http.Request) {
-	token := r.Header.Get("Authorization")
-	//get device from DB by token
-	var device model.Device
-	model.DB.Where("token = ?", token).First(&device)
-	// check auth
-	if device.UserId < 1 {
-		log.Printf("Unknown device tried access counters")
-		w.WriteHeader(http.StatusBadRequest)
+	authOk, userId := ApiCheckAuth(w, r)
+	if !authOk {
+		w.Write([]byte{})
 		return
 	}
 
@@ -31,7 +26,7 @@ func ApiCounter(w http.ResponseWriter, r *http.Request) {
 
 	// gather data, convert from DB model to API model
 	var counter CounterApi
-	dbCounters := model.CounterLogList(device.UserId)
+	dbCounters := model.CounterLogList(userId)
 	for _, v := range dbCounters {
 		if v.CounterId == uint(counterId) {
 			counter = CounterApi{

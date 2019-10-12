@@ -65,6 +65,20 @@ func StartWebInterface() {
 	log.Fatal(http.ListenAndServe(":3000", loggedRouter))
 }
 
+func ApiCheckAuth(w http.ResponseWriter, r *http.Request) (ok bool, userId uint) {
+	token := r.Header.Get("Authorization")
+	//get device from DB by token
+	var device model.Device
+	model.DB.Where("token = ?", token).First(&device)
+	// check auth
+	if device.UserId < 1 {
+		log.Printf("Unknown device tried access to API")
+		w.WriteHeader(http.StatusBadRequest)
+		return false, 0
+	}
+	return true, device.UserId
+}
+
 func CheckAuth(w http.ResponseWriter, r *http.Request) (ok bool, user model.User) {
 	// We can obtain the session token from the requests cookies, which come with every request
 	c, err := r.Cookie("session_token")

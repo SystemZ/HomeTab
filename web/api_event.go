@@ -22,6 +22,7 @@ type IncomingEvent struct {
 }
 
 func ApiEvent(w http.ResponseWriter, r *http.Request) {
+	// FIXME use ApiCheckAuth()
 	//enforce POST only
 	if r.Method != http.MethodPost {
 		w.WriteHeader(http.StatusBadRequest)
