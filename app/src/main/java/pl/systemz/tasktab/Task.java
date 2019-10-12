@@ -35,7 +35,7 @@ public class Task extends AppCompatActivity {
         final Button startButton = findViewById(R.id.taskCounterStart);
         final Button stopButton = findViewById(R.id.taskCounterStop);
 
-        Client client = Client.getInstance();
+        Client client = Client.getInstance(getApplicationContext());
         Call<Client.Timer> call = client.getGithub().timerInfo(taskIdz);
         call.enqueue(new Callback<Client.Timer>() {
             @Override
@@ -122,7 +122,7 @@ public class Task extends AppCompatActivity {
         // notificationId is a unique int for each notification that you must define
         notificationManager.notify(taskId, builder.build());
 
-        Client client = Client.getInstance();
+        Client client = Client.getInstance(getApplicationContext());
         Call<Client.Timer> call = client.getGithub().timerStart(taskId);
         call.enqueue(new Callback<Client.Timer>() {
             @Override
@@ -143,7 +143,7 @@ public class Task extends AppCompatActivity {
     }
 
     protected void counterStop(final Integer taskId) {
-        Client client = Client.getInstance();
+        Client client = Client.getInstance(getApplicationContext());
         Call<Client.Timer> call = client.getGithub().timerStop(taskId);
         call.enqueue(new Callback<Client.Timer>() {
             @Override

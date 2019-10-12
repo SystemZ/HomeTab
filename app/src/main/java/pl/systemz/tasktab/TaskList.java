@@ -50,7 +50,7 @@ public class TaskList extends AppCompatActivity {
         recyclerView.setAdapter(mAdapter);
 
         // calling backend API
-        Client client = Client.getInstance();
+        Client client = Client.getInstance(getApplicationContext());
         Call<List<Client.Timer>> call = client.getGithub().timers();
         call.enqueue(new Callback<List<Client.Timer>>() {
             @Override
