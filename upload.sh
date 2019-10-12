@@ -1,6 +1,6 @@
 #!/bin/bash
-echo $RCLONE_CONFIG | base64 -d > ~/.rclone.conf
-cat ~/.rclone.conf
+mkdir -p /root/.config/rclone/
+echo $RCLONE_CONFIG | base64 -d > /root/.config/rclone/rclone.conf
 RAND_STR=$(pwgen -N 1 -s 32)
 URL="https://s3.eu-central-1.amazonaws.com/tmp.lvlup.pro/$RAND_STR/tasktab.apk"
 echo "Uploading to URL: $URL"
