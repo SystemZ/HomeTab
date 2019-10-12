@@ -67,4 +67,6 @@ dependencies {
     implementation 'androidx.recyclerview:recyclerview:1.0.0'
     implementation 'com.squareup.retrofit2:retrofit:2.5.0'
     implementation 'com.squareup.retrofit2:converter-gson:2.5.0'
+//    implementation 'com.hivemq:hivemq-mqtt-client:1.1.2'
+    implementation group: 'com.hivemq', name: 'hivemq-mqtt-client-shaded', version: '1.1.2'
 }
