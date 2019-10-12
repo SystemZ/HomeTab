@@ -57,6 +57,8 @@ func StartWebInterface() {
 	r.HandleFunc("/refresh", Refresh) // FIXME
 	// API
 	r.HandleFunc("/api/v1/event", ApiEvent)
+	r.HandleFunc("/api/v1/counter", ApiCounterList)
+	r.HandleFunc("/api/v1/counter/{id}", ApiCounter)
 	// start internal http server with logging
 	loggedRouter := handlers.LoggingHandler(os.Stdout, r)
 	log.Println("HTTP server started on :3000")

@@ -183,6 +183,7 @@ func PrettyTime(s uint) string {
 }
 
 type CounterSessionList struct {
+	CounterId         uint
 	Id                uint
 	UserId            uint
 	Name              string
@@ -197,6 +198,7 @@ type CounterSessionList struct {
 func CounterLogList(userId uint) (result []CounterSessionList) {
 	query := `
 SELECT 
+  counter_sessions.counter_id,
   counter_sessions.id,
   counter_sessions.user_id,
   counters.name, 
@@ -226,7 +228,7 @@ LIMIT 100
 	defer rows.Close()
 	for rows.Next() {
 		var list CounterSessionList
-		err := rows.Scan(&list.Id, &list.UserId, &list.Name, &list.Tags, &list.StartedAt, &list.EndedAt, &list.Duration)
+		err := rows.Scan(&list.CounterId, &list.Id, &list.UserId, &list.Name, &list.Tags, &list.StartedAt, &list.EndedAt, &list.Duration)
 		if err != nil {
 			log.Printf("%v", err.Error())
 			return
