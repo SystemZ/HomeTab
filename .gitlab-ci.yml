@@ -20,9 +20,11 @@ build:
 
 upload:
   stage: upload
-  image: rclone/rclone:latest
+  image: alpine:latest
   script:
-    - apk --no-cache add bash curl pwgen
+    - apk --no-cache add bash curl pwgen unzip
+    - mkdir -p /root/.config/
+    - curl https://rclone.org/install.sh | /bin/bash
     - echo $RCLONE_CONFIG > /root/.config/rclone
     - ls -alh .
     - find .
