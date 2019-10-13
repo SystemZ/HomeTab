@@ -6,7 +6,6 @@ import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Intent;
-import android.content.IntentFilter;
 import android.graphics.Color;
 import android.os.Build;
 import android.os.IBinder;
@@ -16,6 +15,7 @@ import android.widget.Toast;
 
 import com.google.gson.Gson;
 import com.hivemq.client.mqtt.MqttClient;
+import com.hivemq.client.mqtt.MqttClientState;
 import com.hivemq.client.mqtt.mqtt3.Mqtt3AsyncClient;
 import com.hivemq.client.mqtt.mqtt3.message.connect.connack.Mqtt3ConnAck;
 import com.hivemq.client.mqtt.mqtt3.message.publish.Mqtt3Publish;
@@ -72,14 +72,13 @@ public class StalkService extends Service {
         // SystemClock.elapsedRealtime() + AlarmManager.INTERVAL_HALF_HOUR,
         // AlarmManager.INTERVAL_HALF_HOUR, alarmIntent);
 
-        IntentFilter intentFilter = new IntentFilter();
-        intentFilter.addAction(Intent.ACTION_SCREEN_ON);
-        intentFilter.addAction(Intent.ACTION_SCREEN_OFF);
-        intentFilter.addAction(Intent.ACTION_BATTERY_CHANGED);
-        intentFilter.addAction(Intent.ACTION_BOOT_COMPLETED);
-
-        this.antenna = new Antenna();
-        registerReceiver(antenna, intentFilter);
+//        IntentFilter intentFilter = new IntentFilter();
+//        intentFilter.addAction(Intent.ACTION_SCREEN_ON);
+//        intentFilter.addAction(Intent.ACTION_SCREEN_OFF);
+//        intentFilter.addAction(Intent.ACTION_BATTERY_CHANGED);
+//        intentFilter.addAction(Intent.ACTION_BOOT_COMPLETED);
+//        this.antenna = new Antenna();
+//        registerReceiver(antenna, intentFilter);
 
         // get credentials to MQTT server by asking tasktab backend RESTful API
         Client client = Client.getInstance(getApplicationContext());
@@ -90,6 +89,7 @@ public class StalkService extends Service {
                 if (!response.isSuccessful()) {
                     // debug
                     Log.e(TAG, "MQ credentials fetch failed");
+                    justStop();
                     return;
                 }
                 Log.d(TAG, "MQ credentials fetched");
@@ -99,8 +99,15 @@ public class StalkService extends Service {
             @Override
             public void onFailure(Call<Client.MqCredentials> call, Throwable t) {
                 Log.e(TAG, "MQ credentials fetch onFailure");
+                Log.e(TAG, t.getCause().toString());
+                justStop();
             }
         });
+    }
+
+    // end work if fetching credentials doesn't work
+    public void justStop() {
+        this.stopSelf();
     }
 
     @Override
@@ -134,6 +141,11 @@ public class StalkService extends Service {
         // The service is no longer used and is being destroyed
         Toast.makeText(this, "Stalk Service stopped", Toast.LENGTH_LONG).show();
         Log.d(TAG, "onDestroy");
+        try {
+            mqClient.disconnect();
+        } catch (NullPointerException e) {
+            Log.d(TAG, "tried to destroy empty mqClient");
+        }
     }
 
     // MQTT related below
@@ -149,23 +161,23 @@ public class StalkService extends Service {
                 .serverPort(response.body().port)
                 .automaticReconnect()
                 .initialDelay(1, TimeUnit.SECONDS)
-                .maxDelay(3, TimeUnit.SECONDS)
+                .maxDelay(10, TimeUnit.SECONDS)
                 .applyAutomaticReconnect()
                 .addConnectedListener(connectedContext -> {
                     Log.d(TAG, "MQTT connected");
                 })
                 .addDisconnectedListener(disconnectedContext -> {
                     Log.d(TAG, "Got MQTT DC: " + disconnectedContext.getClientConfig().getState());
-//                    if (disconnectedContext.getClientConfig().getState() == MqttClientState.CONNECTING) {
-//                        disconnectedContext.getReconnector().reconnect(false);
-//                    }
-                    //disconnectedContext.getReconnector().reconnect(true);
+                    if (disconnectedContext.getClientConfig().getState() == MqttClientState.CONNECTING_RECONNECT) {
+                        disconnectedContext.getReconnector().reconnect(false);
+                        this.stopSelf();
+                    }
                 })
-                //.automaticReconnectWithDefaultConfig()
                 .buildAsync();
 
         // login to MQTT server
         mqClient.connectWith()
+                .cleanSession(true)
                 .keepAlive(10)
                 .simpleAuth()
                 .username(response.body().username)
@@ -173,9 +185,11 @@ public class StalkService extends Service {
                 .applySimpleAuth()
                 .send()
                 .whenComplete(this::mqConnectionComplete);
+        Log.d(TAG, "mqConnect() end");
     }
 
     private void mqConnectionComplete(Mqtt3ConnAck connAck, Throwable throwable) {
+        Log.d(TAG, connAck.toString());
         if (throwable != null) {
             // handle failure
             Log.e(TAG, "Failure connecting to MQTT server");
@@ -183,7 +197,7 @@ public class StalkService extends Service {
             // setup subscribes or start publishing
             Log.d(TAG, "Connected to MQTT server");
             mqClient.subscribeWith()
-                    .topicFilter("tasktab")
+                    .topicFilter(mqClient.getConfig().getClientIdentifier().toString())
                     // Process the received message
                     .callback(this::newMqMsg)
                     .send()

@@ -51,6 +51,22 @@ public class Client {
         }
     }
 
+    public static class MqCredentials {
+        public final String id;
+        public final String host;
+        public final int port;
+        public final String username;
+        public final String password;
+
+        public MqCredentials(String id, String host, int port, String username, String password) {
+            this.id = id;
+            this.host = host;
+            this.port = port;
+            this.username = username;
+            this.password = password;
+        }
+    }
+
     public interface GitHub {
         @GET("/repos/{owner}/{repo}/contributors")
         Call<List<Contributor>> contributors(
@@ -74,6 +90,9 @@ public class Client {
         Call<Timer> timerStop(
                 @Path("id") int id
         );
+
+        @GET("mq/access")
+        Call<MqCredentials> mqCredentialsGet();
     }
 
     private Client(Context context) {
