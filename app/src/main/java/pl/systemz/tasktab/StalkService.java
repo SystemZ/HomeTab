@@ -5,9 +5,23 @@ import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.graphics.Color;
 import android.os.IBinder;
 import android.util.Log;
 import android.widget.Toast;
+
+import com.google.gson.Gson;
+import com.hivemq.client.internal.mqtt.handler.disconnect.MqttDisconnectEvent;
+import com.hivemq.client.mqtt.MqttClient;
+import com.hivemq.client.mqtt.mqtt3.Mqtt3AsyncClient;
+
+import java.nio.charset.StandardCharsets;
+
+import androidx.core.app.NotificationCompat;
+import androidx.core.app.NotificationManagerCompat;
+import pl.systemz.tasktab.model.MqttMsg;
+
+import static java.lang.System.currentTimeMillis;
 
 public class StalkService extends Service {
     private static final String TAG = "Stalk";
@@ -54,6 +68,82 @@ public class StalkService extends Service {
         this.antenna = new Antenna();
         registerReceiver(antenna, intentFilter);
 
+
+        // to listen for MQTT messages
+        Mqtt3AsyncClient client = MqttClient
+                .builder()
+                .useMqttVersion3()
+                .identifier("tasktab-android")
+                .serverHost("changeme")
+                .serverPort(1883)
+                .automaticReconnect()
+                .applyAutomaticReconnect()
+                .addDisconnectedListener(disconnectedContext -> {
+                    Log.d(TAG, "Got MQTT DC");
+                    disconnectedContext.getReconnector().reconnect(true);
+                })
+                .addConnectedListener(connectedContext -> {
+                    Log.d(TAG, "MQTT connected");
+                })
+                //.useSslWithDefaultConfig()
+                .buildAsync();
+
+        client.connectWith()
+                .simpleAuth()
+                .username("tasktab:tasktab-android")
+                .password("changeme".getBytes())
+                .applySimpleAuth()
+                .send()
+                .whenComplete((connAck, throwable) -> {
+                    if (throwable != null) {
+                        // handle failure
+                        Log.d(TAG, "Failure connecting to MQTT server");
+                    } else {
+                        // setup subscribes or start publishing
+                        Log.d(TAG, "Connected to MQTT server");
+                        client.subscribeWith()
+                                .topicFilter("tasktab")
+                                .callback(publish -> {
+                                    // Process the received message
+                                    Log.d(TAG, "Got a new msg via MQTT");
+                                    String msgTxt = new String(publish.getPayloadAsBytes(), StandardCharsets.UTF_8);
+                                    // deserialize
+                                    // {"type":"notification","msg":"testzz",id:1}
+                                    Gson gson = new Gson();
+                                    MqttMsg msgObj = gson.fromJson(msgTxt, MqttMsg.class);
+
+                                    NotificationCompat.Builder builder = new NotificationCompat.Builder(this, "tasktab-counters")
+                                            .setSmallIcon(R.drawable.ic_access_time_black_24dp)
+                                            .setContentTitle(msgObj.getMsg())
+                                            .setContentText("In progress...")
+                                            .setUsesChronometer(true)
+                                            .setWhen(currentTimeMillis())
+                                            //.setOngoing(true)
+//                                            .setContentIntent(tapIntent)
+//                .addAction(R.mipmap.ic_launcher, "Stop", stopActionIntent)
+                                            .setColor(Color.GREEN)
+                                            //.setAutoCancel(true)
+                                            .setVibrate(new long[]{150})
+                                            //.setSound(Settings.System.DEFAULT_NOTIFICATION_URI)
+                                            .setPriority(NotificationCompat.PRIORITY_DEFAULT);
+
+                                    NotificationManagerCompat notificationManager = NotificationManagerCompat.from(this);
+                                    // notificationId is a unique int for each notification that you must define
+                                    notificationManager.notify(msgObj.getId(), builder.build());
+
+                                })
+                                .send()
+                                .whenComplete((subAck, throwable2) -> {
+                                    if (throwable2 != null) {
+                                        // Handle failure to subscribe
+                                        Log.d(TAG, "Subscribe error");
+                                    } else {
+                                        // Handle successful subscription, e.g. logging or incrementing a metric
+                                        Log.d(TAG, "Subscribe OK");
+                                    }
+                                });
+                    }
+                });
     }
 
     @Override
