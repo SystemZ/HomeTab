@@ -43,15 +43,15 @@
             </intent-filter>
         </activity>
 
-        <receiver android:name=".NotificationReceiver" />
-        <receiver android:name=".PowerReceiver">
+        <receiver android:name=".receiver.NotificationReceiver" />
+        <receiver android:name=".receiver.PowerReceiver">
             <intent-filter>
                 <action android:name="android.intent.action.ACTION_POWER_CONNECTED" />
                 <action android:name="android.intent.action.ACTION_POWER_DISCONNECTED" />
             </intent-filter>
         </receiver>
         <receiver
-            android:name=".Antenna"
+            android:name=".receiver.Antenna"
             android:enabled="true">
             <intent-filter>
                 <action android:name="android.intent.action.SCREEN_ON" />
@@ -61,7 +61,7 @@
             </intent-filter>
         </receiver>
         <receiver
-            android:name=".BootReceiver"
+            android:name=".receiver.BootReceiver"
             android:enabled="true">
             <intent-filter>
                 <action android:name="android.intent.action.BOOT_COMPLETED" />

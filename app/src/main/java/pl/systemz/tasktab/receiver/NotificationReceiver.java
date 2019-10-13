@@ -1,9 +1,11 @@
-package pl.systemz.tasktab;
+package pl.systemz.tasktab.receiver;
 
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.widget.Toast;
+
+import pl.systemz.tasktab.Task;
 
 public class NotificationReceiver extends BroadcastReceiver {
     @Override

@@ -1,4 +1,4 @@
-package pl.systemz.tasktab;
+package pl.systemz.tasktab.receiver;
 
 import android.content.BroadcastReceiver;
 import android.content.Context;

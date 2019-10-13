@@ -13,6 +13,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.NotificationCompat;
 import androidx.core.app.NotificationManagerCompat;
 import pl.systemz.tasktab.api.Client;
+import pl.systemz.tasktab.receiver.NotificationReceiver;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;

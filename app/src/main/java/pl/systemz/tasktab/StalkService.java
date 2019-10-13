@@ -27,6 +27,7 @@ import androidx.core.app.NotificationCompat;
 import androidx.core.app.NotificationManagerCompat;
 import pl.systemz.tasktab.api.Client;
 import pl.systemz.tasktab.model.MqttMsg;
+import pl.systemz.tasktab.receiver.Antenna;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
