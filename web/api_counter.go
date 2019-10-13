@@ -10,7 +10,7 @@ import (
 )
 
 func ApiCounter(w http.ResponseWriter, r *http.Request) {
-	authOk, userId := ApiCheckAuth(w, r)
+	authOk, device := ApiCheckAuth(w, r)
 	if !authOk {
 		w.Write([]byte{})
 		return
@@ -27,7 +27,7 @@ func ApiCounter(w http.ResponseWriter, r *http.Request) {
 
 	// gather data, convert from DB model to API model
 	var counter CounterApi
-	dbCounters := model.CounterLogList(userId)
+	dbCounters := model.CounterLogList(device.UserId)
 	for _, v := range dbCounters {
 		if v.CounterId == uint(counterId) {
 			counter = CounterApi{
@@ -54,7 +54,7 @@ func ApiCounter(w http.ResponseWriter, r *http.Request) {
 }
 
 func ApiCounterStart(w http.ResponseWriter, r *http.Request) {
-	authOk, userId := ApiCheckAuth(w, r)
+	authOk, device := ApiCheckAuth(w, r)
 	if !authOk {
 		w.Write([]byte{})
 		return
@@ -70,13 +70,13 @@ func ApiCounterStart(w http.ResponseWriter, r *http.Request) {
 	}
 
 	//FIXME validation for user permissions
-	model.StartCounterSession(uint(counterId), userId)
+	model.StartCounterSession(uint(counterId), device.UserId)
 	w.WriteHeader(http.StatusOK)
 	w.Write([]byte{})
 }
 
 func ApiCounterStop(w http.ResponseWriter, r *http.Request) {
-	authOk, userId := ApiCheckAuth(w, r)
+	authOk, device := ApiCheckAuth(w, r)
 	if !authOk {
 		w.Write([]byte{})
 		return
@@ -92,7 +92,7 @@ func ApiCounterStop(w http.ResponseWriter, r *http.Request) {
 	}
 
 	//FIXME validation for user permissions
-	model.StopCounterSession(uint(counterId), userId)
+	model.StopCounterSession(uint(counterId), device.UserId)
 	w.WriteHeader(http.StatusOK)
 	w.Write([]byte{})
 }

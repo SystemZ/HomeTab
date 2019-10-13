@@ -15,7 +15,7 @@ type CounterApi struct {
 }
 
 func ApiCounterList(w http.ResponseWriter, r *http.Request) {
-	authOk, userId := ApiCheckAuth(w, r)
+	authOk, device := ApiCheckAuth(w, r)
 	if !authOk {
 		w.Write([]byte{})
 		return
@@ -23,7 +23,7 @@ func ApiCounterList(w http.ResponseWriter, r *http.Request) {
 
 	// gather data, convert from DB model to API model
 	var counters []CounterApi
-	dbCounters := model.CountersLongList(userId)
+	dbCounters := model.CountersLongList(device.UserId)
 	for _, counter := range dbCounters {
 		counters = append(counters, CounterApi{
 			Id:         counter.Id,
