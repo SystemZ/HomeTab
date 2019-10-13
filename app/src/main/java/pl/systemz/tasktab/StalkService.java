@@ -25,7 +25,11 @@ import java.nio.charset.StandardCharsets;
 
 import androidx.core.app.NotificationCompat;
 import androidx.core.app.NotificationManagerCompat;
+import pl.systemz.tasktab.api.Client;
 import pl.systemz.tasktab.model.MqttMsg;
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 import static java.lang.System.currentTimeMillis;
 
@@ -45,13 +49,13 @@ public class StalkService extends Service {
     @Override
     public void onCreate() {
         // The service is being created
+        Log.d(TAG, "onCreate()");
 
         //Intent intents = new Intent(getBaseContext(),MainActivity.class);
         //intents.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         //startActivity(intents);
 
         Toast.makeText(this, "Stalk service started", Toast.LENGTH_LONG).show();
-        Log.d(TAG, "onStart, register events");
 
         // Hopefully your alarm will have a lower frequency than this!
         // AlarmManager alarmMgr;
@@ -75,33 +79,26 @@ public class StalkService extends Service {
         this.antenna = new Antenna();
         registerReceiver(antenna, intentFilter);
 
-        // connect to MQTT server
-        mqClient = MqttClient
-                .builder()
-                .useMqttVersion3()
-                .identifier("tasktab-android")
-                .serverHost("changeme")
-                .serverPort(1883)
-                .automaticReconnect()
-                .applyAutomaticReconnect()
-                .addDisconnectedListener(disconnectedContext -> {
-                    Log.d(TAG, "Got MQTT DC");
-                    disconnectedContext.getReconnector().reconnect(true);
-                })
-                .addConnectedListener(connectedContext -> {
-                    Log.d(TAG, "MQTT connected");
-                })
-                //.useSslWithDefaultConfig()
-                .buildAsync();
+        // get credentials to MQTT server by asking tasktab backend RESTful API
+        Client client = Client.getInstance(getApplicationContext());
+        Call<Client.MqCredentials> call = client.getGithub().mqCredentialsGet();
+        call.enqueue(new Callback<Client.MqCredentials>() {
+            @Override
+            public void onResponse(Call<Client.MqCredentials> call, Response<Client.MqCredentials> response) {
+                if (!response.isSuccessful()) {
+                    // debug
+                    Log.e(TAG, "MQ credentials fetch failed");
+                    return;
+                }
+                Log.d(TAG, "MQ credentials fetched");
+                mqConnect(response);
+            }
 
-        // login to MQTT server
-        mqClient.connectWith()
-                .simpleAuth()
-                .username("tasktab:tasktab-android")
-                .password("changeme".getBytes())
-                .applySimpleAuth()
-                .send()
-                .whenComplete(this::mqConnectionComplete);
+            @Override
+            public void onFailure(Call<Client.MqCredentials> call, Throwable t) {
+                Log.e(TAG, "MQ credentials fetch onFailure");
+            }
+        });
     }
 
     @Override
@@ -139,10 +136,41 @@ public class StalkService extends Service {
 
     // MQTT related below
     //
+    private void mqConnect(Response<Client.MqCredentials> response) {
+        Log.d(TAG, "Connecting to MQTT server");
+        // connect to MQTT server
+        mqClient = MqttClient
+                .builder()
+                .useMqttVersion3()
+                .identifier(response.body().id)
+                .serverHost(response.body().host)
+                .serverPort(response.body().port)
+                .automaticReconnect()
+                .applyAutomaticReconnect()
+                .addDisconnectedListener(disconnectedContext -> {
+                    Log.d(TAG, "Got MQTT DC");
+                    disconnectedContext.getReconnector().reconnect(true);
+                })
+                .addConnectedListener(connectedContext -> {
+                    Log.d(TAG, "MQTT connected");
+                })
+                //.useSslWithDefaultConfig()
+                .buildAsync();
+
+        // login to MQTT server
+        mqClient.connectWith()
+                .simpleAuth()
+                .username(response.body().username)
+                .password(response.body().password.getBytes())
+                .applySimpleAuth()
+                .send()
+                .whenComplete(this::mqConnectionComplete);
+    }
+
     private void mqConnectionComplete(Mqtt3ConnAck connAck, Throwable throwable) {
         if (throwable != null) {
             // handle failure
-            Log.d(TAG, "Failure connecting to MQTT server");
+            Log.e(TAG, "Failure connecting to MQTT server");
         } else {
             // setup subscribes or start publishing
             Log.d(TAG, "Connected to MQTT server");
