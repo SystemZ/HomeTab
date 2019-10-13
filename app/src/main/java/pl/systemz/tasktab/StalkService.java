@@ -22,6 +22,7 @@ import com.hivemq.client.mqtt.mqtt3.message.publish.Mqtt3Publish;
 import com.hivemq.client.mqtt.mqtt3.message.subscribe.suback.Mqtt3SubAck;
 
 import java.nio.charset.StandardCharsets;
+import java.util.concurrent.TimeUnit;
 
 import androidx.core.app.NotificationCompat;
 import androidx.core.app.NotificationManagerCompat;
@@ -147,19 +148,25 @@ public class StalkService extends Service {
                 .serverHost(response.body().host)
                 .serverPort(response.body().port)
                 .automaticReconnect()
+                .initialDelay(1, TimeUnit.SECONDS)
+                .maxDelay(3, TimeUnit.SECONDS)
                 .applyAutomaticReconnect()
-                .addDisconnectedListener(disconnectedContext -> {
-                    Log.d(TAG, "Got MQTT DC");
-                    disconnectedContext.getReconnector().reconnect(true);
-                })
                 .addConnectedListener(connectedContext -> {
                     Log.d(TAG, "MQTT connected");
                 })
-                //.useSslWithDefaultConfig()
+                .addDisconnectedListener(disconnectedContext -> {
+                    Log.d(TAG, "Got MQTT DC: " + disconnectedContext.getClientConfig().getState());
+//                    if (disconnectedContext.getClientConfig().getState() == MqttClientState.CONNECTING) {
+//                        disconnectedContext.getReconnector().reconnect(false);
+//                    }
+                    //disconnectedContext.getReconnector().reconnect(true);
+                })
+                //.automaticReconnectWithDefaultConfig()
                 .buildAsync();
 
         // login to MQTT server
         mqClient.connectWith()
+                .keepAlive(10)
                 .simpleAuth()
                 .username(response.body().username)
                 .password(response.body().password.getBytes())
