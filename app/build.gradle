@@ -3,8 +3,12 @@ apply plugin: 'com.android.application'
 android {
     // used for MQTT lib only
     compileOptions {
-        sourceCompatibility 1.8
-        targetCompatibility 1.8
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+    packagingOptions {
+        exclude 'META-INF/INDEX.LIST'
+        exclude 'META-INF/io.netty.versions.properties'
     }
     //
     compileSdkVersion 28
@@ -44,6 +48,6 @@ dependencies {
     implementation 'androidx.recyclerview:recyclerview:1.0.0'
     implementation 'com.squareup.retrofit2:retrofit:2.5.0'
     implementation 'com.squareup.retrofit2:converter-gson:2.5.0'
-    implementation 'com.hivemq:hivemq-mqtt-client-shaded:1.1.2'
+    implementation 'com.hivemq:hivemq-mqtt-client:1.1.2'
     implementation 'com.google.code.gson:gson:2.8.6'
 }
