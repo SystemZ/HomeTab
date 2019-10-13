@@ -7,17 +7,20 @@ import (
 )
 
 var (
-	DB_HOST            string
-	DB_PORT            string
-	DB_NAME            string
-	DB_USERNAME        string
-	DB_PASSWORD        string
-	REDIS_HOST         string
-	REDIS_PASSWORD     string
-	SESSION_VALID_S    int
-	REGISTER_ON        bool
-	REGISTER_WHITELIST bool
-	REGISTER_TOKEN     string
+	DB_HOST                   string
+	DB_PORT                   string
+	DB_NAME                   string
+	DB_USERNAME               string
+	DB_PASSWORD               string
+	REDIS_HOST                string
+	REDIS_PASSWORD            string
+	SESSION_VALID_S           int
+	REGISTER_ON               bool
+	REGISTER_WHITELIST        bool
+	REGISTER_TOKEN            string
+	MQTT_VHOST                string
+	MQTT_EXTERNAL_SERVER_HOST string
+	MQTT_EXTERNAL_SERVER_PORT int
 )
 
 func init() {
@@ -51,4 +54,11 @@ func init() {
 	REGISTER_ON = viper.GetBool("REGISTER_ON")
 	viper.SetDefault("REGISTER_TOKEN", "unknown")
 	REGISTER_TOKEN = viper.GetString("REGISTER_TOKEN")
+	// MQTT
+	viper.SetDefault("MQTT_VHOST", "tasktab")
+	MQTT_VHOST = viper.GetString("MQTT_VHOST")
+	viper.SetDefault("MQTT_EXTERNAL_SERVER_HOST", "127.0.0.1")
+	MQTT_EXTERNAL_SERVER_HOST = viper.GetString("MQTT_EXTERNAL_SERVER_HOST")
+	viper.SetDefault("MQTT_EXTERNAL_SERVER_PORT", 1883)
+	MQTT_EXTERNAL_SERVER_PORT = viper.GetInt("MQTT_EXTERNAL_SERVER_PORT")
 }

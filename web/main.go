@@ -56,6 +56,7 @@ func StartWebInterface() {
 	r.HandleFunc("/logout", Logout)
 	r.HandleFunc("/refresh", Refresh) // FIXME
 	// API
+	r.HandleFunc("/api/v1/mq/access", ApiMqCredential)
 	r.HandleFunc("/api/v1/event", ApiEvent)
 	r.HandleFunc("/api/v1/counter", ApiCounterList)
 	r.HandleFunc("/api/v1/counter/{id}", ApiCounter)
