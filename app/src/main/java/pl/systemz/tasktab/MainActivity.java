@@ -16,6 +16,8 @@ import android.widget.TextView;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.navigation.NavigationView;
 
+import java.util.Locale;
+
 import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
@@ -57,7 +59,7 @@ public class MainActivity extends AppCompatActivity
 
         TextView versionView = findViewById(R.id.versionInfo);
         // set visible version name
-        //versionView.setText("v" + BuildConfig.VERSION_NAME + " (" + BuildConfig.VERSION_CODE + ")");
+        versionView.setText(String.format(Locale.ENGLISH, "%s %s", BuildConfig.VERSION_CODE, BuildConfig.VERSION_NAME));
 
         // start service if it's not running already
         mYourService = new StalkService();
