@@ -1,12 +1,16 @@
 package pl.systemz.tasktab;
 
 import android.app.AlarmManager;
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.graphics.Color;
+import android.os.Build;
 import android.os.IBinder;
+import android.provider.Settings;
 import android.util.Log;
 import android.widget.Toast;
 
@@ -183,23 +187,27 @@ public class StalkService extends Service {
     }
 
     private void startNotification(MqttMsg msgObj) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            NotificationChannel channel = new NotificationChannel("tasktab-counters",
+                    "Active counters",
+                    NotificationManager.IMPORTANCE_DEFAULT);
+            NotificationManagerCompat notificationManager = NotificationManagerCompat.from(this);
+            notificationManager.createNotificationChannel(channel);
+        }
         NotificationCompat.Builder builder = new NotificationCompat.Builder(this, "tasktab-counters")
                 .setSmallIcon(R.drawable.ic_access_time_black_24dp)
                 .setContentTitle(msgObj.getMsg())
                 .setContentText("In progress...")
                 .setUsesChronometer(true)
                 .setWhen(currentTimeMillis())
-                //.setOngoing(true)
+                .setOngoing(true)
                 //.setContentIntent(tapIntent)
                 //.addAction(R.mipmap.ic_launcher, "Stop", stopActionIntent)
                 .setColor(Color.GREEN)
-                //.setAutoCancel(true)
                 .setVibrate(new long[]{150})
-                //.setSound(Settings.System.DEFAULT_NOTIFICATION_URI)
+                .setSound(Settings.System.DEFAULT_NOTIFICATION_URI)
                 .setPriority(NotificationCompat.PRIORITY_DEFAULT);
         NotificationManagerCompat notificationManager = NotificationManagerCompat.from(this);
-        // notificationId is a unique int for each notification that you must define
         notificationManager.notify(msgObj.getId(), builder.build());
     }
-
 }
