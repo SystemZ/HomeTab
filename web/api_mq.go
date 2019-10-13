@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	uuid "github.com/satori/go.uuid"
 	"gitlab.com/systemz/tasktab/config"
-	"log"
 	"net/http"
 	"strconv"
 )
@@ -32,7 +31,6 @@ func ApiMqCredential(w http.ResponseWriter, r *http.Request) {
 		Username: config.MQTT_VHOST + ":tasktab-device-" + strconv.Itoa(int(device.Id)),
 		Password: device.Token,
 	}
-	log.Printf("%v", credentials)
 
 	// prepare JSON
 	res, err := json.MarshalIndent(credentials, "", "  ")
