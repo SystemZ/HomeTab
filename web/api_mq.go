@@ -2,7 +2,6 @@ package web
 
 import (
 	"encoding/json"
-	uuid "github.com/satori/go.uuid"
 	"gitlab.com/systemz/tasktab/config"
 	"net/http"
 	"strconv"
@@ -22,9 +21,8 @@ func ApiMqCredential(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte{})
 		return
 	}
-	deviceMqId := uuid.NewV4().String()
 	credentials := MqCredentialApiRes{
-		Id:   deviceMqId,
+		Id:   "tasktab-device-" + strconv.Itoa(int(device.Id)),
 		Host: config.MQTT_EXTERNAL_SERVER_HOST,
 		Port: uint(config.MQTT_EXTERNAL_SERVER_PORT),
 		// tasktab:device-1
