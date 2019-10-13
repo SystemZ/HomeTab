@@ -165,14 +165,24 @@ public class StalkService extends Service {
         Log.d(TAG, "Got a new msg via MQTT");
         String msgTxt = new String(publish.getPayloadAsBytes(), StandardCharsets.UTF_8);
         // deserialize
-        // {"type":"notification","msg":"testzz",id:1}
+        // {"type":"startNotification","msg":"testzz",id:1}
+        // {"type":"stopNotification","msg":"testzz",id:1}
         Gson gson = new Gson();
         MqttMsg msgObj = gson.fromJson(msgTxt, MqttMsg.class);
-
-        newNotification(msgObj);
+        // action based on msg
+        if (msgObj.getType().equals("startNotification")) {
+            startNotification(msgObj);
+        } else if (msgObj.getType().equals("stopNotification")) {
+            stopNotification(msgObj);
+        }
     }
 
-    private void newNotification(MqttMsg msgObj) {
+    private void stopNotification(MqttMsg msgObj) {
+        NotificationManagerCompat notificationManager = NotificationManagerCompat.from(this);
+        notificationManager.cancel(msgObj.getId());
+    }
+
+    private void startNotification(MqttMsg msgObj) {
         NotificationCompat.Builder builder = new NotificationCompat.Builder(this, "tasktab-counters")
                 .setSmallIcon(R.drawable.ic_access_time_black_24dp)
                 .setContentTitle(msgObj.getMsg())
