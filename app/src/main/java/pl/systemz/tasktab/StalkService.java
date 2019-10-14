@@ -123,17 +123,16 @@ public class StalkService extends Service {
             NotificationManagerCompat notificationManager = NotificationManagerCompat.from(this);
             notificationManager.createNotificationChannel(channel);
         }
-        NotificationCompat.Builder builder = new NotificationCompat.Builder(this, "tasktab-service-running");
-
-        builder.setSmallIcon(R.drawable.ic_launcher_foreground);
-        builder.setContentTitle(".");
-        //builder.setContentText("content text");
-        //final Intent notificationIntent = new Intent(this, FakeActivity.class);
-        //final PendingIntent pi = PendingIntent.getActivity(this, 0, notificationIntent, 0);
-        //builder.setContentIntent(pi);
+        final Intent notificationIntent = new Intent(this, MainActivity.class);
+        final PendingIntent pi = PendingIntent.getActivity(this, 0, notificationIntent, 0);
+        NotificationCompat.Builder builder = new NotificationCompat.Builder(this, "tasktab-service-running")
+                .setSmallIcon(R.drawable.ic_launcher_foreground)
+                .setContentTitle(".")
+                //.setContentText("content text");
+                .setOngoing(true)
+                .setContentIntent(pi);
         final Notification notification = builder.build();
         startForeground(1, notification);
-
         return Service.START_STICKY;
     }
 
