@@ -118,7 +118,7 @@ public class StalkService extends Service {
         // Show notification to prevent killing in background
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             NotificationChannel channel = new NotificationChannel("tasktab-service-running",
-                    "Still alive",
+                    "Placeholder, disable me",
                     NotificationManager.IMPORTANCE_DEFAULT);
             NotificationManagerCompat notificationManager = NotificationManagerCompat.from(this);
             notificationManager.createNotificationChannel(channel);
