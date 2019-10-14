@@ -2,7 +2,7 @@ stages:
 - build
 - upload
 
-build:
+assembleDebug:
   stage: build
   image: jangrewe/gitlab-ci-android
   before_script:
@@ -14,6 +14,29 @@ build:
   artifacts:
     paths:
       - app/build/outputs/apk/debug/app-debug.apk
+  cache:
+    key: ${CI_PROJECT_ID}
+    paths:
+      - .gradle/
+
+assembleRelease:
+  stage: build
+  image: jangrewe/gitlab-ci-android
+  before_script:
+    - export GRADLE_USER_HOME=$(pwd)/.gradle
+    - export VERSION_CODE=$(date +%s)
+    - chmod +x ./gradlew
+  script:
+    - echo $KEYSTORE_FILE | base64 -d > my.keystore
+    - ./gradlew assembleRelease
+      -Pandroid.injected.signing.store.file=$(pwd)/my.keystore
+      -Pandroid.injected.signing.store.password=$KEYSTORE_PASSWORD
+      -Pandroid.injected.signing.key.alias=$KEY_ALIAS
+      -Pandroid.injected.signing.key.password=$KEY_PASSWORD
+  artifacts:
+    paths:
+      - app/build/outputs/apk/release/app-release.apk
+      #- CHANGELOG
   cache:
     key: ${CI_PROJECT_ID}
     paths:
