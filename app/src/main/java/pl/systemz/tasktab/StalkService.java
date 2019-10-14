@@ -1,6 +1,7 @@
 package pl.systemz.tasktab;
 
 import android.app.AlarmManager;
+import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
@@ -36,13 +37,12 @@ import retrofit2.Response;
 import static java.lang.System.currentTimeMillis;
 
 public class StalkService extends Service {
-    private static final String TAG = "Stalk";
+    private static final String TAG = "StalkService";
     private Antenna antenna;
 
     private AlarmManager alarmMgr;
     private PendingIntent alarmIntent;
 
-    int mStartMode;       // indicates how to behave if the service is killed
     IBinder mBinder;      // interface for clients that bind
     boolean mAllowRebind; // indicates whether onRebind should be used
 
@@ -115,23 +115,45 @@ public class StalkService extends Service {
         // The service is starting, due to a call to startService()
         Log.d(TAG, "onStartCommand");
 
-        return mStartMode;
+        // Show notification to prevent killing in background
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            NotificationChannel channel = new NotificationChannel("tasktab-service-running",
+                    "Still alive",
+                    NotificationManager.IMPORTANCE_DEFAULT);
+            NotificationManagerCompat notificationManager = NotificationManagerCompat.from(this);
+            notificationManager.createNotificationChannel(channel);
+        }
+        NotificationCompat.Builder builder = new NotificationCompat.Builder(this, "tasktab-service-running");
+
+        builder.setSmallIcon(R.drawable.ic_launcher_foreground);
+        builder.setContentTitle(".");
+        //builder.setContentText("content text");
+        //final Intent notificationIntent = new Intent(this, FakeActivity.class);
+        //final PendingIntent pi = PendingIntent.getActivity(this, 0, notificationIntent, 0);
+        //builder.setContentIntent(pi);
+        final Notification notification = builder.build();
+        startForeground(1, notification);
+
+        return Service.START_STICKY;
     }
 
     @Override
     public IBinder onBind(Intent intent) {
+        Log.d(TAG, "onBind");
         // A mqClient is binding to the service with bindService()
         return mBinder;
     }
 
     @Override
     public boolean onUnbind(Intent intent) {
+        Log.d(TAG, "onUnbind");
         // All clients have unbound with unbindService()
         return mAllowRebind;
     }
 
     @Override
     public void onRebind(Intent intent) {
+        Log.d(TAG, "onRebind");
         // A mqClient is binding to the service with bindService(),
         // after onUnbind() has already been called
     }
