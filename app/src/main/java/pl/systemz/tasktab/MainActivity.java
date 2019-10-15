@@ -28,9 +28,6 @@ import androidx.drawerlayout.widget.DrawerLayout;
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
 
-    Intent mServiceIntent;
-    private StalkService mYourService;
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -63,15 +60,16 @@ public class MainActivity extends AppCompatActivity
         versionView.setText(String.format(Locale.ENGLISH, "%s %s", BuildConfig.VERSION_CODE, BuildConfig.VERSION_NAME));
 
         // start service if it's not running already
-        mYourService = new StalkService();
-        mServiceIntent = new Intent(this, mYourService.getClass());
-        if (!isMyServiceRunning(mYourService.getClass())) {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                startForegroundService(mServiceIntent);
-            } else {
-                startService(mServiceIntent);
+        new Thread(() -> {
+            Intent serviceIntent = new Intent(getApplicationContext(), StalkService.class);
+            if (!isMyServiceRunning(StalkService.class)) {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                    startForegroundService(serviceIntent);
+                } else {
+                    startService(serviceIntent);
+                }
             }
-        }
+        }).start();
 
         // prevent loosing connection to server when in doze mode
         String packageName = getApplicationContext().getPackageName();
@@ -82,7 +80,6 @@ public class MainActivity extends AppCompatActivity
             intent.setAction(Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS);
             intent.setData(Uri.parse("package:" + packageName));
             getApplicationContext().startActivity(intent);
-            //intent.setAction(Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS);
         }
     }
 
