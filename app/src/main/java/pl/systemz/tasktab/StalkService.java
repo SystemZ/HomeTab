@@ -15,15 +15,18 @@ import android.util.Log;
 import android.widget.Toast;
 
 import com.google.gson.Gson;
-import com.hivemq.client.mqtt.MqttClient;
-import com.hivemq.client.mqtt.MqttClientState;
-import com.hivemq.client.mqtt.mqtt3.Mqtt3AsyncClient;
-import com.hivemq.client.mqtt.mqtt3.message.connect.connack.Mqtt3ConnAck;
-import com.hivemq.client.mqtt.mqtt3.message.publish.Mqtt3Publish;
-import com.hivemq.client.mqtt.mqtt3.message.subscribe.suback.Mqtt3SubAck;
 
+import org.fusesource.hawtbuf.Buffer;
+import org.fusesource.hawtbuf.UTF8Buffer;
+import org.fusesource.mqtt.client.CallbackConnection;
+import org.fusesource.mqtt.client.Listener;
+import org.fusesource.mqtt.client.MQTT;
+import org.fusesource.mqtt.client.QoS;
+import org.fusesource.mqtt.client.Topic;
+
+import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
-import java.util.concurrent.TimeUnit;
+import java.util.Arrays;
 
 import androidx.core.app.NotificationCompat;
 import androidx.core.app.NotificationManagerCompat;
@@ -46,28 +49,18 @@ public class StalkService extends Service {
     IBinder mBinder;      // interface for clients that bind
     boolean mAllowRebind; // indicates whether onRebind should be used
 
-    Mqtt3AsyncClient mqClient;
+    MQTT mqttClient;
+    CallbackConnection mqttConnection;
 
     @Override
     public void onCreate() {
         // The service is being created
         Log.d(TAG, "onCreate()");
+        Toast.makeText(this, "Stalk service started", Toast.LENGTH_LONG).show();
 
         //Intent intents = new Intent(getBaseContext(),MainActivity.class);
         //intents.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         //startActivity(intents);
-
-        Toast.makeText(this, "Stalk service started", Toast.LENGTH_LONG).show();
-
-        // Hopefully your alarm will have a lower frequency than this!
-        // AlarmManager alarmMgr;
-        // alarmMgr = (AlarmManager)this.getSystemService(Context.ALARM_SERVICE);
-        // pi = PendingIntent.getBroadcast(this, 11, new Intent("pl.systemz.stalk.GPSSETTINGS"), 0);
-        // am.setInexactRepeating(AlarmManager.RTC_WAKEUP, 0, TWENTYFIVE_SECONDS, pi);
-
-        // alarmMgr.setInexactRepeating(AlarmManager.ELAPSED_REALTIME_WAKEUP,
-        //         SystemClock.elapsedRealtime() + 60*1000,
-        //         60*1000, alarmIntent);
 
         // SystemClock.elapsedRealtime() + AlarmManager.INTERVAL_HALF_HOUR,
         // AlarmManager.INTERVAL_HALF_HOUR, alarmIntent);
@@ -80,6 +73,20 @@ public class StalkService extends Service {
 //        this.antenna = new Antenna();
 //        registerReceiver(antenna, intentFilter);
 
+    }
+
+    // end work if fetching credentials doesn't work
+    public void justStop() {
+        this.stopSelf();
+    }
+
+    @Override
+    public int onStartCommand(Intent intent, int flags, int startId) {
+        // The service is starting, due to a call to startService()
+        Log.d(TAG, "onStartCommand");
+        // show notification preventing killing service
+        foregroundNotification();
+
         // get credentials to MQTT server by asking tasktab backend RESTful API
         Client client = Client.getInstance(getApplicationContext());
         Call<Client.MqCredentials> call = client.getGithub().mqCredentialsGet();
@@ -87,7 +94,6 @@ public class StalkService extends Service {
             @Override
             public void onResponse(Call<Client.MqCredentials> call, Response<Client.MqCredentials> response) {
                 if (!response.isSuccessful()) {
-                    // debug
                     Log.e(TAG, "MQ credentials fetch failed");
                     justStop();
                     return;
@@ -103,39 +109,10 @@ public class StalkService extends Service {
                 justStop();
             }
         });
-    }
 
-    // end work if fetching credentials doesn't work
-    public void justStop() {
-        this.stopSelf();
-    }
-
-    @Override
-    public int onStartCommand(Intent intent, int flags, int startId) {
-        // The service is starting, due to a call to startService()
-        Log.d(TAG, "onStartCommand");
-
-        // Show notification to prevent killing in background
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            NotificationChannel channel = new NotificationChannel("tasktab-service-running",
-                    "Placeholder, disable me",
-                    NotificationManager.IMPORTANCE_DEFAULT);
-            NotificationManagerCompat notificationManager = NotificationManagerCompat.from(this);
-            notificationManager.createNotificationChannel(channel);
-        }
-        final Intent notificationIntent = new Intent(this, MainActivity.class);
-        final PendingIntent pi = PendingIntent.getActivity(this, 0, notificationIntent, 0);
-        NotificationCompat.Builder builder = new NotificationCompat.Builder(this, "tasktab-service-running")
-                .setSmallIcon(R.drawable.ic_launcher_foreground)
-                .setContentTitle(".")
-                //.setContentText("content text");
-                .setOngoing(true)
-                .setAutoCancel(false)
-                .setContentIntent(pi);
-        final Notification notification = builder.build();
-        startForeground(1, notification);
         return Service.START_STICKY;
     }
+
 
     @Override
     public IBinder onBind(Intent intent) {
@@ -163,93 +140,113 @@ public class StalkService extends Service {
         // The service is no longer used and is being destroyed
         Toast.makeText(this, "Stalk Service stopped", Toast.LENGTH_LONG).show();
         Log.d(TAG, "onDestroy");
-        try {
-            mqClient.disconnect();
-        } catch (NullPointerException e) {
-            Log.d(TAG, "tried to destroy empty mqClient");
-        }
+        mqttConnection.disconnect(new org.fusesource.mqtt.client.Callback<Void>() {
+            @Override
+            public void onSuccess(Void value) {
+                Log.d(TAG, "disconnect from MQTT OK");
+            }
+
+            @Override
+            public void onFailure(Throwable value) {
+                Log.d(TAG, "disconnect from MQTT error");
+            }
+        });
     }
 
-    // MQTT related below
-    //
     private void mqConnect(Response<Client.MqCredentials> response) {
         Log.d(TAG, "Connecting to MQTT server");
-        // connect to MQTT server
-        mqClient = MqttClient
-                .builder()
-                .useMqttVersion3()
-                .identifier(response.body().id)
-                .serverHost(response.body().host)
-                .serverPort(response.body().port)
-                .automaticReconnect()
-                .initialDelay(1, TimeUnit.SECONDS)
-                .maxDelay(10, TimeUnit.SECONDS)
-                .applyAutomaticReconnect()
-                .addConnectedListener(connectedContext -> {
-                    Log.d(TAG, "MQTT connected");
-                })
-                .addDisconnectedListener(disconnectedContext -> {
-                    Log.d(TAG, "Got MQTT DC: " + disconnectedContext.getClientConfig().getState());
-                    if (disconnectedContext.getClientConfig().getState() == MqttClientState.CONNECTING_RECONNECT) {
-                        disconnectedContext.getReconnector().reconnect(false);
-                        this.stopSelf();
+
+        mqttClient = new MQTT();
+        try {
+            mqttClient.setHost(response.body().host, response.body().port);
+        } catch (URISyntaxException e) {
+            e.printStackTrace();
+        }
+        mqttClient.setCleanSession(false);
+        mqttClient.setClientId(response.body().id);
+        mqttClient.setUserName(response.body().username);
+        mqttClient.setPassword(response.body().password);
+        mqttClient.setReconnectDelayMax(5000);
+        mqttClient.setReconnectBackOffMultiplier(1);
+        mqttConnection = mqttClient.callbackConnection();
+
+        mqttConnection.listener(new Listener() {
+            public void onDisconnected() {
+                Log.d(TAG, "listener onDisconnected");
+            }
+
+            public void onConnected() {
+                Log.d(TAG, "listener onConnected");
+            }
+
+            public void onPublish(UTF8Buffer topic, Buffer payload, Runnable ack) {
+                Log.d(TAG, "listener onPublish");
+                // You can now process a received message from a topic.
+                mqttMsgHandler(payload.toByteArray());
+                // Once process execute the ack runnable.
+                ack.run();
+            }
+
+            public void onFailure(Throwable value) {
+                Log.d(TAG, "listener onFailure");
+                //mqttConnection.close(null); // a mqttConnection failure occured.
+            }
+        });
+
+        mqttConnection.connect(new org.fusesource.mqtt.client.Callback<Void>() {
+            @Override
+            public void onSuccess(Void value) {
+                Log.d(TAG, "connect onSuccess");
+
+                // Subscribe to a topic
+                Topic[] topics = {new Topic(response.body().id, QoS.AT_LEAST_ONCE)};
+                mqttConnection.subscribe(topics, new org.fusesource.mqtt.client.Callback<byte[]>() {
+                    public void onSuccess(byte[] qoses) {
+                        // The result of the subcribe request.
+                        Log.d(TAG, "QoS: " + Arrays.toString(qoses));
                     }
-                })
-                .buildAsync();
 
-        // login to MQTT server
-        mqClient.connectWith()
-                .cleanSession(true)
-                .keepAlive(15)
-                .simpleAuth()
-                .username(response.body().username)
-                .password(response.body().password.getBytes())
-                .applySimpleAuth()
-                .send()
-                .whenComplete(this::mqConnectionComplete);
-        Log.d(TAG, "mqConnect() end");
+                    public void onFailure(Throwable value) {
+                        Log.d(TAG, "connect subscribe onFailure");
+                        //mqttConnection.close(null); // subscribe failed.
+                    }
+                });
+            }
+
+            @Override
+            public void onFailure(Throwable value) {
+                Log.d(TAG, "connect onFailure");
+            }
+        });
     }
 
-    private void mqConnectionComplete(Mqtt3ConnAck connAck, Throwable throwable) {
-        Log.d(TAG, connAck.toString());
-        if (throwable != null) {
-            // handle failure
-            Log.e(TAG, "Failure connecting to MQTT server");
-        } else {
-            // setup subscribes or start publishing
-            Log.d(TAG, "Connected to MQTT server");
-            mqClient.subscribeWith()
-                    .topicFilter(mqClient.getConfig().getClientIdentifier().toString())
-                    // Process the received message
-                    .callback(this::newMqMsg)
-                    .send()
-                    .whenComplete(StalkService::subscribeComplete);
-        }
-    }
-
-    private static void subscribeComplete(Mqtt3SubAck subAck, Throwable throwable2) {
-        if (throwable2 != null) {
-            // Handle failure to subscribe
-            Log.d(TAG, "Subscribe error");
-        } else {
-            // Handle successful subscription, e.g. logging or incrementing a metric
-            Log.d(TAG, "Subscribe OK");
-        }
-    }
-
-    private void newMqMsg(Mqtt3Publish publish) {
+    private void mqttMsgHandler(byte[] payload) {
         Log.d(TAG, "Got a new msg via MQTT");
-        String msgTxt = new String(publish.getPayloadAsBytes(), StandardCharsets.UTF_8);
+
         // deserialize
         // {"type":"startNotification","msg":"testzz",id:1}
         // {"type":"stopNotification","msg":"testzz",id:1}
+        String msgTxt = new String(payload, StandardCharsets.UTF_8);
         Gson gson = new Gson();
-        MqttMsg msgObj = gson.fromJson(msgTxt, MqttMsg.class);
+        Log.d(TAG, "Parsing JSON...");
+        MqttMsg msgObj = null;
+        try {
+            msgObj = gson.fromJson(msgTxt, MqttMsg.class);
+        } catch (Exception e) {
+            Log.d(TAG, "Error when parsing JSON...");
+            return;
+        }
+
+        Log.d(TAG, "JSON parsed correctly");
         // action based on msg
         if (msgObj.getType().equals("startNotification")) {
+            Log.d(TAG, "Creating new notification...");
             startNotification(msgObj);
         } else if (msgObj.getType().equals("stopNotification")) {
+            Log.d(TAG, "Removing notification...");
             stopNotification(msgObj);
+        } else {
+            Log.d(TAG, "Task in message not recognized...");
         }
     }
 
@@ -281,5 +278,27 @@ public class StalkService extends Service {
                 .setPriority(NotificationCompat.PRIORITY_DEFAULT);
         NotificationManagerCompat notificationManager = NotificationManagerCompat.from(this);
         notificationManager.notify(msgObj.getId(), builder.build());
+    }
+
+    private void foregroundNotification() {
+        // Show notification to prevent killing in background
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            NotificationChannel channel = new NotificationChannel("tasktab-service-running",
+                    "Placeholder, disable me",
+                    NotificationManager.IMPORTANCE_DEFAULT);
+            NotificationManagerCompat notificationManager = NotificationManagerCompat.from(this);
+            notificationManager.createNotificationChannel(channel);
+        }
+        final Intent notificationIntent = new Intent(this, MainActivity.class);
+        final PendingIntent pi = PendingIntent.getActivity(this, 0, notificationIntent, 0);
+        NotificationCompat.Builder builder = new NotificationCompat.Builder(this, "tasktab-service-running")
+                .setSmallIcon(R.drawable.ic_launcher_foreground)
+                .setContentTitle(".")
+                //.setContentText("content text");
+                .setOngoing(true)
+                .setAutoCancel(false)
+                .setContentIntent(pi);
+        final Notification notification = builder.build();
+        startForeground(-1, notification);
     }
 }

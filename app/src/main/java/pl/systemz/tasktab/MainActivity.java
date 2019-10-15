@@ -60,16 +60,14 @@ public class MainActivity extends AppCompatActivity
         versionView.setText(String.format(Locale.ENGLISH, "%s %s", BuildConfig.VERSION_CODE, BuildConfig.VERSION_NAME));
 
         // start service if it's not running already
-        new Thread(() -> {
-            Intent serviceIntent = new Intent(getApplicationContext(), StalkService.class);
-            if (!isMyServiceRunning(StalkService.class)) {
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                    startForegroundService(serviceIntent);
-                } else {
-                    startService(serviceIntent);
-                }
+        Intent serviceIntent = new Intent(getApplicationContext(), StalkService.class);
+        if (!isMyServiceRunning(StalkService.class)) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                startForegroundService(serviceIntent);
+            } else {
+                startService(serviceIntent);
             }
-        }).start();
+        }
 
         // prevent loosing connection to server when in doze mode
         String packageName = getApplicationContext().getPackageName();
