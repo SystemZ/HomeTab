@@ -22,7 +22,7 @@ func ApiMqCredential(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	credentials := MqCredentialApiRes{
-		Id:   "tasktab-device-" + strconv.Itoa(int(device.Id)),
+		Id:   "device" + strconv.Itoa(int(device.Id)),
 		Host: config.MQTT_EXTERNAL_SERVER_HOST,
 		Port: uint(config.MQTT_EXTERNAL_SERVER_PORT),
 		// tasktab:device-1
