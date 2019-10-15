@@ -130,6 +130,7 @@ public class StalkService extends Service {
                 .setContentTitle(".")
                 //.setContentText("content text");
                 .setOngoing(true)
+                .setAutoCancel(false)
                 .setContentIntent(pi);
         final Notification notification = builder.build();
         startForeground(1, notification);
@@ -199,7 +200,7 @@ public class StalkService extends Service {
         // login to MQTT server
         mqClient.connectWith()
                 .cleanSession(true)
-                .keepAlive(10)
+                .keepAlive(15)
                 .simpleAuth()
                 .username(response.body().username)
                 .password(response.body().password.getBytes())
