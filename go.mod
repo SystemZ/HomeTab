@@ -6,7 +6,6 @@ require (
 	cloud.google.com/go v0.38.0 // indirect
 	github.com/getlantern/golog v0.0.0-20190830074920-4ef2e798c2d7 // indirect
 	github.com/getlantern/systray v0.0.0-20190727060347-6f0e5a3c556c
-	github.com/go-redis/redis v6.15.5+incompatible
 	github.com/go-redis/redis/v7 v7.0.0-beta.3
 	github.com/go-redis/redis_rate/v8 v8.0.0-beta
 	github.com/go-sql-driver/mysql v1.4.1
@@ -21,6 +20,7 @@ require (
 	github.com/sirupsen/logrus v1.2.0
 	github.com/spf13/cobra v0.0.5
 	github.com/spf13/viper v1.4.0
+	github.com/streadway/amqp v0.0.0-20190827072141-edfb9018d271
 	github.com/unrolled/render v1.0.1
 	golang.org/x/crypto v0.0.0-20190325154230-a5d413f7728c
 	golang.org/x/net v0.0.0-20191002035440-2ec189313ef0 // indirect

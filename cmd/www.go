@@ -3,6 +3,7 @@ package cmd
 import (
 	"github.com/spf13/cobra"
 	"gitlab.com/systemz/tasktab/model"
+	"gitlab.com/systemz/tasktab/queue"
 	"gitlab.com/systemz/tasktab/web"
 	"log"
 )
@@ -22,6 +23,7 @@ func wwwExec(cmd *cobra.Command, args []string) {
 	log.Println("Wild TaskTab appears!")
 	model.InitMysql()
 	model.InitRedis()
+	queue.Listen()
 	web.StartWebInterface()
 	log.Println("Dying...")
 }

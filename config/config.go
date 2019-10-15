@@ -7,20 +7,29 @@ import (
 )
 
 var (
-	DB_HOST                   string
-	DB_PORT                   string
-	DB_NAME                   string
-	DB_USERNAME               string
-	DB_PASSWORD               string
-	REDIS_HOST                string
-	REDIS_PASSWORD            string
-	SESSION_VALID_S           int
-	REGISTER_ON               bool
-	REGISTER_WHITELIST        bool
-	REGISTER_TOKEN            string
+	DB_HOST     string
+	DB_PORT     string
+	DB_NAME     string
+	DB_USERNAME string
+	DB_PASSWORD string
+	//
+	REDIS_HOST     string
+	REDIS_PASSWORD string
+	//
+	SESSION_VALID_S    int
+	REGISTER_ON        bool
+	REGISTER_WHITELIST bool
+	REGISTER_TOKEN     string
+	//
 	MQTT_VHOST                string
 	MQTT_EXTERNAL_SERVER_HOST string
 	MQTT_EXTERNAL_SERVER_PORT int
+	//
+	RABBITMQ_HOST     string
+	RABBITMQ_PORT     string
+	RABBITMQ_USERNAME string
+	RABBITMQ_PASSWORD string
+	RABBITMQ_VHOST    string
 )
 
 func init() {
@@ -61,4 +70,15 @@ func init() {
 	MQTT_EXTERNAL_SERVER_HOST = viper.GetString("MQTT_EXTERNAL_SERVER_HOST")
 	viper.SetDefault("MQTT_EXTERNAL_SERVER_PORT", 1883)
 	MQTT_EXTERNAL_SERVER_PORT = viper.GetInt("MQTT_EXTERNAL_SERVER_PORT")
+	// RabbitMQ
+	viper.SetDefault("RABBITMQ_HOST", "localhost")
+	RABBITMQ_HOST = viper.GetString("RABBITMQ_HOST")
+	viper.SetDefault("RABBITMQ_PORT", "5672")
+	RABBITMQ_PORT = viper.GetString("RABBITMQ_PORT")
+	viper.SetDefault("RABBITMQ_USERNAME", "guest")
+	RABBITMQ_USERNAME = viper.GetString("RABBITMQ_USERNAME")
+	viper.SetDefault("RABBITMQ_PASSWORD", "guest")
+	RABBITMQ_PASSWORD = viper.GetString("RABBITMQ_PASSWORD")
+	viper.SetDefault("RABBITMQ_VHOST", "/")
+	RABBITMQ_VHOST = viper.GetString("RABBITMQ_VHOST")
 }
