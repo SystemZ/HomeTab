@@ -1,0 +1,26 @@
+<h2>Notes</h2>
+
+<h3><a href="/note/new">Create new</a></h3>
+
+All notes list
+
+<table>
+    <thead>
+    <tr>
+        <th>Title</th>
+        <th>Short</th>
+        <th>Tags</th>
+        <th>Created</th>
+    </tr>
+    </thead>
+    <tbody>
+    {{ range .Notes -}}
+        <tr>
+            <td><a href="/note/{{.Id}}">{{.Title}}</a></td>
+            <td>{{.BodyShort}}</td>
+            <td>{{.Tags}}</td>
+            <td>{{formatDate .CreatedAt}}</td>
+        </tr>
+    {{- end }}
+    </tbody>
+</table>

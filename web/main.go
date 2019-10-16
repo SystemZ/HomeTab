@@ -46,6 +46,10 @@ func StartWebInterface() {
 	r.HandleFunc("/count", Count)
 	r.HandleFunc("/count/log", CountLog)
 	r.HandleFunc("/device", Device)
+	r.HandleFunc("/notes", Notes)
+	r.HandleFunc("/note/new", NewNote)
+	r.HandleFunc("/note/{id}", Note)
+	r.HandleFunc("/note/{id}/edit", NoteEdit)
 	// settings
 	r.HandleFunc("/account", Account)
 	// auth
