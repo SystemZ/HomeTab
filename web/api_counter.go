@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"github.com/gorilla/mux"
 	"gitlab.com/systemz/tasktab/model"
+	"gitlab.com/systemz/tasktab/service"
 	"log"
 	"net/http"
 	"strconv"
@@ -71,6 +72,12 @@ func ApiCounterStart(w http.ResponseWriter, r *http.Request) {
 
 	//FIXME validation for user permissions
 	model.StartCounterSession(uint(counterId), device.UserId)
+
+	// notify mobile app
+	var user model.User
+	model.DB.Where(model.User{Id: device.UserId}).First(&user)
+	service.SendCounterNotification(true, user, uint(counterId))
+
 	w.WriteHeader(http.StatusOK)
 	w.Write([]byte{})
 }
@@ -93,6 +100,12 @@ func ApiCounterStop(w http.ResponseWriter, r *http.Request) {
 
 	//FIXME validation for user permissions
 	model.StopCounterSession(uint(counterId), device.UserId)
+
+	// notify mobile app
+	var user model.User
+	model.DB.Where(model.User{Id: device.UserId}).First(&user)
+	service.SendCounterNotification(false, user, uint(counterId))
+
 	w.WriteHeader(http.StatusOK)
 	w.Write([]byte{})
 }

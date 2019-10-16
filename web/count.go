@@ -2,7 +2,7 @@ package web
 
 import (
 	"gitlab.com/systemz/tasktab/model"
-	"gitlab.com/systemz/tasktab/queue"
+	"gitlab.com/systemz/tasktab/service"
 	"net/http"
 	"strconv"
 )
@@ -42,12 +42,8 @@ func Count(w http.ResponseWriter, r *http.Request) {
 		}
 		model.StartCounterSession(uint(counterId), user.Id)
 		// notify mobile app
-		msg := queue.Notification{
-			Id:   counterId,
-			Type: "startNotification",
-			Msg:  "Counter #" + strconv.Itoa(counterId) + " running",
-		}
-		queue.SendNotification(msg)
+		service.SendCounterNotification(true, user, uint(counterId))
+		// all done, redirect
 		http.Redirect(w, r, "/count", 302)
 		return
 	}
@@ -61,11 +57,8 @@ func Count(w http.ResponseWriter, r *http.Request) {
 		}
 		model.StopCounterSession(uint(counterId), user.Id)
 		// notify mobile app
-		msg := queue.Notification{
-			Id:   counterId,
-			Type: "stopNotification",
-		}
-		queue.SendNotification(msg)
+		service.SendCounterNotification(false, user, uint(counterId))
+		// all done, redirect
 		http.Redirect(w, r, "/count", 302)
 		return
 	}

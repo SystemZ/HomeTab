@@ -7,19 +7,19 @@ import (
 )
 
 type Notification struct {
-	Id   int    `json:"id"`
+	Id   uint   `json:"id"`
 	Type string `json:"type"`
 	Msg  string `json:"msg"`
 }
 
-func SendNotification(n Notification) {
+func SendNotification(n Notification, key string) {
 	msg, err := json.Marshal(n)
 	if err != nil {
 		log.Printf("Error marshalling notification: %v", err)
 	}
 	err = ch.Publish(
 		"amq.topic",
-		"device6",
+		key,
 		false,
 		false,
 		amqp.Publishing{
