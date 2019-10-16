@@ -2,7 +2,6 @@ package pl.systemz.tasktab;
 
 import android.app.PendingIntent;
 import android.content.Intent;
-import android.graphics.Color;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
@@ -10,15 +9,11 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.app.NotificationCompat;
-import androidx.core.app.NotificationManagerCompat;
 import pl.systemz.tasktab.api.Client;
 import pl.systemz.tasktab.receiver.NotificationReceiver;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
-
-import static java.lang.System.currentTimeMillis;
 
 public class Task extends AppCompatActivity {
 
@@ -99,29 +94,9 @@ public class Task extends AppCompatActivity {
 //        stopActionBroadcastIntent.putExtra("ACTION", "STOP");
 //        PendingIntent stopActionIntent = PendingIntent.getBroadcast(this, 1, stopActionBroadcastIntent, PendingIntent.FLAG_UPDATE_CURRENT);
 
-        NotificationCompat.Builder builder = new NotificationCompat.Builder(this, "tasktab-task-" + taskId.toString())
-                .setSmallIcon(R.drawable.ic_access_time_black_24dp)
-                .setContentTitle(taskName)
-                .setContentText("In progress...")
-                .setUsesChronometer(true)
-                .setWhen(currentTimeMillis())
-                .setOngoing(true)
-                .setContentIntent(tapIntent)
-//                .addAction(R.mipmap.ic_launcher, "Stop", stopActionIntent)
-                .setColor(Color.GREEN)
-                //.setAutoCancel(true)
-                .setVibrate(new long[]{150})
-                //.setSound(Settings.System.DEFAULT_NOTIFICATION_URI)
-                .setPriority(NotificationCompat.PRIORITY_DEFAULT);
-
 
 //        Uri alarmSound = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
 //        builder.setSound(alarmSound);
-
-        NotificationManagerCompat notificationManager = NotificationManagerCompat.from(this);
-
-        // notificationId is a unique int for each notification that you must define
-        notificationManager.notify(taskId, builder.build());
 
         Client client = Client.getInstance(getApplicationContext());
         Call<Client.Timer> call = client.getGithub().timerStart(taskId);
@@ -154,8 +129,6 @@ public class Task extends AppCompatActivity {
                     return;
                 }
                 Toast.makeText(Task.this, "Counter stopped", Toast.LENGTH_SHORT).show();
-                NotificationManagerCompat notificationManager = NotificationManagerCompat.from(Task.this);
-                notificationManager.cancel(taskId);
             }
 
             @Override
