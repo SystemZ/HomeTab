@@ -266,7 +266,7 @@ public class StalkService extends Service {
         NotificationCompat.Builder builder = new NotificationCompat.Builder(this, "tasktab-counters")
                 .setSmallIcon(R.drawable.ic_access_time_black_24dp)
                 .setContentTitle(msgObj.getMsg())
-                .setContentText("In progress...")
+                .setContentText("Counter is running...")
                 .setUsesChronometer(true)
                 .setWhen(currentTimeMillis())
                 .setOngoing(true)
@@ -292,12 +292,16 @@ public class StalkService extends Service {
         final Intent notificationIntent = new Intent(this, MainActivity.class);
         final PendingIntent pi = PendingIntent.getActivity(this, 0, notificationIntent, 0);
         NotificationCompat.Builder builder = new NotificationCompat.Builder(this, "tasktab-service-running")
-                .setSmallIcon(R.drawable.ic_launcher_foreground)
-                .setContentTitle(".")
+                .setSmallIcon(R.drawable.ic_assignment_black_24dp)
+                .setContentTitle("")
                 //.setContentText("content text");
                 .setOngoing(true)
                 .setAutoCancel(false)
                 .setContentIntent(pi);
+        // for Android 7.1.1 let's hide notification icon because we can!
+        if (Build.VERSION.SDK_INT == Build.VERSION_CODES.N_MR1) {
+            builder.setPriority(NotificationCompat.PRIORITY_MIN);
+        }
         final Notification notification = builder.build();
         startForeground(-1, notification);
     }
