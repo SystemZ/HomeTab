@@ -256,6 +256,13 @@ public class StalkService extends Service {
     }
 
     private void startNotification(MqttMsg msgObj) {
+        // prepare handler for clicking notification
+        Intent taskView = new Intent(this, Task.class);
+        taskView.putExtra("TASK_ID", msgObj.getId());
+        taskView.putExtra("TASK_NAME", "...");
+        // use System.currentTimeMillis() to have a unique ID for the pending intent
+        PendingIntent pIntent = PendingIntent.getActivity(this, (int) System.currentTimeMillis(), taskView, 0);
+
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             NotificationChannel channel = new NotificationChannel("tasktab-counters",
                     "Active counters",
@@ -270,7 +277,7 @@ public class StalkService extends Service {
                 .setUsesChronometer(true)
                 .setWhen(currentTimeMillis())
                 .setOngoing(true)
-                //.setContentIntent(tapIntent)
+                .setContentIntent(pIntent)
                 //.addAction(R.mipmap.ic_launcher, "Stop", stopActionIntent)
                 .setColor(Color.GREEN)
                 .setVibrate(new long[]{150})
