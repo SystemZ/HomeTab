@@ -21,6 +21,10 @@ type TasksPage struct {
 func Index(w http.ResponseWriter, r *http.Request) {
 	authOk, user := CheckAuth(w, r)
 
+	if !authOk {
+		return
+	}
+
 	// new task was added via form
 	if r.Method == http.MethodPost && len(r.FormValue("newTask")) > 0 {
 		task := model.Task{
