@@ -283,13 +283,13 @@ CREATE TABLE `users` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Table structure for table `webhook_action`
+-- Table structure for table `webhook_actions`
 --
 
-DROP TABLE IF EXISTS `webhook_action`;
+DROP TABLE IF EXISTS `webhook_actions`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `webhook_action` (
+CREATE TABLE `webhook_actions` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `extra` text NOT NULL,
   `type` int(10) unsigned NOT NULL,
@@ -327,4 +327,4 @@ CREATE TABLE `webhook_receivers` (
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2019-10-18 22:20:13
+-- Dump completed on 2019-10-18 22:52:50
