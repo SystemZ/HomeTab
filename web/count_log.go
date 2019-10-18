@@ -16,6 +16,10 @@ func CountLog(w http.ResponseWriter, r *http.Request) {
 	var page CountLogPage
 	authOk, user := CheckAuth(w, r)
 
+	if !authOk {
+		return
+	}
+
 	page.User = user
 	page.AuthOk = authOk
 	page.Counters = model.CounterLogList(user.Id)

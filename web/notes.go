@@ -18,6 +18,9 @@ type NewNotePage struct {
 
 func NewNote(w http.ResponseWriter, r *http.Request) {
 	authOk, user := CheckAuth(w, r)
+	if !authOk {
+		return
+	}
 
 	// note was created via form
 	if r.Method == http.MethodPost && len(r.FormValue("title")) > 0 {
@@ -56,6 +59,9 @@ type NotesListPage struct {
 
 func Notes(w http.ResponseWriter, r *http.Request) {
 	authOk, user := CheckAuth(w, r)
+	if !authOk {
+		return
+	}
 	var page NotesListPage
 	page.User = user
 	page.AuthOk = authOk
@@ -72,6 +78,9 @@ type NotePage struct {
 
 func Note(w http.ResponseWriter, r *http.Request) {
 	authOk, user := CheckAuth(w, r)
+	if !authOk {
+		return
+	}
 
 	// check ID in URL
 	vars := mux.Vars(r)
@@ -100,6 +109,9 @@ type NoteEditPage struct {
 
 func NoteEdit(w http.ResponseWriter, r *http.Request) {
 	authOk, user := CheckAuth(w, r)
+	if !authOk {
+		return
+	}
 
 	// check ID in URL
 	vars := mux.Vars(r)

@@ -16,6 +16,9 @@ type AccountPage struct {
 
 func Account(w http.ResponseWriter, r *http.Request) {
 	authOk, user := CheckAuth(w, r)
+	if !authOk {
+		return
+	}
 
 	//FIXME validation
 	//FIXME possible race condition

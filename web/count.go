@@ -17,6 +17,9 @@ type CountPage struct {
 func Count(w http.ResponseWriter, r *http.Request) {
 	var page CountPage
 	authOk, user := CheckAuth(w, r)
+	if !authOk {
+		return
+	}
 
 	//FIXME validation
 	//FIXME possible race condition

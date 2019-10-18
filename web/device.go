@@ -13,6 +13,10 @@ type DevicePage struct {
 
 func Device(w http.ResponseWriter, r *http.Request) {
 	authOk, user := CheckAuth(w, r)
+	if !authOk {
+		return
+	}
+
 	var page DevicePage
 	page.User = user
 	page.AuthOk = authOk

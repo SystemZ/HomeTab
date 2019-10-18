@@ -20,7 +20,6 @@ type TasksPage struct {
 
 func Index(w http.ResponseWriter, r *http.Request) {
 	authOk, user := CheckAuth(w, r)
-
 	if !authOk {
 		return
 	}
