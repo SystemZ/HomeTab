@@ -68,7 +68,6 @@ func StartWebInterface() {
 	r.HandleFunc("/api/v1/counter/{id}/stop", ApiCounterStop)
 	// Webhooks
 	r.HandleFunc("/wh/gitlab", WebhookGitlab)
-	r.HandleFunc("/wh/argocd", WebhookArgocd)
 	// start internal http server with logging
 	loggedRouter := handlers.LoggingHandler(os.Stdout, r)
 	log.Println("HTTP server started on :3000")
