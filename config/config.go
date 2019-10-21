@@ -7,6 +7,8 @@ import (
 )
 
 var (
+	DEV_MODE bool
+	//
 	DB_HOST     string
 	DB_PORT     string
 	DB_NAME     string
@@ -39,6 +41,9 @@ func init() {
 		log.Println("Production env detected")
 	}
 	viper.AutomaticEnv()
+	// dev
+	viper.SetDefault("DEV_MODE", false)
+	DEV_MODE = viper.GetBool("DEV_MODE")
 	// DB stuff
 	viper.SetDefault("DB_HOST", "localhost")
 	DB_HOST = viper.GetString("DB_HOST")

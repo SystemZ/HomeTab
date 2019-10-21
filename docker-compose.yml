@@ -4,6 +4,14 @@ services:
     image: redis:5-alpine
     ports:
       - "6379:6379"
+  phpredmin:
+    image: 'sasanrose/phpredmin'
+    environment:
+      - PHPREDMIN_DATABASE_REDIS_0_HOST=redis
+    ports:
+      - 8090:80
+    depends_on:
+      - redis
   db:
     image: mysql:5.7
     ports:
@@ -21,3 +29,11 @@ services:
       - PMA_HOST=db
       - PMA_USER=root
       - PMA_PASSWORD=dev
+  rabbitmq:
+    image: rabbitmq:3.7-management
+    ports:
+      - 15672:15672 # Web GUI
+      - 5672:5672 # AMQP
+      - 1883:1883 # MQTT
+    volumes:
+      - "./dev/enabled_plugins:/etc/rabbitmq/enabled_plugins"

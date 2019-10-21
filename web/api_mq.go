@@ -3,6 +3,7 @@ package web
 import (
 	"encoding/json"
 	"gitlab.com/systemz/tasktab/config"
+	"log"
 	"net/http"
 	"strconv"
 )
@@ -28,6 +29,11 @@ func ApiMqCredential(w http.ResponseWriter, r *http.Request) {
 		// tasktab:device-1
 		Username: config.MQTT_VHOST + ":tasktab-device-" + strconv.Itoa(int(device.Id)),
 		Password: device.Token,
+	}
+	if config.DEV_MODE {
+		credentials.Username = "guest"
+		credentials.Password = "guest"
+		log.Printf("Device getting credentials: %v", credentials)
 	}
 
 	// prepare JSON
