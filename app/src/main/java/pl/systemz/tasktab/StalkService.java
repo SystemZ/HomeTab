@@ -252,7 +252,7 @@ public class StalkService extends Service {
 
     private void stopNotification(MqttMsg msgObj) {
         NotificationManagerCompat notificationManager = NotificationManagerCompat.from(this);
-        notificationManager.cancel(msgObj.getId());
+        notificationManager.cancel(msgObj.getSessionId());
     }
 
     private void startNotification(MqttMsg msgObj) {
@@ -273,7 +273,7 @@ public class StalkService extends Service {
         NotificationCompat.Builder builder = new NotificationCompat.Builder(this, "tasktab-counters")
                 .setSmallIcon(R.drawable.ic_access_time_black_24dp)
                 .setContentTitle(msgObj.getMsg())
-                .setContentText("Counter is running...")
+                .setContentText("Counting...")
                 .setUsesChronometer(true)
                 .setWhen(currentTimeMillis())
                 .setOngoing(true)
@@ -284,7 +284,7 @@ public class StalkService extends Service {
                 .setSound(Settings.System.DEFAULT_NOTIFICATION_URI)
                 .setPriority(NotificationCompat.PRIORITY_DEFAULT);
         NotificationManagerCompat notificationManager = NotificationManagerCompat.from(this);
-        notificationManager.notify(msgObj.getId(), builder.build());
+        notificationManager.notify(msgObj.getSessionId(), builder.build());
     }
 
     private void foregroundNotification() {

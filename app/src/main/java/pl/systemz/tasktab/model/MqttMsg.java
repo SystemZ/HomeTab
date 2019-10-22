@@ -14,6 +14,9 @@ public class MqttMsg {
     @SerializedName("id")
     @Expose
     private Integer id;
+    @SerializedName("sessionId")
+    @Expose
+    private Integer sessionId;
 
     public String getType() {
         return type;
@@ -37,6 +40,14 @@ public class MqttMsg {
 
     public void setId(Integer id) {
         this.id = id;
+    }
+
+    public Integer getSessionId() {
+        return sessionId;
+    }
+
+    public void setSessionId(Integer sessionId) {
+        this.sessionId = sessionId;
     }
 
 }
