@@ -10,6 +10,7 @@ type Notification struct {
 	Id        uint   `json:"id"`
 	SessionId uint   `json:"sessionId"`
 	Type      string `json:"type"`
+	Title     string `json:"title"`
 	Msg       string `json:"msg"`
 }
 

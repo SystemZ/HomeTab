@@ -17,12 +17,14 @@ func SendCounterNotification(start bool, sourceUser model.User, counterId uint, 
 	// send message to each device
 	for _, device := range devices {
 		msgKey := "device" + strconv.Itoa(int(device.Id))
-		msgBody := counter.Name
-		msgBody = sourceUser.Username + " @ " + counter.Name
+		msgTitle := sourceUser.Username + " @ " + counter.Name
+		msgBody := "Counting..."
 		// add or remove notification from device
 		msgType := "startNotification"
 		if !start {
 			msgType = "stopNotification"
+			msgTitle = ""
+			msgBody = ""
 		}
 
 		// finally craft queue message
@@ -30,6 +32,7 @@ func SendCounterNotification(start bool, sourceUser model.User, counterId uint, 
 			Id:        counterId,
 			SessionId: sessionId,
 			Type:      msgType,
+			Title:     msgTitle,
 			Msg:       msgBody,
 		}
 		log.Printf("Sending push msg to %v", device.Name)
