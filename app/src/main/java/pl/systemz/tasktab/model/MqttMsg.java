@@ -8,12 +8,19 @@ public class MqttMsg {
     @SerializedName("type")
     @Expose
     private String type;
+
+    @SerializedName("title")
+    @Expose
+    private String title;
+
     @SerializedName("msg")
     @Expose
     private String msg;
+
     @SerializedName("id")
     @Expose
     private Integer id;
+
     @SerializedName("sessionId")
     @Expose
     private Integer sessionId;
@@ -24,6 +31,14 @@ public class MqttMsg {
 
     public void setType(String type) {
         this.type = type;
+    }
+
+    public String getTitle() {
+        return title;
+    }
+
+    public void setTitle(String title) {
+        this.title = title;
     }
 
     public String getMsg() {

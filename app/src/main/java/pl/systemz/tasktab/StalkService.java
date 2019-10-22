@@ -272,15 +272,15 @@ public class StalkService extends Service {
         }
         NotificationCompat.Builder builder = new NotificationCompat.Builder(this, "tasktab-counters")
                 .setSmallIcon(R.drawable.ic_access_time_black_24dp)
-                .setContentTitle(msgObj.getMsg())
-                .setContentText("Counting...")
+                .setContentTitle(msgObj.getTitle())
+                .setContentText(msgObj.getMsg())
                 .setUsesChronometer(true)
+                .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
                 .setWhen(currentTimeMillis())
                 .setOngoing(true)
                 .setContentIntent(pIntent)
                 //.addAction(R.mipmap.ic_launcher, "Stop", stopActionIntent)
                 .setColor(Color.GREEN)
-                .setVibrate(new long[]{150})
                 .setSound(Settings.System.DEFAULT_NOTIFICATION_URI)
                 .setPriority(NotificationCompat.PRIORITY_DEFAULT);
         NotificationManagerCompat notificationManager = NotificationManagerCompat.from(this);
