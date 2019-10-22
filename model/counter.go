@@ -55,7 +55,7 @@ func CreateCounter(name string) uint {
 	return counter.Id
 }
 
-func StartCounterSession(counterId uint, userId uint) {
+func StartCounterSession(counterId uint, userId uint) uint {
 	var session CounterSession
 	//FIXME timezones
 	now := time.Now()
@@ -66,19 +66,21 @@ func StartCounterSession(counterId uint, userId uint) {
 	session.CreatedAt = &now
 	session.UpdatedAt = &now
 	DB.Save(&session)
+	return session.Id
 }
 
-func StopCounterSession(counterId uint, userId uint) {
+func StopCounterSession(counterId uint, userId uint) uint {
 	var session CounterSession
 	res := DB.Order("ended_at asc").Where("user_id = ? AND counter_id = ? AND ended_at IS NULL", userId, counterId).First(&session)
 	if res.RowsAffected < 1 {
-		return
+		return 0
 	}
 	//FIXME timezones
 	now := time.Now()
 	session.EndedAt = &now
 	session.UpdatedAt = &now
 	DB.Save(&session)
+	return session.Id
 }
 
 type CounterList struct {

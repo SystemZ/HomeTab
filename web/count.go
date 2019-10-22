@@ -43,9 +43,9 @@ func Count(w http.ResponseWriter, r *http.Request) {
 			http.Redirect(w, r, "/count", 302)
 			return
 		}
-		model.StartCounterSession(uint(counterId), user.Id)
+		sessionId := model.StartCounterSession(uint(counterId), user.Id)
 		// notify mobile app
-		service.SendCounterNotification(true, user, uint(counterId))
+		service.SendCounterNotification(true, user, uint(counterId), sessionId)
 		// all done, redirect
 		http.Redirect(w, r, "/count", 302)
 		return
@@ -58,9 +58,9 @@ func Count(w http.ResponseWriter, r *http.Request) {
 			http.Redirect(w, r, "/count", 302)
 			return
 		}
-		model.StopCounterSession(uint(counterId), user.Id)
+		sessionId := model.StopCounterSession(uint(counterId), user.Id)
 		// notify mobile app
-		service.SendCounterNotification(false, user, uint(counterId))
+		service.SendCounterNotification(false, user, uint(counterId), sessionId)
 		// all done, redirect
 		http.Redirect(w, r, "/count", 302)
 		return

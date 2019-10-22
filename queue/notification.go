@@ -7,9 +7,10 @@ import (
 )
 
 type Notification struct {
-	Id   uint   `json:"id"`
-	Type string `json:"type"`
-	Msg  string `json:"msg"`
+	Id        uint   `json:"id"`
+	SessionId uint   `json:"sessionId"`
+	Type      string `json:"type"`
+	Msg       string `json:"msg"`
 }
 
 func SendNotification(n Notification, key string) {

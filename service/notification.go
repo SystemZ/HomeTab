@@ -7,7 +7,7 @@ import (
 	"strconv"
 )
 
-func SendCounterNotification(start bool, sourceUser model.User, counterId uint) {
+func SendCounterNotification(start bool, sourceUser model.User, counterId uint, sessionId uint) {
 	// get DB info
 	var counter model.Counter
 	model.DB.Where(model.Counter{Id: counterId}).First(&counter)
@@ -18,10 +18,7 @@ func SendCounterNotification(start bool, sourceUser model.User, counterId uint) 
 	for _, device := range devices {
 		msgKey := "device" + strconv.Itoa(int(device.Id))
 		msgBody := counter.Name
-		// for devices of other users we craft other message
-		if device.UserId != sourceUser.Id {
-			msgBody = sourceUser.Username + " @ " + counter.Name
-		}
+		msgBody = sourceUser.Username + " @ " + counter.Name
 		// add or remove notification from device
 		msgType := "startNotification"
 		if !start {
@@ -30,9 +27,10 @@ func SendCounterNotification(start bool, sourceUser model.User, counterId uint) 
 
 		// finally craft queue message
 		msg := queue.Notification{
-			Id:   counterId,
-			Type: msgType,
-			Msg:  msgBody,
+			Id:        counterId,
+			SessionId: sessionId,
+			Type:      msgType,
+			Msg:       msgBody,
 		}
 		log.Printf("Sending push msg to %v", device.Name)
 		queue.SendNotification(msg, msgKey)
