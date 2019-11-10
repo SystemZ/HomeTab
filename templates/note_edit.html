@@ -1,0 +1,25 @@
+{{ if .Edit }}
+    <h2>Edit note</h2>
+{{ else }}
+    <h2>Create note</h2>
+{{ end }}
+
+<form method="POST">
+    <select name="project">
+        {{range .Projects}}
+            {{if eq .Id $.Note.ProjectId}}
+                <option value="{{.Id}}">{{.Name}} (current)</option>
+            {{else}}
+                <option value="{{.Id}}">{{.Name}}</option>
+            {{end}}
+        {{end}}
+    </select>
+    <input type="text" name="title" placeholder="Short title" value="{{.Note.Title}}">
+    <textarea name="body" placeholder="Just type here..." style="height: 40vh">{{.Note.Body}}</textarea>
+    <input type="text" name="tags" placeholder="tag1, tag2, tag3" value="{{.Note.Tags}}">
+    {{ if .Edit }}
+        <input type='submit' value="Edit"/>
+    {{ else }}
+        <input type='submit' value="Create"/>
+    {{ end }}
+</form>
