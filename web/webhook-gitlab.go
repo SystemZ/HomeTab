@@ -3,6 +3,7 @@ package web
 import (
 	"bytes"
 	"encoding/json"
+	// gitlabWh "github.com/go-playground/webhooks/gitlab"
 	"gitlab.com/systemz/tasktab/model"
 	"io/ioutil"
 	"log"
@@ -29,6 +30,35 @@ func WebhookGitlab(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 	return
 }
+
+/*
+func WebhookGitlab(w http.ResponseWriter, r *http.Request) {
+	//enforce POST only
+	if r.Method != http.MethodPost {
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
+	hook, _ := gitlabWh.New()
+	payload, err := hook.Parse(r, gitlabWh.PushEvents)
+	if err != nil {
+		if err == gitlabWh.ErrEventNotFound {
+			log.Printf("%v", "Event from gitlab not parsed")
+			w.WriteHeader(http.StatusBadRequest)
+			return
+		}
+	}
+	switch payload.(type) {
+	case gitlabWh.PushEventPayload:
+		data := payload.(gitlabWh.PushEventPayload)
+		log.Printf("Push! ProjectID: %v", data.ProjectID)
+	}
+
+
+	w.WriteHeader(http.StatusOK)
+	return
+}
+*/
 
 func GitlabWhIssueToDiscord(w http.ResponseWriter, r *http.Request) {
 	//get raw JSON
@@ -98,6 +128,8 @@ func GitlabWhIssueToDiscord(w http.ResponseWriter, r *http.Request) {
 	SendDiscordWebhook(bodyRaw, discordWhUrl, w)
 }
 
+// https://discordapp.com/developers/docs/resources/webhook
+// https://discordapp.com/developers/docs/resources/channel#embed-object-embed-author-structure
 type DiscordWebhook struct {
 	Content  string           `json:"content"`
 	Username string           `json:"username"`

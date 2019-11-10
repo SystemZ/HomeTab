@@ -67,6 +67,8 @@ github.com/go-logfmt/logfmt v0.4.0/go.mod h1:3RMwSq7FuexP4Kalkev3ejPJsZTpXXBr9+V
 github.com/go-ole/go-ole v1.2.1/go.mod h1:7FAglXiTm7HKlQRDeOQ6ZNUHidzCWXuZWq/1dTyBNF8=
 github.com/go-ole/go-ole v1.2.4 h1:nNBDSCOigTSiarFpYE9J/KtEA1IOW4CNeqT9TQDqCxI=
 github.com/go-ole/go-ole v1.2.4/go.mod h1:XCwSNxSkXRo4vlyPy93sltvi/qJq0jqQhjqQNIwKuxM=
+github.com/go-playground/webhooks v5.13.0+incompatible h1:S6K1YkZ36h1HW5Nt9N3F8SwjMpVthK+UlKR9IuOR4XE=
+github.com/go-playground/webhooks v5.13.0+incompatible/go.mod h1:rMsxoY7bQzIPF9Ni55rTCyLG2af55f9IWgJ1ao3JiZA=
 github.com/go-redis/redis/v7 v7.0.0-beta.3 h1:p5g3p597f83HyVxg6qvGLLDqCYWodYWC9XmSbKPwuto=
 github.com/go-redis/redis/v7 v7.0.0-beta.3/go.mod h1:dohSoK1cSNPaisjbZhSk7RYyPhVx2k+4sAbJdPK5KPs=
 github.com/go-redis/redis_rate/v8 v8.0.0-beta h1:HXEYE0I9+VFoCW8fHeVNrAZ5wj970o12uA5msqveneQ=

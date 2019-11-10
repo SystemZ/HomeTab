@@ -6,6 +6,7 @@ require (
 	cloud.google.com/go v0.38.0 // indirect
 	github.com/getlantern/golog v0.0.0-20190830074920-4ef2e798c2d7 // indirect
 	github.com/getlantern/systray v0.0.0-20190727060347-6f0e5a3c556c
+	github.com/go-playground/webhooks v5.13.0+incompatible
 	github.com/go-redis/redis/v7 v7.0.0-beta.3
 	github.com/go-redis/redis_rate/v8 v8.0.0-beta
 	github.com/go-sql-driver/mysql v1.4.1
