@@ -5,12 +5,20 @@
                 app
         >
             <v-list dense>
-                <v-list-item link>
+                <v-list-item to="/tasks">
                     <v-list-item-action>
-                        <v-icon>mdi-home</v-icon>
+                        <v-icon>mdi-clipboard-text</v-icon>
                     </v-list-item-action>
                     <v-list-item-content>
-                        <v-list-item-title>Home</v-list-item-title>
+                        <v-list-item-title>Tasks</v-list-item-title>
+                    </v-list-item-content>
+                </v-list-item>
+                <v-list-item to="/notes">
+                    <v-list-item-action>
+                        <v-icon>mdi-note</v-icon>
+                    </v-list-item-action>
+                    <v-list-item-content>
+                        <v-list-item-title>Notes</v-list-item-title>
                     </v-list-item-content>
                 </v-list-item>
             </v-list>
@@ -27,9 +35,9 @@
 
         <v-content>
             <v-container
-                    class="fill-height"
                     fluid
             >
+                <router-view/>
             </v-container>
         </v-content>
     </v-app>
