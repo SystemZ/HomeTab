@@ -14,16 +14,16 @@ function deploy-when-master {
 }
 
 function dump-schema {
-  sudo docker-compose exec db /bin/sh -c "/usr/bin/mysqldump -udev -pdev --no-data dev" | grep -v "Using a password on the command line interface can be insecure" | sed 's/ AUTO_INCREMENT=[0-9]*//g' > migrations/0.sql
+    sudo docker-compose exec db /bin/sh -c "/usr/bin/mysqldump -udev -pdev --no-data dev" | grep -v "Using a password on the command line interface can be insecure" | sed 's/ AUTO_INCREMENT=[0-9]*//g' > migrations/0.sql
 }
 function build {
-    docker build -t tasktab .
+    sudo docker build -t tasktab .
 }
 function up {
-    docker-compose up -d
+    sudo docker-compose up -d
 }
 function stop {
-    docker-compose stop
+    sudo docker-compose stop
 }
 function default {
     up
