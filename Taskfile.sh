@@ -7,7 +7,7 @@ function help {
 }
 
 function deploy-when-master {
-    if $(git branch | grep \* | cut -d ' ' -f2 | grep -q master); then
+    if [[ "$CI_COMMIT_REF_NAME" == "master" ]]; then
       echo "Deploying..."
       curl -X POST -F token=$INFRA_TOKEN -F "ref=master" -F "variables[SERVICE_NAME]=tasktab" -F "variables[SERVICE_VERSION]=pipeline-$CI_PIPELINE_ID" https://gitlab.com/api/v4/projects/6986946/trigger/pipeline
     fi
