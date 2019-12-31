@@ -6,7 +6,6 @@ require (
 	cloud.google.com/go v0.38.0 // indirect
 	github.com/getlantern/golog v0.0.0-20190830074920-4ef2e798c2d7 // indirect
 	github.com/getlantern/systray v0.0.0-20190727060347-6f0e5a3c556c
-	github.com/go-playground/webhooks v5.13.0+incompatible
 	github.com/go-redis/redis/v7 v7.0.0-beta.3
 	github.com/go-redis/redis_rate/v8 v8.0.0-beta
 	github.com/go-sql-driver/mysql v1.4.1
@@ -17,7 +16,9 @@ require (
 	github.com/jinzhu/gorm v1.9.11
 	github.com/onsi/ginkgo v1.10.2 // indirect
 	github.com/onsi/gomega v1.7.0 // indirect
+	github.com/rs/cors v1.7.0
 	github.com/satori/go.uuid v1.2.0
+	github.com/shurcooL/sanitized_anchor_name v1.0.0 // indirect
 	github.com/sirupsen/logrus v1.2.0
 	github.com/spf13/cobra v0.0.5
 	github.com/spf13/viper v1.4.0
@@ -33,4 +34,5 @@ require (
 	golang.org/x/net v0.0.0-20191002035440-2ec189313ef0 // indirect
 	golang.org/x/text v0.3.2 // indirect
 	google.golang.org/appengine v1.5.0 // indirect
+	gopkg.in/russross/blackfriday.v2 v2.0.0 // indirect
 )

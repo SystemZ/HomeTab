@@ -17,7 +17,7 @@ type MqCredentialApiRes struct {
 }
 
 func ApiMqCredential(w http.ResponseWriter, r *http.Request) {
-	authOk, device := ApiCheckAuth(w, r)
+	authOk, device := DeviceApiCheckAuth(w, r)
 	if !authOk {
 		w.Write([]byte{})
 		return

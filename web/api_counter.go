@@ -11,7 +11,7 @@ import (
 )
 
 func ApiCounter(w http.ResponseWriter, r *http.Request) {
-	authOk, device := ApiCheckAuth(w, r)
+	authOk, device := DeviceApiCheckAuth(w, r)
 	if !authOk {
 		w.Write([]byte{})
 		return
@@ -55,7 +55,7 @@ func ApiCounter(w http.ResponseWriter, r *http.Request) {
 }
 
 func ApiCounterStart(w http.ResponseWriter, r *http.Request) {
-	authOk, device := ApiCheckAuth(w, r)
+	authOk, device := DeviceApiCheckAuth(w, r)
 	if !authOk {
 		w.Write([]byte{})
 		return
@@ -83,7 +83,7 @@ func ApiCounterStart(w http.ResponseWriter, r *http.Request) {
 }
 
 func ApiCounterStop(w http.ResponseWriter, r *http.Request) {
-	authOk, device := ApiCheckAuth(w, r)
+	authOk, device := DeviceApiCheckAuth(w, r)
 	if !authOk {
 		w.Write([]byte{})
 		return

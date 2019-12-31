@@ -17,9 +17,17 @@
                     :headers="headers"
                     :items="notes"
                     :search="search"
+                    :loading="notesLoading"
             >
                 <template v-slot:item.createdAt="{ item }">
-                    {{item.createdAt | prettyTimeDate}}
+                    {{item.createdAt | prettyTimeDate }}
+                </template>
+                <template v-slot:progress>
+                    <v-progress-linear
+                            indeterminate
+                            :height="2"
+                            color="green"
+                    ></v-progress-linear>
                 </template>
             </v-data-table>
         </v-card>
@@ -27,16 +35,19 @@
 </template>
 
 <script>
+    import axios from "axios";
+
     export default {
         name: 'notes',
         data() {
             return {
                 search: '',
+                notesLoading: true,
                 headers: [
                     {
                         text: 'ID',
                         align: 'left',
-                        sortable: false,
+                        sortable: true,
                         value: 'id',
                     },
                     {text: 'Title', value: 'title'},
@@ -44,16 +55,33 @@
                     {text: 'Tags', value: 'tags'},
                     {text: 'Created at', value: 'createdAt'},
                 ],
-                notes: [
-                    {
-                        id: 1,
-                        title: "Smaller plan",
-                        short: "No",
-                        tags: ["lvlup", "ticket"],
-                        createdAt: "2018-10-24T17:53:56+01:00",
-                    },
-                ],
+                notes: [],
             }
         },
+        mounted() {
+            this.getNotes()
+        },
+        methods: {
+            authConfig() {
+                return {headers: {Authorization: "Bearer " + localStorage.getItem(this.lsToken)}}
+            },
+            getNotes() {
+                let vm = this
+                vm.notesLoading = true
+                axios.get(vm.apiUrl + "/api/v1/note", vm.authConfig())
+                    .then((res) => {
+                        vm.notesLoading = false
+                        vm.notes = res.data
+                    })
+                    .catch(function (err) {
+                        if (err.response.status === 401) {
+                            console.log("logged out")
+                            //vm.$root.$emit("sessionExpired")
+                        } else {
+                            console.log("something wrong")
+                        }
+                    })
+            }
+        }
     }
 </script>

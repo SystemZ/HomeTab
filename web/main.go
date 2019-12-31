@@ -3,6 +3,7 @@ package web
 import (
 	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
+	"github.com/rs/cors"
 	"github.com/unrolled/render"
 	"gitlab.com/systemz/tasktab/config"
 	"gitlab.com/systemz/tasktab/model"
@@ -10,6 +11,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"strings"
 	"time"
 )
 
@@ -60,9 +62,11 @@ func StartWebInterface() {
 	r.HandleFunc("/logout", Logout)
 	r.HandleFunc("/refresh", Refresh) // FIXME
 	// API
+	r.HandleFunc("/api/v1/login", ApiLogin)
 	r.HandleFunc("/api/v1/mq/access", ApiMqCredential)
 	r.HandleFunc("/api/v1/event", ApiEvent)
 	r.HandleFunc("/api/v1/counter", ApiCounterList)
+	r.HandleFunc("/api/v1/note", ApiNoteList).Methods("GET")
 	r.HandleFunc("/api/v1/counter/{id}", ApiCounter)
 	r.HandleFunc("/api/v1/counter/{id}/start", ApiCounterStart)
 	r.HandleFunc("/api/v1/counter/{id}/stop", ApiCounterStop)
@@ -71,10 +75,16 @@ func StartWebInterface() {
 	// start internal http server with logging
 	loggedRouter := handlers.LoggingHandler(os.Stdout, r)
 	log.Println("HTTP server started on :3000")
+
+	if config.DEV_MODE {
+		log.Println("DEV env detected, CORS wildcard")
+		loggedRouter = cors.AllowAll().Handler(loggedRouter)
+	}
+
 	log.Fatal(http.ListenAndServe(":3000", loggedRouter))
 }
 
-func ApiCheckAuth(w http.ResponseWriter, r *http.Request) (ok bool, device model.Device) {
+func DeviceApiCheckAuth(w http.ResponseWriter, r *http.Request) (ok bool, device model.Device) {
 	token := r.Header.Get("Authorization")
 	//get device from DB by token
 	model.DB.Where("token = ?", token).First(&device)
@@ -85,6 +95,39 @@ func ApiCheckAuth(w http.ResponseWriter, r *http.Request) (ok bool, device model
 		return false, device
 	}
 	return true, device
+}
+
+func CheckApiAuth(w http.ResponseWriter, r *http.Request) (ok bool, user model.User) {
+	tokenInHeader := r.Header.Get("Authorization")
+	if len(tokenInHeader) != 43 {
+		return false, user
+	}
+	tokenSplit := strings.Split(tokenInHeader, " ")
+	if tokenSplit[0] != "Bearer" {
+		return false, user
+	}
+	if len(tokenSplit[1]) != 36 {
+		return false, user
+	}
+	//Bearer 0b97c6a3-2415-4b5e-b144-268fdf6af6da
+
+	res := model.Redis.Get(tokenSplit[1])
+	_, err := res.Result()
+	if res.Err() != nil {
+		return false, user
+	}
+	if len(res.String()) < 1 {
+		// If the session token is not present in cache, return an unauthorized error
+		return false, user
+	}
+
+	userId, err := res.Uint64()
+	if err != nil {
+		return false, user
+	}
+
+	_, user = model.GetUserById(uint(userId))
+	return true, user
 }
 
 func CheckAuth(w http.ResponseWriter, r *http.Request) (ok bool, user model.User) {

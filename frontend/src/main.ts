@@ -18,6 +18,21 @@ Vue.filter('prettyTimeDate', (str: string) => {
   return withZero(t.getHours()) + ':' + withZero(t.getMinutes()) +
       ' ' + withZero(t.getDate()) + '/' + withZero(t.getMonth() + 1) + '/' + t.getFullYear();
 });
+const mixin = {
+  computed: {
+    apiUrl(): string {
+      if (process.env.NODE_ENV === 'production') {
+        return 'https://tasktab.lvlup.pro';
+      } else {
+        return 'http://127.0.0.1:3000';
+      }
+    },
+    lsToken(): string {
+      return 'authToken';
+    },
+  }
+}
+Vue.mixin(mixin);
 
 new Vue({
   router,

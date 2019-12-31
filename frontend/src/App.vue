@@ -21,6 +21,14 @@
                         <v-list-item-title>Notes</v-list-item-title>
                     </v-list-item-content>
                 </v-list-item>
+                <v-list-item to="/login">
+                    <v-list-item-action>
+                        <v-icon>mdi-login</v-icon>
+                    </v-list-item-action>
+                    <v-list-item-content>
+                        <v-list-item-title>Login</v-list-item-title>
+                    </v-list-item-content>
+                </v-list-item>
             </v-list>
         </v-navigation-drawer>
 
