@@ -79,7 +79,7 @@
         methods: {
             login() {
                 let vm = this;
-                axios.post('http://127.0.0.1:3000/api/v1/login', {
+                axios.post(vm.apiUrl + '/api/v1/login', {
                     'username': vm.username,
                     'password': vm.password
                 }).then((res) => {
