@@ -3,19 +3,26 @@
         <h1 class="display-1">#{{id}} {{note.title}}</h1>
         <div class="caption">Tags: {{note.tags}}</div>
         <div class="caption">Created: {{note.createdAt | prettyTimeDate }}</div>
-        <v-card class="mt-4">
-            <v-card-text>
-                {{note.body}}
-            </v-card-text>
-        </v-card>
+        <vue-simplemde
+                v-model="note.body"
+                :highlight="true"
+                ref="markdownEditor"
+        />
     </div>
 </template>
 
 <script>
     import axios from "axios";
+    import VueSimplemde from 'vue-simplemde'
+    import hljs from 'highlight.js';
+
+    window.hljs = hljs;
 
     export default {
         name: 'note',
+        components: {
+            VueSimplemde
+        },
         data() {
             return {
                 noteLoading: true,
@@ -32,9 +39,17 @@
             id() {
                 return this.$route.params.id
             },
+            simplemde() {
+                return this.$refs.markdownEditor.simplemde
+            }
         },
         mounted() {
             this.getNote()
+            this.simplemde.codemirror.on('change', (instance, changeObj) => {
+                if (!this.simplemde.isPreviewActive()) {
+                    this.simplemde.togglePreview()
+                }
+            })
         },
         methods: {
             authConfig() {
@@ -60,3 +75,9 @@
         }
     }
 </script>
+<style>
+    @import '~simplemde/dist/simplemde.min.css';
+    @import '~github-markdown-css';
+    @import '~highlight.js/styles/atom-one-dark.css';
+    /* Highlight theme list: https://github.com/isagalaev/highlight.js/tree/master/src/styles */
+</style>
