@@ -72,6 +72,7 @@ func StartWebInterface() {
 	r.HandleFunc("/api/v1/event", ApiEvent)
 	r.HandleFunc("/api/v1/counter", ApiCounterList)
 	r.HandleFunc("/api/v1/note", ApiNoteList).Methods("GET")
+	r.HandleFunc("/api/v1/note/{id}", ApiNote).Methods("GET")
 	r.HandleFunc("/api/v1/counter/{id}", ApiCounter)
 	r.HandleFunc("/api/v1/counter/{id}/start", ApiCounterStart)
 	r.HandleFunc("/api/v1/counter/{id}/stop", ApiCounterStop)

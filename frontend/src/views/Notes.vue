@@ -18,6 +18,7 @@
                     :items="notes"
                     :search="search"
                     :loading="notesLoading"
+                    @click:row="toNote"
             >
                 <template v-slot:item.createdAt="{ item }">
                     {{item.createdAt | prettyTimeDate }}
@@ -64,6 +65,9 @@
         methods: {
             authConfig() {
                 return {headers: {Authorization: "Bearer " + localStorage.getItem(this.lsToken)}}
+            },
+            toNote(item) {
+                this.$router.push({name: 'note', params: {id: item.id}})
             },
             getNotes() {
                 let vm = this
