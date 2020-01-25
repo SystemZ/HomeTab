@@ -45,11 +45,6 @@
         },
         mounted() {
             this.getNote()
-            this.simplemde.codemirror.on('change', (instance, changeObj) => {
-                if (!this.simplemde.isPreviewActive()) {
-                    this.simplemde.togglePreview()
-                }
-            })
         },
         methods: {
             authConfig() {
@@ -62,6 +57,9 @@
                     .then((res) => {
                         vm.noteLoading = false
                         vm.note = res.data
+                        setTimeout(() => {
+                            vm.simplemde.togglePreview()
+                        }, 0)
                     })
                     .catch(function (err) {
                         if (err.response.status === 401) {
