@@ -52,7 +52,8 @@ func ApiNoteList(w http.ResponseWriter, r *http.Request) {
 
 }
 
-type OneNoteApiResponse struct {
+// FIXME for note edit
+type OneNoteApi struct {
 	Id        uint       `json:"id"`
 	Title     string     `json:"title"`
 	Body      string     `json:"body"`
@@ -85,7 +86,7 @@ func ApiNote(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
-	var rawResponse OneNoteApiResponse
+	var rawResponse OneNoteApi
 	rawResponse.Id = notesInDb[0].Id
 	rawResponse.Title = notesInDb[0].Title
 	rawResponse.Body = notesInDb[0].Body
@@ -102,4 +103,43 @@ func ApiNote(w http.ResponseWriter, r *http.Request) {
 	// all ok, return list
 	w.WriteHeader(http.StatusOK)
 	w.Write(response)
+}
+
+func ApiNoteEdit(w http.ResponseWriter, r *http.Request) {
+	// check auth
+	ok, _ := CheckApiAuth(w, r)
+	if !ok {
+		w.WriteHeader(http.StatusUnauthorized)
+		return
+	}
+
+	// check ID in URL
+	vars := mux.Vars(r)
+	noteId, err := strconv.Atoi(vars["id"])
+	if err != nil {
+		log.Printf("Wrong note ID requested")
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
+	// get note from DB
+	notesInDb := model.OneNote(uint(noteId))
+	// no such note
+	if len(notesInDb) < 1 {
+		log.Printf("No note with ID %v found", noteId)
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
+	// FIXME validate
+	decoder := json.NewDecoder(r.Body)
+	var noteEdited OneNoteApi
+	decoder.Decode(&noteEdited)
+
+	oneNote := notesInDb[0]
+	oneNote.Body = noteEdited.Body
+	model.DB.Save(&oneNote)
+
+	// all ok, return list
+	w.WriteHeader(http.StatusOK)
 }

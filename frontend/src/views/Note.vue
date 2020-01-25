@@ -1,8 +1,32 @@
 <template>
     <div>
+        <v-snackbar top v-model="noteSaved" :timeout="1500">
+            Note saved!
+            <v-btn
+                    color="green"
+                    text
+                    @click="noteSaved = false"
+            >
+                Close
+            </v-btn>
+        </v-snackbar>
+        <v-snackbar top v-model="noteSaveError" :timeout="0">
+            Note save error!
+            <v-btn
+                    color="red"
+                    @click="noteSaveError = false"
+            >
+                Close
+            </v-btn>
+        </v-snackbar>
+
         <h1 class="display-1">#{{id}} {{note.title}}</h1>
         <div class="caption">Tags: {{note.tags}}</div>
         <div class="caption">Created: {{note.createdAt | prettyTimeDate }}</div>
+        <v-btn dark color="green" class="mt-3 mb-5" @click.native="saveNote">
+            <v-icon>mdi-content-save-outline</v-icon>
+            Save
+        </v-btn>
         <vue-simplemde
                 v-model="note.body"
                 :highlight="true"
@@ -26,6 +50,8 @@
         data() {
             return {
                 noteLoading: true,
+                noteSaved: false,
+                noteSaveError: false,
                 note: {
                     id: 0,
                     title: "",
@@ -62,6 +88,28 @@
                         }, 0)
                     })
                     .catch(function (err) {
+                        if (err.response.status === 401) {
+                            console.log("logged out")
+                            //vm.$root.$emit("sessionExpired")
+                        } else {
+                            console.log("something wrong")
+                        }
+                    })
+            },
+            saveNote() {
+                let vm = this
+                vm.notesLoading = true
+                let dataToSend = {
+                    'body': vm.note.body,
+                }
+                axios.put(vm.apiUrl + "/api/v1/note/" + vm.id, dataToSend, vm.authConfig())
+                    .then((res) => {
+                        vm.noteLoading = false
+                        vm.noteSaveError = false
+                        vm.noteSaved = true
+                    })
+                    .catch(function (err) {
+                        vm.noteSaveError = true
                         if (err.response.status === 401) {
                             console.log("logged out")
                             //vm.$root.$emit("sessionExpired")
