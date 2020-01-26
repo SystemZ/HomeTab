@@ -138,6 +138,8 @@ func ApiNoteEdit(w http.ResponseWriter, r *http.Request) {
 
 	oneNote := notesInDb[0]
 	oneNote.Body = noteEdited.Body
+	oneNote.Tags = noteEdited.Tags
+	oneNote.Title = noteEdited.Title
 	model.DB.Save(&oneNote)
 
 	// all ok, return list

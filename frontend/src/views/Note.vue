@@ -20,9 +20,22 @@
             </v-btn>
         </v-snackbar>
 
-        <h1 class="display-1">#{{id}} {{note.title}}</h1>
-        <div class="caption">Tags: {{note.tags}}</div>
+        <h1 class="display-1">
+            #{{id}}
+            <v-text-field v-if="noteEditing" v-model="note.title"></v-text-field>
+            <span v-else>{{note.title}}</span>
+        </h1>
+        <div class="caption">
+            Tags:
+            <v-text-field v-if="noteEditing" v-model="note.tags"></v-text-field>
+            <span v-else>{{note.tags}}</span>
+        </div>
         <div class="caption">Created: {{note.createdAt | prettyTimeDate }}</div>
+        <v-btn dark color="primary" class="mt-3 mb-5 mr-4"
+               @click="noteEditing ? noteEditing = false : noteEditing = true">
+            <v-icon>mdi-pencil</v-icon>
+            Edit
+        </v-btn>
         <v-btn dark color="green" class="mt-3 mb-5" @click.native="saveNote">
             <v-icon>mdi-content-save-outline</v-icon>
             Save
@@ -52,6 +65,7 @@
                 noteLoading: true,
                 noteSaved: false,
                 noteSaveError: false,
+                noteEditing: false,
                 note: {
                     id: 0,
                     title: "",
@@ -67,6 +81,17 @@
             },
             simplemde() {
                 return this.$refs.markdownEditor.simplemde
+            }
+        },
+        watch: {
+            noteEditing(noteEditingNew, noteEditingOld) {
+                if (noteEditingNew && this.simplemde.isPreviewActive()) {
+                    this.simplemde.togglePreview()
+                } else if (!noteEditingNew && this.simplemde.isPreviewActive()) {
+                    this.simplemde.togglePreview()
+                } else if (!noteEditingNew && !this.simplemde.isPreviewActive()) {
+                    this.simplemde.togglePreview()
+                }
             }
         },
         mounted() {
@@ -101,6 +126,8 @@
                 vm.notesLoading = true
                 let dataToSend = {
                     'body': vm.note.body,
+                    'title': vm.note.title,
+                    'tags': vm.note.tags,
                 }
                 axios.put(vm.apiUrl + "/api/v1/note/" + vm.id, dataToSend, vm.authConfig())
                     .then((res) => {
