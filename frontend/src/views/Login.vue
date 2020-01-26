@@ -87,6 +87,7 @@
                     vm.username = ''
                     vm.password = ''
                     localStorage.setItem('authToken', res.data.token)
+                    this.$store.dispatch('setLoggedIn')
                     vm.$router.push({name: 'notes'})
                 }).catch(function (err) {
                     vm.loginError = true;

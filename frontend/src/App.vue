@@ -5,7 +5,7 @@
                 app
         >
             <v-list dense>
-                <v-list-item to="/tasks">
+                <v-list-item v-if="$store.state.loggedIn" to="/tasks">
                     <v-list-item-action>
                         <v-icon>mdi-clipboard-text</v-icon>
                     </v-list-item-action>
@@ -13,7 +13,7 @@
                         <v-list-item-title>Tasks</v-list-item-title>
                     </v-list-item-content>
                 </v-list-item>
-                <v-list-item to="/notes">
+                <v-list-item v-if="$store.state.loggedIn" to="/notes">
                     <v-list-item-action>
                         <v-icon>mdi-note</v-icon>
                     </v-list-item-action>
@@ -21,7 +21,8 @@
                         <v-list-item-title>Notes</v-list-item-title>
                     </v-list-item-content>
                 </v-list-item>
-                <v-list-item to="/login">
+
+                <v-list-item v-if="!$store.state.loggedIn" to="/login">
                     <v-list-item-action>
                         <v-icon>mdi-login</v-icon>
                     </v-list-item-action>
@@ -29,6 +30,15 @@
                         <v-list-item-title>Login</v-list-item-title>
                     </v-list-item-content>
                 </v-list-item>
+                <v-list-item v-else @click.native="logout" link>
+                    <v-list-item-action>
+                        <v-icon>mdi-exit-run</v-icon>
+                    </v-list-item-action>
+                    <v-list-item-content>
+                        <v-list-item-title>Logout</v-list-item-title>
+                    </v-list-item-content>
+                </v-list-item>
+
             </v-list>
         </v-navigation-drawer>
 
@@ -60,5 +70,12 @@
         data: () => ({
             drawer: null,
         }),
+        methods: {
+            logout() {
+                localStorage.removeItem('authToken')
+                this.$store.dispatch('setLoggedOut')
+                this.$router.push({name: 'login'})
+            }
+        }
     });
 </script>
