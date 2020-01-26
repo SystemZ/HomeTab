@@ -5,7 +5,6 @@ import (
 	uuid "github.com/satori/go.uuid"
 	"gitlab.com/systemz/tasktab/config"
 	"gitlab.com/systemz/tasktab/model"
-	"log"
 	"net/http"
 	"time"
 )
@@ -23,8 +22,6 @@ func ApiLogin(w http.ResponseWriter, r *http.Request) {
 	decoder := json.NewDecoder(r.Body)
 	var loginCreds ApiLoginRequest
 	decoder.Decode(&loginCreds)
-
-	log.Printf("used credentials: %+v", loginCreds)
 
 	//TODO check length of credentials first
 	passOk, user := model.IsPasswordOk(loginCreds.Username, loginCreds.Password)
