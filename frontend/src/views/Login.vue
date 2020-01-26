@@ -87,7 +87,7 @@
                     vm.username = ''
                     vm.password = ''
                     localStorage.setItem('authToken', res.data.token)
-                    vm.$router.push({name: vm.$vuetify.lang.current + '-' + 'profile'})
+                    vm.$router.push({name: 'notes'})
                 }).catch(function (err) {
                     vm.loginError = true;
                     if (err.response.status === 401) {
