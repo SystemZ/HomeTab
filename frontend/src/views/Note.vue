@@ -31,12 +31,12 @@
             <span v-else>{{note.tags}}</span>
         </div>
         <div class="caption">Created: {{note.createdAt | prettyTimeDate }}</div>
-        <v-btn dark color="primary" class="mt-3 mb-5 mr-4"
+        <v-btn dark color="primary" class="mt-3 mb-5 mr-4" :disabled="noteLoading"
                @click="noteEditing ? noteEditing = false : noteEditing = true">
             <v-icon>mdi-pencil</v-icon>
             Edit
         </v-btn>
-        <v-btn dark color="green" class="mt-3 mb-5" @click.native="saveNote">
+        <v-btn dark color="green" class="mt-3 mb-5" :disabled="noteLoading" @click.native="saveNote">
             <v-icon>mdi-content-save-outline</v-icon>
             Save
         </v-btn>
