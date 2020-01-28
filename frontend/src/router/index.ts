@@ -3,6 +3,7 @@ import VueRouter from 'vue-router'
 import Tasks from '../views/Tasks.vue'
 import Notes from '../views/Notes.vue'
 import Note from '../views/Note.vue'
+import Counters from '../views/Counters.vue'
 import Login from '../views/Login.vue'
 
 Vue.use(VueRouter)
@@ -27,6 +28,11 @@ const routes = [
         path: '/note/:id',
         name: 'note',
         component: Note
+    },
+    {
+        path: '/counters',
+        name: 'counters',
+        component: Counters
     },
     {
         path: '/login',

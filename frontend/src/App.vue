@@ -13,6 +13,14 @@
                         <v-list-item-title>Tasks</v-list-item-title>
                     </v-list-item-content>
                 </v-list-item>
+                <v-list-item v-if="$store.state.loggedIn" to="/counters">
+                    <v-list-item-action>
+                        <v-icon>mdi-timer</v-icon>
+                    </v-list-item-action>
+                    <v-list-item-content>
+                        <v-list-item-title>Counters</v-list-item-title>
+                    </v-list-item-content>
+                </v-list-item>
                 <v-list-item v-if="$store.state.loggedIn" to="/notes">
                     <v-list-item-action>
                         <v-icon>mdi-note</v-icon>
