@@ -70,10 +70,10 @@ func StartWebInterface() {
 	r.HandleFunc("/api/v1/login", ApiLogin)
 	r.HandleFunc("/api/v1/mq/access", ApiMqCredential)
 	r.HandleFunc("/api/v1/event", ApiEvent)
-	r.HandleFunc("/api/v1/counter", ApiCounterList)
 	r.HandleFunc("/api/v1/note", ApiNoteList).Methods("GET")
 	r.HandleFunc("/api/v1/note/{id}", ApiNote).Methods("GET")
 	r.HandleFunc("/api/v1/note/{id}", ApiNoteEdit).Methods("PUT")
+	r.HandleFunc("/api/v1/counter", ApiCounterList).Methods("GET")
 	r.HandleFunc("/api/v1/counter/{id}", ApiCounter)
 	r.HandleFunc("/api/v1/counter/{id}/start", ApiCounterStart)
 	r.HandleFunc("/api/v1/counter/{id}/stop", ApiCounterStop)
@@ -98,7 +98,7 @@ func DeviceApiCheckAuth(w http.ResponseWriter, r *http.Request) (ok bool, device
 	// check auth
 	if device.UserId < 1 {
 		log.Printf("Unknown device tried access to API")
-		w.WriteHeader(http.StatusBadRequest)
+		//w.WriteHeader(http.StatusBadRequest)
 		return false, device
 	}
 	return true, device

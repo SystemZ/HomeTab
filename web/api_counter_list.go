@@ -15,15 +15,25 @@ type CounterApi struct {
 }
 
 func ApiCounterList(w http.ResponseWriter, r *http.Request) {
-	authOk, device := DeviceApiCheckAuth(w, r)
-	if !authOk {
+	authDeviceOk, deviceInfo := DeviceApiCheckAuth(w, r)
+	authUserOk, userInfo := CheckApiAuth(w, r)
+	// deny access if neither auth method works
+	if !authUserOk && !authDeviceOk {
 		w.Write([]byte{})
 		return
 	}
 
+	var userId uint
+	if authDeviceOk {
+		userId = deviceInfo.UserId
+	}
+	if authUserOk {
+		userId = userInfo.Id
+	}
+
 	// gather data, convert from DB model to API model
 	var counters []CounterApi
-	dbCounters := model.CountersLongList(device.UserId)
+	dbCounters := model.CountersLongList(userId)
 	for _, counter := range dbCounters {
 		counters = append(counters, CounterApi{
 			Id:         counter.Id,
