@@ -70,7 +70,23 @@
         data: () => ({
             drawer: null,
         }),
+        created() {
+            this.$root.$on('sessionExpired', this.logout)
+        },
+        destroyed() {
+            this.$root.$off('sessionExpired', this.logout)
+        },
+        mounted() {
+            this.checkToken()
+        },
         methods: {
+            checkToken() {
+                if (localStorage.getItem("authToken") === null) {
+                    return
+                }
+                this.$store.dispatch('setLoggedIn')
+            },
+            // TODO auto logout if server responds with 401
             logout() {
                 localStorage.removeItem('authToken')
                 this.$store.dispatch('setLoggedOut')

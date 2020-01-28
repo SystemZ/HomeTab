@@ -79,8 +79,7 @@
                     })
                     .catch(function (err) {
                         if (err.response.status === 401) {
-                            console.log("logged out")
-                            //vm.$root.$emit("sessionExpired")
+                            vm.$root.$emit("sessionExpired")
                         } else {
                             console.log("something wrong")
                         }
