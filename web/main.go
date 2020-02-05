@@ -73,7 +73,8 @@ func StartWebInterface() {
 	r.HandleFunc("/api/v1/note", ApiNoteList).Methods("GET")
 	r.HandleFunc("/api/v1/note/{id}", ApiNote).Methods("GET")
 	r.HandleFunc("/api/v1/note/{id}", ApiNoteEdit).Methods("PUT")
-	r.HandleFunc("/api/v1/counter", ApiCounterList).Methods("GET")
+	r.HandleFunc("/api/v1/counter", ApiCounterList).Methods("GET")                //Android app
+	r.HandleFunc("/api/v1/counter-page", ApiCounterListPagination).Methods("GET") //JS frontend
 	r.HandleFunc("/api/v1/counter/{id}", ApiCounter)
 	r.HandleFunc("/api/v1/counter/{id}/start", ApiCounterStart)
 	r.HandleFunc("/api/v1/counter/{id}/stop", ApiCounterStop)

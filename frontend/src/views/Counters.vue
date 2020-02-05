@@ -18,8 +18,11 @@
                     :items="counters"
                     :search="search"
                     :loading="countersLoading"
-                    @click:row="toCounter"
+                    :options.sync="tableOptions"
+                    @pagination="getCounters"
+                    :server-items-length="totalCounters"
             >
+                <!--@click:row="toCounter"-->
                 <template v-slot:item.createdAt="{ item }">
                     {{item.createdAt | prettyTimeDate }}
                 </template>
@@ -44,6 +47,8 @@
             return {
                 search: '',
                 countersLoading: true,
+                tableOptions: {},
+                totalCounters: 0,
                 headers: [
                     {
                         text: 'ID',
@@ -57,10 +62,9 @@
                     // {text: 'Created at', value: 'createdAt'},
                 ],
                 counters: [],
+                prevItemsPerPage: 0,
+                prevPage: 0,
             }
-        },
-        mounted() {
-            this.getCounters()
         },
         methods: {
             authConfig() {
@@ -69,13 +73,29 @@
             toCounter(item) {
                 this.$router.push({name: 'note', params: {id: item.id}})
             },
-            getCounters() {
+            getCounters(pagination) {
                 let vm = this
                 vm.countersLoading = true
-                axios.get(vm.apiUrl + "/api/v1/counter", vm.authConfig())
+                let lastId = 0
+                let queryType = "next"
+                if (vm.counters.length > 0) {
+                    if (pagination.page > vm.prevPage) {
+                        lastId = vm.counters[vm.counters.length - 1].id
+                    } else {
+                        lastId = vm.counters[0].id
+                        queryType = "prev"
+                    }
+                }
+                vm.prevPage = pagination.page
+                if (pagination.itemsPerPage !== vm.prevItemsPerPage) {
+                    lastId = 0
+                }
+                vm.prevItemsPerPage = pagination.itemsPerPage
+                axios.get(vm.apiUrl + "/api/v1/counter-page?limit=" + pagination.itemsPerPage + "&" + queryType + "Id=" + lastId, vm.authConfig())
                     .then((res) => {
                         vm.countersLoading = false
-                        vm.counters = res.data
+                        vm.counters = res.data.counters
+                        vm.totalCounters = res.data.pagination.allRecords
                     })
                     .catch(function (err) {
                         if (err.response.status === 401) {

@@ -3,6 +3,7 @@ package model
 import (
 	"github.com/go-sql-driver/mysql"
 	"log"
+	"sort"
 	"strconv"
 	"time"
 )
@@ -168,6 +169,99 @@ ORDER BY counters.id DESC
 		result = append(result, list)
 	}
 	return result
+}
+
+func CountersLongListPaginate(userId uint, limit int, nextId int, prevId int) (result []CounterList, allRecords int) {
+	// count... counters
+	DB.Table("counters").Count(&allRecords)
+
+	whereSign := ">"
+	sortType := "ASC"
+	if nextId < prevId {
+		nextId = prevId
+		whereSign = "<"
+		sortType = "DESC"
+	}
+
+	// get counters
+	query := `
+SELECT
+  counters.id,
+  counters.name,
+  (SELECT GROUP_CONCAT(counter_tags.name SEPARATOR ',') FROM counter_tags WHERE counter_tags.counter_id = counters.id) AS tags,
+  counters.created_at,
+  counters.updated_at,
+  IFNULL((
+    SELECT SUM(TIMESTAMPDIFF(SECOND, counter_sessions.started_at,IFNULL(counter_sessions.ended_at, NOW())))
+    FROM counter_sessions
+    WHERE
+      counters.id = counter_sessions.counter_id
+    AND
+      counter_sessions.user_id = ?
+    AND
+      counter_sessions.started_at > NOW() - INTERVAL 7 DAY
+  ), 0) AS seconds_7d,
+  IFNULL((
+    SELECT SUM(TIMESTAMPDIFF(SECOND, counter_sessions.started_at,IFNULL(counter_sessions.ended_at, NOW())))
+    FROM counter_sessions
+    WHERE
+      counters.id = counter_sessions.counter_id
+    AND
+      counter_sessions.user_id = ?
+    AND
+      counter_sessions.started_at > NOW() - INTERVAL 30 DAY
+  ), 0) AS seconds_30d,
+  IFNULL((
+    SELECT SUM(TIMESTAMPDIFF(SECOND, counter_sessions.started_at,IFNULL(counter_sessions.ended_at, NOW())))
+    FROM counter_sessions
+    WHERE
+      counters.id = counter_sessions.counter_id
+    AND
+      counter_sessions.user_id = ?
+  ), 0) AS seconds_all,
+  (
+    SELECT COUNT(*)
+    FROM counter_sessions
+    WHERE
+      counters.id = counter_sessions.counter_id
+    AND
+      counter_sessions.user_id = ?
+    AND
+      counter_sessions.ended_at IS NULL
+  ) AS running
+FROM counters
+WHERE id ` + whereSign + ` ?
+GROUP BY counters.id
+ORDER BY counters.id ` + sortType + `
+LIMIT ?
+`
+	stmt, err := DB.DB().Prepare(query)
+	if err != nil {
+		return
+	}
+	defer stmt.Close()
+	rows, err := stmt.Query(userId, userId, userId, userId, nextId, limit)
+	if err != nil {
+		return
+	}
+	defer rows.Close()
+	for rows.Next() {
+		var list CounterList
+		err := rows.Scan(&list.Id, &list.Name, &list.Tags, &list.CreatedAt, &list.UpdatedAt, &list.Seconds7d, &list.Seconds30d, &list.SecondsAll, &list.Running)
+		if err != nil {
+			return
+		}
+
+		list.Seconds7dFormatted = PrettyTime(list.Seconds7d)
+		list.Seconds30dFormatted = PrettyTime(list.Seconds30d)
+		list.SecondsAllFormatted = PrettyTime(list.SecondsAll)
+		result = append(result, list)
+	}
+
+	sort.Slice(result, func(p, q int) bool {
+		return result[p].Id < result[q].Id
+	})
+	return result, allRecords
 }
 
 func PrettyTime(s uint) string {
