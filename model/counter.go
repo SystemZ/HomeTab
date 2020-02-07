@@ -171,10 +171,37 @@ ORDER BY counters.id DESC
 	return result
 }
 
-func CountersLongListPaginate(userId uint, limit int, nextId int, prevId int) (result []CounterList, allRecords int) {
+func CountersLongListPaginate(userId uint, limit int, nextId int, prevId int, qTerm string) (result []CounterList, allRecords int) {
 	// count... counters
-	DB.Table("counters").Count(&allRecords)
+	if len(qTerm) < 1 {
+		qTerm = "%"
+	}
+	scoutQuery := `SELECT COUNT(*) FROM counters WHERE counters.name LIKE ?`
+	stmt1, err := DB.DB().Prepare(scoutQuery)
+	if err != nil {
+		log.Printf("%v", err)
+		return
+	}
+	defer stmt1.Close()
+	rows1, err := stmt1.Query(qTerm)
+	if err != nil {
+		log.Printf("%v", err)
+		return
+	}
+	defer rows1.Close()
+	for rows1.Next() {
+		err := rows1.Scan(&allRecords)
+		if err != nil {
+			return
+		}
+	}
 
+	// no records visible? don't ask DB again
+	if allRecords < 1 {
+		return result, allRecords
+	}
+
+	// we have some results so let's get details
 	whereSign := ">"
 	sortType := "ASC"
 	if nextId < prevId {
@@ -231,17 +258,20 @@ SELECT
   ) AS running
 FROM counters
 WHERE id ` + whereSign + ` ?
+AND counters.name LIKE ?
 GROUP BY counters.id
 ORDER BY counters.id ` + sortType + `
 LIMIT ?
 `
 	stmt, err := DB.DB().Prepare(query)
 	if err != nil {
+		log.Printf("%v", err)
 		return
 	}
 	defer stmt.Close()
-	rows, err := stmt.Query(userId, userId, userId, userId, nextId, limit)
+	rows, err := stmt.Query(userId, userId, userId, userId, nextId, qTerm, limit)
 	if err != nil {
+		log.Printf("%v", err)
 		return
 	}
 	defer rows.Close()

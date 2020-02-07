@@ -65,6 +65,10 @@ type CounterApiPagination struct {
 	Counters []CounterApi `json:"counters"`
 }
 
+type PaginateQueryRequest struct {
+	Query string `json:"q"`
+}
+
 func ApiCounterListPagination(w http.ResponseWriter, r *http.Request) {
 	authUserOk, userInfo := CheckApiAuth(w, r)
 	if !authUserOk {
@@ -92,10 +96,16 @@ func ApiCounterListPagination(w http.ResponseWriter, r *http.Request) {
 		prevId = 0
 	}
 
+	// get search term
+	decoder := json.NewDecoder(r.Body)
+	var counterQuery PaginateQueryRequest
+	decoder.Decode(&counterQuery)
+	searchTerm := counterQuery.Query
+
 	// gather data, convert from DB model to API model
 	var rawRes CounterApiPagination
 	var counters []CounterApi
-	dbCounters, allRecords := model.CountersLongListPaginate(userId, limit, nextId, prevId)
+	dbCounters, allRecords := model.CountersLongListPaginate(userId, limit, nextId, prevId, searchTerm)
 	for _, counter := range dbCounters {
 		counters = append(counters, CounterApi{
 			Id:         counter.Id,
@@ -105,10 +115,17 @@ func ApiCounterListPagination(w http.ResponseWriter, r *http.Request) {
 			InProgress: counter.Running == 1,
 		})
 	}
+	// prevent null result in JSON, make empty array instead
+	//rawRes.Counters = make([]CounterApi, 0)
 	rawRes.Counters = counters
 	rawRes.Pagination.AllRecords = allRecords
 
-	// prepare JSON
+	if len(rawRes.Counters) < 1 {
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
+	// prepare JSON result
 	counterList, err := json.MarshalIndent(rawRes, "", "  ")
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
@@ -118,5 +135,4 @@ func ApiCounterListPagination(w http.ResponseWriter, r *http.Request) {
 	// all ok, return list
 	w.WriteHeader(http.StatusOK)
 	w.Write(counterList)
-
 }

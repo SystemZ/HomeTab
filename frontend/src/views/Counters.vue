@@ -4,14 +4,18 @@
             <v-card-title>
                 Counters
                 <v-spacer></v-spacer>
-                <v-text-field
-                        v-model="search"
-                        append-icon="mdi-magnify"
-                        label="Search"
-                        single-line
-                        hide-details
-                >
-                </v-text-field>
+                <v-row>
+                    <v-switch v-model="searchPro" label="Pro" color="green" class="mr-5"></v-switch>
+                    <v-text-field
+                            v-model="search"
+                            append-icon="mdi-magnify"
+                            label="Search"
+                            single-line
+                            hide-details
+                            @keydown="doSearch"
+                    >
+                    </v-text-field>
+                </v-row>
             </v-card-title>
             <v-data-table
                     :headers="headers"
@@ -46,6 +50,9 @@
         data() {
             return {
                 search: '',
+                searchPro: false,
+                searchTimeout: null,
+                //
                 countersLoading: true,
                 tableOptions: {},
                 totalCounters: 0,
@@ -73,25 +80,48 @@
             toCounter(item) {
                 this.$router.push({name: 'note', params: {id: item.id}})
             },
-            getCounters(pagination) {
+            getCounters(pagination, resetPagination) {
                 let vm = this
                 vm.countersLoading = true
                 let lastId = 0
                 let queryType = "next"
                 if (vm.counters.length > 0) {
-                    if (pagination.page > vm.prevPage) {
+                    if (pagination !== undefined && pagination.page > vm.prevPage) {
+                        // next page button
                         lastId = vm.counters[vm.counters.length - 1].id
+                    } else if (resetPagination) {
+                        // search box handling
+                        // we don't want to skip records with ID bigger than 1
+                        lastId = 0
+                        vm.tableOptions.page = 1
                     } else {
+                        // prev page button
                         lastId = vm.counters[0].id
                         queryType = "prev"
                     }
                 }
-                vm.prevPage = pagination.page
-                if (pagination.itemsPerPage !== vm.prevItemsPerPage) {
-                    lastId = 0
+
+                let itemsPerPage = vm.prevItemsPerPage
+                if (pagination !== undefined) {
+                    vm.prevPage = pagination.page
+                    if (pagination.itemsPerPage !== vm.prevItemsPerPage) {
+                        lastId = 0
+                    }
+                    vm.prevItemsPerPage = pagination.itemsPerPage
+                    let limit = 0
+                    if (pagination.itemsPerPage !== undefined) {
+                        limit = pagination.itemsPerPage
+                    }
                 }
-                vm.prevItemsPerPage = pagination.itemsPerPage
-                axios.get(vm.apiUrl + "/api/v1/counter-page?limit=" + pagination.itemsPerPage + "&" + queryType + "Id=" + lastId, vm.authConfig())
+
+                let searchQuery = "%" + vm.search + "%"
+                if (vm.searchPro) {
+                    searchQuery = vm.search
+                }
+
+                let rawUrl = vm.apiUrl + "/api/v1/counter-page?limit=" + itemsPerPage + "&" + queryType + "Id=" + lastId
+                let url = encodeURI(rawUrl)
+                axios.post(url, {q: searchQuery}, vm.authConfig())
                     .then((res) => {
                         vm.countersLoading = false
                         vm.counters = res.data.counters
@@ -101,11 +131,21 @@
                         if (err.response.status === 401) {
                             console.log("logged out")
                             vm.$root.$emit("sessionExpired")
+                        } else if (err.response.status === 400) {
+                            console.log("empty result / wrong request")
+                            vm.countersLoading = false
+                            // make table empty as backend result is empty
+                            vm.counters = []
+                            vm.totalCounters = 0
                         } else {
                             console.log("something wrong")
                         }
                     })
-            }
+            },
+            doSearch() {
+                clearTimeout(this.searchTimeout)
+                this.searchTimeout = setTimeout(this.getCounters, 500, undefined, true)
+            },
         }
     }
 </script>
