@@ -7,6 +7,11 @@ import (
 	"github.com/unrolled/render"
 	"gitlab.com/systemz/tasktab/config"
 	"gitlab.com/systemz/tasktab/model"
+	"gitlab.com/systemz/tasktab/service/feed_backends/helios"
+	"gitlab.com/systemz/tasktab/service/feed_backends/kernelcare"
+	"gitlab.com/systemz/tasktab/service/feed_backends/tm_gdynia"
+	"gitlab.com/systemz/tasktab/service/feed_backends/tm_poznan"
+	"gitlab.com/systemz/tasktab/service/feed_backends/tw_szczecin"
 	"html/template"
 	"log"
 	"net/http"
@@ -78,6 +83,14 @@ func StartWebInterface() {
 	r.HandleFunc("/api/v1/counter/{id}", ApiCounter)
 	r.HandleFunc("/api/v1/counter/{id}/start", ApiCounterStart)
 	r.HandleFunc("/api/v1/counter/{id}/stop", ApiCounterStop)
+
+	// Feeds
+	r.HandleFunc("/feed/kernelcare", kernelcare.Serve)
+	r.HandleFunc("/feed/helios", helios.Serve)
+	r.HandleFunc("/feed/tw-szczecin", tw_szczecin.Serve)
+	r.HandleFunc("/feed/tm-gdynia", tm_gdynia.Serve)
+	r.HandleFunc("/feed/tm-poznan", tm_poznan.Serve)
+
 	// Webhooks
 	r.HandleFunc("/wh/gitlab", WebhookGitlab)
 	// start internal http server with logging
