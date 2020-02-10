@@ -25,6 +25,8 @@
                     :options.sync="tableOptions"
                     @pagination="getCounters"
                     :server-items-length="totalCounters"
+                    :footer-props="{'disable-pagination': countersLoading}"
+                    disable-sort
             >
                 <!--@click:row="toCounter"-->
                 <template v-slot:item.createdAt="{ item }">
