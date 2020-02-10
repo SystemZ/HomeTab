@@ -1,7 +1,7 @@
 <template>
-    <div>
+    <v-container fluid>
         Tasks
-    </div>
+    </v-container>
 </template>
 
 <script>

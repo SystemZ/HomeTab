@@ -1,5 +1,5 @@
 <template>
-    <div>
+    <v-container fluid>
         <v-snackbar top v-model="noteSaved" :timeout="1500">
             Note saved!
             <v-btn
@@ -45,7 +45,7 @@
                 :highlight="true"
                 ref="markdownEditor"
         />
-    </div>
+    </v-container>
 </template>
 
 <script>

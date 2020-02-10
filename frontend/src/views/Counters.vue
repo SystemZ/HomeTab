@@ -1,5 +1,5 @@
 <template>
-    <div>
+    <v-container fluid>
         <v-card class="ma-5">
             <v-card-title>
                 Counters
@@ -27,8 +27,8 @@
                     :server-items-length="totalCounters"
                     :footer-props="{'disable-pagination': countersLoading}"
                     disable-sort
+                    @click:row="toCounter"
             >
-                <!--@click:row="toCounter"-->
                 <template v-slot:item.createdAt="{ item }">
                     {{item.createdAt | prettyTimeDate }}
                 </template>
@@ -41,7 +41,7 @@
                 </template>
             </v-data-table>
         </v-card>
-    </div>
+    </v-container>
 </template>
 
 <script>
@@ -80,7 +80,7 @@
                 return {headers: {Authorization: "Bearer " + localStorage.getItem(this.lsToken)}}
             },
             toCounter(item) {
-                this.$router.push({name: 'note', params: {id: item.id}})
+                this.$router.push({name: 'counter', params: {id: item.id}})
             },
             getCounters(pagination, resetPagination) {
                 let vm = this

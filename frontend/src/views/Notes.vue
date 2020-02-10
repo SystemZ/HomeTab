@@ -1,5 +1,5 @@
 <template>
-    <div>
+    <v-container fluid>
         <v-card class="ma-5">
             <v-card-title>
                 Notes
@@ -32,7 +32,7 @@
                 </template>
             </v-data-table>
         </v-card>
-    </div>
+    </v-container>
 </template>
 
 <script>

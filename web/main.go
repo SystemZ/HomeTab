@@ -75,14 +75,19 @@ func StartWebInterface() {
 	r.HandleFunc("/api/v1/login", ApiLogin)
 	r.HandleFunc("/api/v1/mq/access", ApiMqCredential)
 	r.HandleFunc("/api/v1/event", ApiEvent)
+	r.HandleFunc("/api/v1/counter-page", ApiCounterListPagination).Methods("POST") //JS frontend
+	// for frontend
 	r.HandleFunc("/api/v1/note", ApiNoteList).Methods("GET")
 	r.HandleFunc("/api/v1/note/{id}", ApiNote).Methods("GET")
 	r.HandleFunc("/api/v1/note/{id}", ApiNoteEdit).Methods("PUT")
-	r.HandleFunc("/api/v1/counter", ApiCounterList).Methods("GET")                 //Android app
-	r.HandleFunc("/api/v1/counter-page", ApiCounterListPagination).Methods("POST") //JS frontend
+	r.HandleFunc("/api/v1/counter/{id}/info", ApiCounterFrontend).Methods("GET")
+	r.HandleFunc("/api/v1/counter/{id}/start", ApiCounterStartFrontend).Methods("PUT")
+	r.HandleFunc("/api/v1/counter/{id}/stop", ApiCounterStopFrontend).Methods("PUT")
+	// for Android
+	r.HandleFunc("/api/v1/counter", ApiCounterList).Methods("GET")
 	r.HandleFunc("/api/v1/counter/{id}", ApiCounter)
-	r.HandleFunc("/api/v1/counter/{id}/start", ApiCounterStart)
-	r.HandleFunc("/api/v1/counter/{id}/stop", ApiCounterStop)
+	r.HandleFunc("/api/v1/counter/{id}/start", ApiCounterStart).Methods("POST")
+	r.HandleFunc("/api/v1/counter/{id}/stop", ApiCounterStop).Methods("POST")
 
 	// Feeds
 	r.HandleFunc("/feed/kernelcare", kernelcare.Serve)
