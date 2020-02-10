@@ -110,10 +110,7 @@
                         lastId = 0
                     }
                     vm.prevItemsPerPage = pagination.itemsPerPage
-                    let limit = 0
-                    if (pagination.itemsPerPage !== undefined) {
-                        limit = pagination.itemsPerPage
-                    }
+                    itemsPerPage = pagination.itemsPerPage
                 }
 
                 let searchQuery = "%" + vm.search + "%"
