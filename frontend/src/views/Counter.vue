@@ -43,7 +43,7 @@
                 counter: {
                     id: 0,
                     title: "...",
-                    tags: "PC",
+                    tags: [],
                     running: false,
                 }
             }
@@ -84,6 +84,7 @@
                     .then((res) => {
                         vm.counter.title = res.data.name
                         vm.counter.running = res.data.inProgress
+                        vm.counter.tags = res.data.tags.toString()
                         vm.counterLoading = false
                     })
                     .catch(function (err) {
