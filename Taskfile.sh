@@ -22,6 +22,9 @@ function build {
 function up {
     sudo docker-compose up -d
 }
+function backend {
+    DEV_MODE=true go run . www
+}
 function stop {
     sudo docker-compose stop
 }
