@@ -15,6 +15,15 @@ Vue.filter('prettyTimeDate', (str: string) => {
   }
 
   const t = new Date(str);
+  // this date looks wrong, show dash
+  if (isNaN(t.getTime())) {
+    return "-"
+  }
+  // event not finished yet / unknown, show dash
+  if (t.getFullYear() == 1) {
+    return "-"
+  }
+  // show proper date
   return withZero(t.getHours()) + ':' + withZero(t.getMinutes()) +
       ' ' + withZero(t.getDate()) + '/' + withZero(t.getMonth() + 1) + '/' + t.getFullYear();
 });
