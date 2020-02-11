@@ -8,7 +8,6 @@ import (
 	"log"
 	"net/http"
 	"strconv"
-	"time"
 )
 
 func ApiCounter(w http.ResponseWriter, r *http.Request) {
@@ -56,7 +55,6 @@ func ApiCounter(w http.ResponseWriter, r *http.Request) {
 }
 
 func ApiCounterFrontend(w http.ResponseWriter, r *http.Request) {
-	time.Sleep(time.Second * 1)
 	authUserOk, userInfo := CheckApiAuth(w, r)
 	if !authUserOk {
 		w.WriteHeader(http.StatusUnauthorized)
