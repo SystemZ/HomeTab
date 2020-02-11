@@ -26,6 +26,8 @@ github.com/discordapp/lilliput v0.0.0-20190227014901-bed442456bce h1:CY688PaLSRA
 github.com/discordapp/lilliput v0.0.0-20190227014901-bed442456bce/go.mod h1:Y/qDoFO8ipcjzUjR+FB3NrX2oJcp6EXQBLuW0nws2IY=
 github.com/discordapp/lilliput v0.0.0-20190402233613-eaffdc08248b h1:FrJsV3nT3cYwZEc0gP9Ueli0c+ajYYO2ye2E2iqxdc8=
 github.com/discordapp/lilliput v0.0.0-20190402233613-eaffdc08248b/go.mod h1:Y/qDoFO8ipcjzUjR+FB3NrX2oJcp6EXQBLuW0nws2IY=
+github.com/discordapp/lilliput v0.0.0-20191204003513-dd93dff726a5 h1:vQqjxwwJifZQ/ru6H1BlFdqohOS3aT6fg7d6uZEWWEo=
+github.com/discordapp/lilliput v0.0.0-20191204003513-dd93dff726a5/go.mod h1:Y/qDoFO8ipcjzUjR+FB3NrX2oJcp6EXQBLuW0nws2IY=
 github.com/disintegration/imaging v1.6.0 h1:nVPXRUUQ36Z7MNf0O77UzgnOb1mkMMor7lmJMJXc/mA=
 github.com/disintegration/imaging v1.6.0/go.mod h1:xuIt+sRxDFrHS0drzXUlCJthkJ8k7lkkUojDSR247MQ=
 github.com/fsnotify/fsnotify v1.4.7 h1:IXs+QLmnXW2CcXuY+8Mzv/fWEsPGWxqefPtCP5CnV9I=

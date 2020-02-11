@@ -5,7 +5,7 @@ go 1.12
 require (
 	github.com/DavidHuie/gomigrate v0.0.0-20160809001028-4004e6142040
 	github.com/carlogit/phash v0.0.0-20150602001824-c146ed9f2a27
-	github.com/discordapp/lilliput v0.0.0-20190227014901-bed442456bce
+	github.com/discordapp/lilliput v0.0.0-20191204003513-dd93dff726a5
 	github.com/disintegration/imaging v1.6.0 // indirect
 	github.com/mattn/go-sqlite3 v1.10.0
 	github.com/nfnt/resize v0.0.0-20180221191011-83c6a9932646
