@@ -75,11 +75,13 @@ func ApiCounterFrontend(w http.ResponseWriter, r *http.Request) {
 
 	// set info about counter
 	var counter CounterApi
-	counter.Id = dbCounters[0].Id
-	counter.Name = dbCounters[0].Name
-	counter.Tags = []string{dbCounters[0].Tags}
-	counter.Seconds = dbCounters[0].Duration
-	counter.InProgress = dbCounters[0].Running
+	if len(dbCounters) > 0 {
+		counter.Id = dbCounters[0].Id
+		counter.Name = dbCounters[0].Name
+		counter.Tags = []string{dbCounters[0].Tags}
+		counter.Seconds = dbCounters[0].Duration
+		counter.InProgress = dbCounters[0].Running
+	}
 
 	// set counter sessions
 	for _, v := range dbCounters {

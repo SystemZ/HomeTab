@@ -192,8 +192,12 @@
                     .then((res) => {
                         vm.counter.title = res.data.name
                         vm.counter.running = res.data.inProgress
-                        vm.counter.tags = res.data.tags.toString()
-                        vm.sessions = res.data.sessions
+                        if (res.data.tags !== null) {
+                            vm.counter.tags = res.data.tags.toString()
+                        }
+                        if (res.data.sessions !== null) {
+                            vm.sessions = res.data.sessions
+                        }
                         vm.records = []
                         vm.records[0] = {"name": "Last 7d", "time": res.data.stats.secondsD7F}
                         vm.records[1] = {"name": "Last 30d", "time": res.data.stats.secondsD30F}
