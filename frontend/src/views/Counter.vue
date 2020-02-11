@@ -28,6 +28,82 @@
                 </div>
             </v-col>
         </v-row>
+        <v-row>
+            <v-col>
+                <v-card>
+                    <v-card-title>
+                        Log
+                    </v-card-title>
+                    <v-data-table
+                            :headers="headers"
+                            :items="sessions"
+                            :loading="countersLoading"
+                            :options.sync="tableOptions"
+                            @pagination="getCounters"
+                            :server-items-length="totalCounters"
+                            :footer-props="{'disable-pagination': countersLoading}"
+                            disable-sort
+                            :items-per-page="5"
+                    >
+                        <template v-slot:item.createdAt="{ item }">
+                            {{item.createdAt | prettyTimeDate }}
+                        </template>
+                        <template v-slot:progress>
+                            <v-progress-linear
+                                    indeterminate
+                                    :height="2"
+                                    color="green"
+                            ></v-progress-linear>
+                        </template>
+                    </v-data-table>
+                </v-card>
+            </v-col>
+        </v-row>
+        <v-row>
+            <v-col>
+                <v-data-iterator
+                        :items="records"
+                        :items-per-page.sync="recordsPerPage"
+                        hide-default-footer
+                >
+                    <template v-slot:header>
+                        <v-toolbar
+                                class="mb-2"
+                                color="green"
+                                dark
+                                flat
+                        >
+                            <v-toolbar-title>Stats</v-toolbar-title>
+                        </v-toolbar>
+                    </template>
+
+                    <template v-slot:default="props">
+                        <v-row>
+                            <v-col
+                                    v-for="item in props.items"
+                                    :key="item.name"
+                                    cols="12"
+                                    sm="6"
+                                    md="4"
+                            >
+                                <v-card>
+                                    <v-card-title class="subheading font-weight-bold">{{ item.name }}</v-card-title>
+
+                                    <v-divider></v-divider>
+
+                                    <v-list dense>
+                                        <v-list-item>
+                                            <v-list-item-content>Time spent:</v-list-item-content>
+                                            <v-list-item-content class="align-end">{{ item.time }}</v-list-item-content>
+                                        </v-list-item>
+                                    </v-list>
+                                </v-card>
+                            </v-col>
+                        </v-row>
+                    </template>
+                </v-data-iterator>
+            </v-col>
+        </v-row>
     </v-container>
 
 </template>
@@ -43,9 +119,41 @@
                 counter: {
                     id: 0,
                     title: "...",
-                    tags: "PC",
+                    tags: [],
                     running: false,
-                }
+                },
+                headers: [
+                    {
+                        text: 'Start',
+                        align: 'left',
+                        value: 'start',
+                    }, // date & time
+                    {text: 'Stop', value: 'stop'}, // date & time
+                    {text: 'Session', value: 'session'}, // how long game was played/current session is taking
+                    // {text: 'Created at', value: 'createdAt'},
+                ],
+                sessions: [
+                    {
+                        start: "18:39:05 05.02.2020",
+                        stop: "18:39:07 05.02.2020",
+                        session: "0h 0m 2s",
+                    },
+                ],
+                recordsPerPage: 3,
+                records: [
+                    {
+                        name: "Last week",
+                        time: "0h 0m 2s",
+                    },
+                    {
+                        name: 'Last month',
+                        time: "0h 0m 2s",
+                    },
+                    {
+                        name: 'All time',
+                        time: "0h 0m 2s",
+                    },
+                ],
             }
         },
         watch: {},
@@ -84,6 +192,7 @@
                     .then((res) => {
                         vm.counter.title = res.data.name
                         vm.counter.running = res.data.inProgress
+                        vm.counter.tags = res.data.tags.toString()
                         vm.counterLoading = false
                     })
                     .catch(function (err) {
