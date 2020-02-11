@@ -32,21 +32,21 @@
             <v-col>
                 <v-card>
                     <v-card-title>
-                        Log
+                        Last 100 sessions
                     </v-card-title>
                     <v-data-table
                             :headers="headers"
                             :items="sessions"
-                            :loading="countersLoading"
-                            :options.sync="tableOptions"
-                            @pagination="getCounters"
-                            :server-items-length="totalCounters"
-                            :footer-props="{'disable-pagination': countersLoading}"
+                            :loading="counterLoading"
+                            :footer-props="{'disable-pagination': counterLoading}"
                             disable-sort
                             :items-per-page="5"
                     >
-                        <template v-slot:item.createdAt="{ item }">
-                            {{item.createdAt | prettyTimeDate }}
+                        <template v-slot:item.start="{ item }">
+                            {{item.start | prettyTimeDate }}
+                        </template>
+                        <template v-slot:item.end="{ item }">
+                            {{item.end | prettyTimeDate }}
                         </template>
                         <template v-slot:progress>
                             <v-progress-linear
@@ -128,30 +128,30 @@
                         align: 'left',
                         value: 'start',
                     }, // date & time
-                    {text: 'Stop', value: 'stop'}, // date & time
-                    {text: 'Session', value: 'session'}, // how long game was played/current session is taking
+                    {text: 'End', value: 'end'}, // date & time
+                    {text: 'Session', value: 'durationSF'}, // how long game was played/current session is taking
                     // {text: 'Created at', value: 'createdAt'},
                 ],
                 sessions: [
                     {
-                        start: "18:39:05 05.02.2020",
-                        stop: "18:39:07 05.02.2020",
-                        session: "0h 0m 2s",
+                        start: "",
+                        stop: "",
+                        durationSF: ""
                     },
                 ],
                 recordsPerPage: 3,
                 records: [
                     {
-                        name: "Last week",
-                        time: "0h 0m 2s",
+                        name: "Last 7d",
+                        time: "0h 0m 0s",
                     },
                     {
-                        name: 'Last month',
-                        time: "0h 0m 2s",
+                        name: 'Last 30d',
+                        time: "0h 0m 0s",
                     },
                     {
                         name: 'All time',
-                        time: "0h 0m 2s",
+                        time: "0h 0m 0s",
                     },
                 ],
             }
@@ -193,6 +193,11 @@
                         vm.counter.title = res.data.name
                         vm.counter.running = res.data.inProgress
                         vm.counter.tags = res.data.tags.toString()
+                        vm.sessions = res.data.sessions
+                        vm.records = []
+                        vm.records[0] = {"name": "Last 7d", "time": res.data.stats.secondsD7F}
+                        vm.records[1] = {"name": "Last 30d", "time": res.data.stats.secondsD30F}
+                        vm.records[2] = {"name": "All time", "time": res.data.stats.secondsAllF}
                         vm.counterLoading = false
                     })
                     .catch(function (err) {

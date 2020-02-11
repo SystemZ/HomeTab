@@ -5,14 +5,24 @@ import (
 	"gitlab.com/systemz/tasktab/model"
 	"net/http"
 	"strconv"
+	"time"
 )
 
 type CounterApi struct {
-	Id         uint     `json:"id"`
-	Name       string   `json:"name"`
-	Tags       []string `json:"tags"`
-	Seconds    uint     `json:"seconds"`
-	InProgress bool     `json:"inProgress"`
+	Id         uint              `json:"id"`
+	Name       string            `json:"name"`
+	Tags       []string          `json:"tags"`
+	Seconds    uint              `json:"seconds"`
+	InProgress bool              `json:"inProgress"`
+	Stats      model.CounterList `json:"stats"`
+	Sessions   []CounterLogApi   `json:"sessions"`
+}
+
+type CounterLogApi struct {
+	Duration          uint      `json:"durationS"`
+	DurationFormatted string    `json:"durationSF"`
+	Start             time.Time `json:"start"`
+	End               time.Time `json:"end"`
 }
 
 func ApiCounterList(w http.ResponseWriter, r *http.Request) {

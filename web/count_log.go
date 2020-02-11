@@ -22,6 +22,6 @@ func CountLog(w http.ResponseWriter, r *http.Request) {
 
 	page.User = user
 	page.AuthOk = authOk
-	page.Counters = model.CounterLogList(user.Id)
+	page.Counters = model.CounterLogList(user.Id, 100)
 	display.HTML(w, http.StatusOK, "count_log", page)
 }

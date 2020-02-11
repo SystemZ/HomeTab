@@ -86,14 +86,14 @@ func StopCounterSession(counterId uint, userId uint) uint {
 
 type CounterList struct {
 	Counter
-	Tags                string
-	Seconds7d           uint
-	Seconds30d          uint
-	SecondsAll          uint
-	Seconds7dFormatted  string
-	Seconds30dFormatted string
-	SecondsAllFormatted string
-	Running             uint
+	Tags                string `json:"tags"`
+	Seconds7d           uint   `json:"secondsD7"`
+	Seconds30d          uint   `json:"secondsD30"`
+	SecondsAll          uint   `json:"secondsAll"`
+	Seconds7dFormatted  string `json:"secondsD7F"`
+	Seconds30dFormatted string `json:"secondsD30F"`
+	SecondsAllFormatted string `json:"secondsAllF"`
+	Running             uint   `json:"running"`
 }
 
 func CountersLongList(userId uint) (result []CounterList) {
@@ -152,6 +152,82 @@ ORDER BY counters.id DESC
 	}
 	defer stmt.Close()
 	rows, err := stmt.Query(userId, userId, userId, userId)
+	if err != nil {
+		return
+	}
+	defer rows.Close()
+	for rows.Next() {
+		var list CounterList
+		err := rows.Scan(&list.Id, &list.Name, &list.Tags, &list.CreatedAt, &list.UpdatedAt, &list.Seconds7d, &list.Seconds30d, &list.SecondsAll, &list.Running)
+		if err != nil {
+			return
+		}
+
+		list.Seconds7dFormatted = PrettyTime(list.Seconds7d)
+		list.Seconds30dFormatted = PrettyTime(list.Seconds30d)
+		list.SecondsAllFormatted = PrettyTime(list.SecondsAll)
+		result = append(result, list)
+	}
+	return result
+}
+
+func CounterStats(counterId, userId uint) (result []CounterList) {
+	query := `
+SELECT
+  counters.id,
+  counters.name,
+  (SELECT GROUP_CONCAT(counter_tags.name SEPARATOR ',') FROM counter_tags WHERE counter_tags.counter_id = counters.id) AS tags,
+  counters.created_at,
+  counters.updated_at,
+  IFNULL((
+    SELECT SUM(TIMESTAMPDIFF(SECOND, counter_sessions.started_at,IFNULL(counter_sessions.ended_at, NOW())))
+    FROM counter_sessions
+    WHERE
+      counters.id = counter_sessions.counter_id
+    AND
+      counter_sessions.user_id = ?
+    AND
+      counter_sessions.started_at > NOW() - INTERVAL 7 DAY
+  ), 0) AS seconds_7d,
+  IFNULL((
+    SELECT SUM(TIMESTAMPDIFF(SECOND, counter_sessions.started_at,IFNULL(counter_sessions.ended_at, NOW())))
+    FROM counter_sessions
+    WHERE
+      counters.id = counter_sessions.counter_id
+    AND
+      counter_sessions.user_id = ?
+    AND
+      counter_sessions.started_at > NOW() - INTERVAL 30 DAY
+  ), 0) AS seconds_30d,
+  IFNULL((
+    SELECT SUM(TIMESTAMPDIFF(SECOND, counter_sessions.started_at,IFNULL(counter_sessions.ended_at, NOW())))
+    FROM counter_sessions
+    WHERE
+      counters.id = counter_sessions.counter_id
+    AND
+      counter_sessions.user_id = ?
+  ), 0) AS seconds_all,
+  (
+    SELECT COUNT(*)
+    FROM counter_sessions
+    WHERE
+      counters.id = counter_sessions.counter_id
+    AND
+      counter_sessions.user_id = ?
+    AND
+      counter_sessions.ended_at IS NULL
+  ) AS running
+FROM counters
+WHERE counters.id = ?
+GROUP BY counters.id
+ORDER BY counters.id DESC
+`
+	stmt, err := DB.DB().Prepare(query)
+	if err != nil {
+		return
+	}
+	defer stmt.Close()
+	rows, err := stmt.Query(userId, userId, userId, userId, counterId)
 	if err != nil {
 		return
 	}
@@ -321,7 +397,7 @@ type CounterSessionList struct {
 	Running           bool
 }
 
-func CounterLogList(userId uint) (result []CounterSessionList) {
+func CounterLogList(userId uint, limit int) (result []CounterSessionList) {
 	query := `
 SELECT 
   counter_sessions.counter_id,
@@ -337,7 +413,7 @@ JOIN counters ON counters.id = counter_sessions.counter_id
 WHERE counter_sessions.deleted_at IS NULL
   AND user_id = ?
 ORDER BY counter_sessions.started_at DESC
-LIMIT 100
+LIMIT ?
 `
 
 	stmt, err := DB.DB().Prepare(query)
@@ -346,7 +422,53 @@ LIMIT 100
 		return
 	}
 	defer stmt.Close()
-	rows, err := stmt.Query(userId)
+	rows, err := stmt.Query(userId, limit)
+	if err != nil {
+		log.Printf("%v", err.Error())
+		return
+	}
+	defer rows.Close()
+	for rows.Next() {
+		var list CounterSessionList
+		err := rows.Scan(&list.CounterId, &list.Id, &list.UserId, &list.Name, &list.Tags, &list.StartedAt, &list.EndedAt, &list.Duration)
+		if err != nil {
+			log.Printf("%v", err.Error())
+			return
+		}
+		list.DurationFormatted = PrettyTime(list.Duration)
+		list.Running = !list.EndedAt.Valid
+		result = append(result, list)
+	}
+	return result
+}
+
+func CounterLog(counterId int, userId uint, limit int) (result []CounterSessionList) {
+	query := `
+SELECT 
+  counter_sessions.counter_id,
+  counter_sessions.id,
+  counter_sessions.user_id,
+  counters.name, 
+  (SELECT GROUP_CONCAT(counter_tags.name SEPARATOR ',') FROM counter_tags WHERE counter_tags.counter_id = counters.id) AS tags,
+  counter_sessions.started_at, 
+  counter_sessions.ended_at,
+  TIMESTAMPDIFF(SECOND, counter_sessions.started_at,IFNULL(counter_sessions.ended_at, NOW())) AS duration
+FROM counter_sessions
+JOIN counters ON counters.id = counter_sessions.counter_id
+WHERE counter_sessions.deleted_at IS NULL
+  AND user_id = ?
+  AND counters.id = ?
+ORDER BY counter_sessions.started_at DESC
+LIMIT ?
+`
+
+	stmt, err := DB.DB().Prepare(query)
+	if err != nil {
+		log.Printf("%v", err.Error())
+		return
+	}
+	defer stmt.Close()
+	rows, err := stmt.Query(userId, counterId, limit)
 	if err != nil {
 		log.Printf("%v", err.Error())
 		return

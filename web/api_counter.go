@@ -8,6 +8,7 @@ import (
 	"log"
 	"net/http"
 	"strconv"
+	"time"
 )
 
 func ApiCounter(w http.ResponseWriter, r *http.Request) {
@@ -28,7 +29,7 @@ func ApiCounter(w http.ResponseWriter, r *http.Request) {
 
 	// gather data, convert from DB model to API model
 	var counter CounterApi
-	dbCounters := model.CounterLogList(device.UserId)
+	dbCounters := model.CounterLogList(device.UserId, 100)
 	for _, v := range dbCounters {
 		if v.CounterId == uint(counterId) {
 			counter = CounterApi{
@@ -55,6 +56,7 @@ func ApiCounter(w http.ResponseWriter, r *http.Request) {
 }
 
 func ApiCounterFrontend(w http.ResponseWriter, r *http.Request) {
+	time.Sleep(time.Second * 1)
 	authUserOk, userInfo := CheckApiAuth(w, r)
 	if !authUserOk {
 		w.WriteHeader(http.StatusUnauthorized)
@@ -71,20 +73,28 @@ func ApiCounterFrontend(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// gather data, convert from DB model to API model
+	dbCounters := model.CounterLog(counterId, userInfo.Id, 100)
+
+	// set info about counter
 	var counter CounterApi
-	dbCounters := model.CounterLogList(userInfo.Id)
+	counter.Id = dbCounters[0].Id
+	counter.Name = dbCounters[0].Name
+	counter.Tags = []string{dbCounters[0].Tags}
+	counter.Seconds = dbCounters[0].Duration
+	counter.InProgress = dbCounters[0].Running
+
+	// set counter sessions
 	for _, v := range dbCounters {
-		if v.CounterId == uint(counterId) {
-			counter = CounterApi{
-				Id:         v.CounterId,
-				Name:       v.Name,
-				Tags:       []string{v.Tags},
-				Seconds:    v.Duration,
-				InProgress: v.Running,
-			}
-			break
-		}
+		counter.Sessions = append(counter.Sessions, CounterLogApi{
+			Duration:          v.Duration,
+			DurationFormatted: v.DurationFormatted,
+			Start:             v.StartedAt,
+			End:               v.EndedAt.Time,
+		})
 	}
+
+	// set counter stats
+	counter.Stats = model.CounterStats(uint(counterId), userInfo.Id)[0]
 
 	// prepare JSON
 	counterList, err := json.MarshalIndent(counter, "", "  ")
