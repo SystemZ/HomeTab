@@ -52,6 +52,18 @@ function build {
     build-windows-amd64
 }
 
+function db {
+    dgraph zero --my=127.0.0.1:5080
+}
+
+function db2 {
+    dgraph alpha --lru_mb=1024 --my=127.0.0.1:7080 --zero=127.0.0.1:5080
+}
+
+function db3 {
+    dgraph-ratel
+}
+
 function build-linux-amd64 {
     echo "Building linux-amd64 ..."
     go build
