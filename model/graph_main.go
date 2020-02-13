@@ -35,14 +35,19 @@ func GraphSetSchema(dg *dgo.Dgraph) {
 	op := &api.Operation{}
 	op.Schema = `
 	name: string @index(exact) .
+    path: string .
 	sha256: string .
+	phash: string .
+	size: int .
 	tagged: [uid] @reverse .
 	assigned_to: [uid] @reverse .
 	
-
  type File {
    name: string
-   sha256
+   path: string
+   sha256: string
+   phash: string
+   size: int
    tagged: [Tag]
  }
 
@@ -128,6 +133,8 @@ type GraphFile struct {
 	Sha256   string `json:"sha256,omitempty"`
 	Mime     string `json:"mime,omitempty"`
 	ParentId int    `json:"parent_id,omitempty"`
+	Path     string `json:"path,omitempty"`
+	Phash    string `json:"phash,omitempty"`
 }
 
 type GraphTag struct {

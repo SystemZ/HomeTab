@@ -32,10 +32,10 @@ func migrateExec(cmd *cobra.Command, args []string) {
 		//_, imgs := model.FileTagSearchByName(db, int64(page), "belly")
 
 		// limit results
-		//if page > 100 {
-		//	log.Println("Max page reached, ending work")
-		//	break
-		//}
+		if page > 5 {
+			log.Println("Max page reached, ending work")
+			break
+		}
 
 		// finish if no files left
 		if len(imgs) < 1 {
@@ -50,7 +50,10 @@ func migrateExec(cmd *cobra.Command, args []string) {
 			// add file
 			model.GraphAddFile(dg, model.GraphFile{
 				Name:   img.Name,
+				Path:   img.Path,
 				Sha256: img.Sha256,
+				Size:   img.Size,
+				Phash:  img.Phash,
 			})
 
 			// add tags to file

@@ -35,6 +35,8 @@ type File struct {
 	Sha256   string `json:"sha256"`
 	Mime     string `json:"mime"`
 	ParentId int    `json:"parentId"`
+	Path     string `json:"path"`
+	Phash    string `json:"phash"`
 }
 
 type Files []File
@@ -49,7 +51,7 @@ func List(db *sql.DB, page int64) (found bool, sha256s map[int]File) {
 	}
 
 	// query
-	rows, err := db.Query("SELECT id, last_path, size, sha256 FROM files ORDER BY id LIMIT ?, ?", offset, limit)
+	rows, err := db.Query("SELECT id, last_path, size, sha256, phash FROM files ORDER BY id LIMIT ?, ?", offset, limit)
 	checkErr(err)
 	defer rows.Close()
 
@@ -58,7 +60,8 @@ func List(db *sql.DB, page int64) (found bool, sha256s map[int]File) {
 		var last_path string
 		var size int
 		var sha256 string
-		err = rows.Scan(&id, &last_path, &size, &sha256)
+		var phash sql.NullString
+		err = rows.Scan(&id, &last_path, &size, &sha256, &phash)
 
 		filename := filepath.Base(last_path)
 
@@ -67,7 +70,7 @@ func List(db *sql.DB, page int64) (found bool, sha256s map[int]File) {
 		if sha256s == nil {
 			sha256s = make(map[int]File)
 		}
-		sha256s[id] = File{Fid: id, Name: filename, Size: size, Sha256: sha256}
+		sha256s[id] = File{Fid: id, Name: filename, Size: size, Sha256: sha256, Path: last_path, Phash: phash.String}
 
 		if !found {
 			found = true
