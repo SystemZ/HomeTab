@@ -7,6 +7,7 @@ import (
 	"github.com/dgraph-io/dgo/v2/protos/api"
 	"google.golang.org/grpc"
 	"log"
+	"strconv"
 )
 
 func GraphInit() *dgo.Dgraph {
@@ -36,9 +37,10 @@ func GraphSetSchema(dg *dgo.Dgraph) {
 	op.Schema = `
 	name: string @index(exact) .
     path: string .
+	size: int .
 	sha256: string .
 	phash: string .
-	size: int .
+	similar: [uid] @reverse .
 
 	tagged: [uid] @reverse .
 	assigned_to: [uid] @reverse .
@@ -49,9 +51,10 @@ func GraphSetSchema(dg *dgo.Dgraph) {
  type File {
    name: string
    path: string
+   size: int
    sha256: string
    phash: string
-   size: int
+   similar: [File]
    tagged: [Tag]
    mime: [Mime]
  }
@@ -164,6 +167,58 @@ func GraphSetMime(dg *dgo.Dgraph, mime string, filename string) {
 	if _, err := dg.NewTxn().Do(ctx, req); err != nil {
 		log.Fatal(err)
 	}
+}
+
+// FIXME use vars properly
+func GraphSetDistance(dg *dgo.Dgraph, filename1 string, filename2 string, distance int) {
+	distanceStr := strconv.Itoa(distance)
+	query := `
+	query {
+      var(func: eq(name,"` + filename1 + `")) {
+        File1 as uid
+      }
+	  var(func: eq(name,"` + filename2 + `")) {
+        File2 as uid
+      }
+	}`
+	mu := &api.Mutation{
+		SetNquads: []byte(`uid(File1) <similar> uid(File2) (distance=` + distanceStr + `) .`),
+	}
+	req := &api.Request{
+		Query:     query,
+		Mutations: []*api.Mutation{mu},
+		CommitNow: true,
+	}
+
+	// Update email only if matching uid found.
+	ctx := context.Background()
+	if _, err := dg.NewTxn().Do(ctx, req); err != nil {
+		log.Fatal(err)
+	}
+}
+
+func GraphSearchPhash(dg *dgo.Dgraph) []GraphFile {
+	const q = `
+	{
+	  Files(func: type("File")) @filter(has(phash)) {
+	    uid
+		name
+		phash
+	  }
+	}
+	`
+	resp, err := dg.NewTxn().Query(context.Background(), q)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	var decode struct {
+		Files []GraphFile
+	}
+	if err := json.Unmarshal(resp.GetJson(), &decode); err != nil {
+		log.Fatal(err)
+	}
+	return decode.Files
 }
 
 type GraphFile struct {
