@@ -84,28 +84,34 @@ func GraphAddFile(dg *dgo.Dgraph, file GraphFile) string {
 	return assigned.Uids["file"]
 }
 
-func GraphAddTag(dg *dgo.Dgraph, file GraphTag) string {
-	file.DType = []string{"Tag"}
-	// don't replace uid if already know it
-	if len(file.Uid) < 1 {
-		// placeholder for fetching DB ID when inserted
-		file.Uid = "_:tag"
+// FIXME use vars properly
+func GraphSetTag(dg *dgo.Dgraph, tagname string, filename string) {
+	query := `
+	query {
+      var(func: eq(name,"` + tagname + `")) {
+	    Tag as uid
+      }
+      var(func: eq(name,"` + filename + `")) {
+        File as uid
+      }
+	}`
+	mu1 := &api.Mutation{
+		SetNquads: []byte(`uid(Tag) <name> "` + tagname + `" .`),
 	}
-	mu := &api.Mutation{
+	mu2 := &api.Mutation{
+		SetNquads: []byte(`uid(File) <tagged> uid(Tag) .`),
+	}
+	req := &api.Request{
+		Query:     query,
+		Mutations: []*api.Mutation{mu1, mu2},
 		CommitNow: true,
 	}
-	pb, err := json.Marshal(file)
-	if err != nil {
-		log.Fatal(err)
-	}
 
-	mu.SetJson = pb
+	// Update email only if matching uid found.
 	ctx := context.Background()
-	assigned, err := dg.NewTxn().Mutate(ctx, mu)
-	if err != nil {
+	if _, err := dg.NewTxn().Do(ctx, req); err != nil {
 		log.Fatal(err)
 	}
-	return assigned.Uids["tag"]
 }
 
 type GraphFile struct {
