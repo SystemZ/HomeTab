@@ -39,8 +39,12 @@ func GraphSetSchema(dg *dgo.Dgraph) {
 	sha256: string .
 	phash: string .
 	size: int .
+
 	tagged: [uid] @reverse .
 	assigned_to: [uid] @reverse .
+
+	mime: [uid] @reverse .
+	mime_assigned_to: [uid] @reverse .
 	
  type File {
    name: string
@@ -49,11 +53,17 @@ func GraphSetSchema(dg *dgo.Dgraph) {
    phash: string
    size: int
    tagged: [Tag]
+   mime: [Mime]
  }
 
  type Tag {
    name: string
    assigned_to: [File]
+ }
+
+ type Mime {
+   name: string
+   mime_assigned_to: [File]
  }
 
 `
@@ -73,6 +83,7 @@ func GraphAddFile(dg *dgo.Dgraph, file GraphFile) string {
 		file.Uid = "_:file"
 	}
 	mu := &api.Mutation{
+		//SetNquads: []byte(`_:file <testz> "eeeez" .`),
 		CommitNow: true,
 	}
 	pb, err := json.Marshal(file)
@@ -108,6 +119,39 @@ func GraphSetTag(dg *dgo.Dgraph, tagname string, filename string) {
 	}
 	mu3 := &api.Mutation{
 		SetNquads: []byte(`uid(File) <tagged> uid(Tag) .`),
+	}
+	req := &api.Request{
+		Query:     query,
+		Mutations: []*api.Mutation{mu1, mu2, mu3},
+		CommitNow: true,
+	}
+
+	// Update email only if matching uid found.
+	ctx := context.Background()
+	if _, err := dg.NewTxn().Do(ctx, req); err != nil {
+		log.Fatal(err)
+	}
+}
+
+// FIXME use vars properly
+func GraphSetMime(dg *dgo.Dgraph, mime string, filename string) {
+	query := `
+	query {
+      var(func: eq(name,"` + mime + `")) {
+	    Mime as uid
+      }
+      var(func: eq(name,"` + filename + `")) {
+        File as uid
+      }
+	}`
+	mu1 := &api.Mutation{
+		SetNquads: []byte(`uid(Mime) <name> "` + mime + `" .`),
+	}
+	mu2 := &api.Mutation{
+		SetNquads: []byte(`uid(Mime) <dgraph.type> "Mime" .`),
+	}
+	mu3 := &api.Mutation{
+		SetNquads: []byte(`uid(File) <mime> uid(Mime) .`),
 	}
 	req := &api.Request{
 		Query:     query,

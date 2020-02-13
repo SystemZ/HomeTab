@@ -14,7 +14,7 @@ func FileTagSearchByName(db *sql.DB, page int64, tag string) (found bool, sha256
 		offset = 0
 	}
 
-	rows, err := db.Query("SELECT files.id, files.last_path, files.size, files.sha256, files.phash FROM tags JOIN files ON files.id = tags.fid WHERE tags.name = ? ORDER BY files.id LIMIT ?, ?", tag, offset, limit)
+	rows, err := db.Query("SELECT files.id, files.last_path, files.size, files.sha256, files.phash, files.mime FROM tags JOIN files ON files.id = tags.fid WHERE tags.name = ? ORDER BY files.id LIMIT ?, ?", tag, offset, limit)
 	checkErr(err)
 	defer rows.Close()
 
@@ -24,7 +24,8 @@ func FileTagSearchByName(db *sql.DB, page int64, tag string) (found bool, sha256
 		var size int
 		var sha256 string
 		var phash string
-		err = rows.Scan(&id, &last_path, &size, &sha256)
+		var mime string
+		err = rows.Scan(&id, &last_path, &size, &sha256, &phash, &mime)
 
 		filename := filepath.Base(last_path)
 
@@ -33,7 +34,7 @@ func FileTagSearchByName(db *sql.DB, page int64, tag string) (found bool, sha256
 		if sha256s == nil {
 			sha256s = make(map[int]File)
 		}
-		sha256s[id] = File{Fid: id, Name: filename, Size: size, Sha256: sha256, Phash: phash}
+		sha256s[id] = File{Fid: id, Name: filename, Size: size, Sha256: sha256, Phash: phash, Mime: mime}
 
 		if !found {
 			found = true

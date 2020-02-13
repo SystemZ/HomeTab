@@ -60,9 +60,13 @@ func migrateExec(cmd *cobra.Command, args []string) {
 			_, tags := model.TagList(db, img.Fid)
 			for _, tag := range tags {
 				log.Printf("tag: %+v", tag)
+				// FIXME use UID or something
 				model.GraphSetTag(dg, tag.Name, img.Name)
 			}
 
+			// set mime for file
+			// FIXME use UID or something
+			model.GraphSetMime(dg, img.Mime, img.Name)
 		}
 	}
 }
