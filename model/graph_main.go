@@ -36,8 +36,8 @@ func GraphSetSchema(dg *dgo.Dgraph) {
 	op.Schema = `
 	name: string @index(exact) .
 	sha256: string .
-	tagged: [uid] .
-	assigned_to: [uid] .
+	tagged: [uid] @reverse .
+	assigned_to: [uid] @reverse .
 	
 
  type File {
@@ -99,11 +99,14 @@ func GraphSetTag(dg *dgo.Dgraph, tagname string, filename string) {
 		SetNquads: []byte(`uid(Tag) <name> "` + tagname + `" .`),
 	}
 	mu2 := &api.Mutation{
+		SetNquads: []byte(`uid(Tag) <dgraph.type> "Tag" .`),
+	}
+	mu3 := &api.Mutation{
 		SetNquads: []byte(`uid(File) <tagged> uid(Tag) .`),
 	}
 	req := &api.Request{
 		Query:     query,
-		Mutations: []*api.Mutation{mu1, mu2},
+		Mutations: []*api.Mutation{mu1, mu2, mu3},
 		CommitNow: true,
 	}
 
