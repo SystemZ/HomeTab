@@ -6,7 +6,6 @@ import (
 	"log"
 	"path/filepath"
 
-	"github.com/DavidHuie/gomigrate"
 	"github.com/carlogit/phash"
 	_ "github.com/mattn/go-sqlite3"
 )
@@ -22,8 +21,8 @@ func DbInit() (db *sql.DB) {
 	checkErr(err)
 
 	//change to https://github.com/mattes/migrate
-	migrator, _ := gomigrate.NewMigrator(db, gomigrate.Sqlite3{}, "./migrations")
-	err = migrator.Migrate()
+	//migrator, _ := gomigrate.NewMigrator(db, gomigrate.Sqlite3{}, "./migrations")
+	//err = migrator.Migrate()
 
 	return db
 }
