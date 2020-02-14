@@ -83,6 +83,7 @@ SELECT
    FROM tags
    INNER JOIN file_tags on tags.id = file_tags.tag_id
    WHERE file_tags.file_id = files.id
+   AND file_tags.deleted_at IS NULL
   ) AS tagz
 FROM files
 INNER JOIN mimes on files.mime_id = mimes.id

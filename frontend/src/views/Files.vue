@@ -39,20 +39,37 @@
                     :src="apiUrl+'/img/thumbs/700/700/'+bigPicInfo.sha256"/>
             <br>
 
-            <v-chip
-                    v-for="(tag, tagIndex) in tagz(bigPicInfo.tags)"
-                    :key="tagIndex"
-                    class="ma-2"
-                    color="indigo"
-                    label
-                    text-color="white"
-                    large
-                    close
-                    @click:close="deleteTag(bigPicInfo,tag)"
+            <v-combobox
+                    :disabled="tagsLoading"
+                    v-model="bigPicInfo.tagz"
+                    @change="addTag"
+                    :items="tagItems"
+                    chips
+                    clearable
+                    label="File tags"
+                    multiple
+                    prepend-icon="mdi-label"
+                    solo
             >
-                <v-icon left>mdi-label</v-icon>
-                {{tag}}
-            </v-chip>
+                <template v-slot:selection="{ attrs, item, select, selected }">
+                    <v-chip
+                            v-bind="attrs"
+                            color="indigo"
+                            dark
+                            class="ma-2"
+                            large
+                            label
+                            :input-value="selected"
+                            close
+                            @click="select"
+                            @click:close="deleteTag(bigPicInfo,item)"
+                    >
+                        <strong>{{ item }}</strong>&nbsp;
+                        <!--<span>(interest)</span>-->
+                    </v-chip>
+                </template>
+            </v-combobox>
+
         </v-card>
         <v-item-group v-else>
             <v-container class="pa-0">
@@ -72,7 +89,7 @@
                                         height="200"
                                         width="200"
                                         class="text-right pa-2"
-                                        @click="bigPic = true , bigPicInfo = item"
+                                        @click="zoom(item)"
                                 >
                                     <v-btn
                                             icon
@@ -145,8 +162,12 @@
         prevPage: 0,
         bigPic: false,
         bigPicInfo: {},
+        tagsLoading: false,
+        //
+        tagItems: ['Streaming', 'Eating', 'Gaming', 'Coding'],
         // change me
         active: false,
+
       }
     },
     mounted () {
@@ -171,13 +192,67 @@
         }
       },
       tagz (str) {
-        if (!str.includes(',')) {
+        // no tags
+        if (!str.includes(',') && str.length < 1) {
           return []
         }
-        return str.split(',')
+        // two or more
+        if (str.includes(',') && str.length > 0) {
+          return str.split(',')
+        }
+        // one tag
+        return [str]
+      },
+      zoom (item) {
+        this.bigPic = true
+        this.bigPicInfo = item
+        this.bigPicInfo.tagz = this.tagz(item.tags)
+        this.bigPicInfo.tagzServer = this.tagz(item.tags)
+      },
+      addTag (currentTags) {
+        this.tagsLoading = true
+        let diff = currentTags
+          .filter(x => !this.bigPicInfo.tagzServer.includes(x))
+          .concat(this.bigPicInfo.tagzServer.filter(x => !currentTags.includes(x)))
+
+        let vm = this
+        let rawUrl = vm.apiUrl + '/api/v1/file/' + this.bigPicInfo.sha256 + '/tag/add'
+        axios.post(rawUrl, {'tag': diff[0]}, vm.authConfig())
+          .then((res) => {
+            console.log(res)
+            vm.bigPicInfo.tagzServer = currentTags
+            this.tagsLoading = false
+          })
+          .catch(function (err) {
+            if (err.response.status === 401) {
+              vm.$root.$emit('sessionExpired')
+            } else {
+              console.log('something wrong')
+            }
+          })
+
       },
       deleteTag (bigPicInfo, tag) {
-        console.log(bigPicInfo, tag)
+        this.tagsLoading = true
+        let vm = this
+        let rawUrl = vm.apiUrl + '/api/v1/file/' + bigPicInfo.sha256 + '/tag/delete'
+        axios.post(rawUrl, {'tag': tag}, vm.authConfig())
+          .then((res) => {
+            console.log(res)
+            for (let i = vm.bigPicInfo.tagz.length - 1; i >= 0; i--) {
+              if (vm.bigPicInfo.tagz[i] === tag) {
+                vm.bigPicInfo.tagz.splice(i, 1)
+              }
+            }
+            this.tagsLoading = false
+          })
+          .catch(function (err) {
+            if (err.response.status === 401) {
+              vm.$root.$emit('sessionExpired')
+            } else {
+              console.log('something wrong')
+            }
+          })
       },
       getFiles () {
         let vm = this
