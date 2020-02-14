@@ -1,11 +1,11 @@
 package cmd
 
 import (
-	"context"
-	"github.com/carlogit/phash"
 	"github.com/spf13/cobra"
 	"gitlab.com/systemz/gotag/model"
+	"gitlab.com/systemz/gotag/model2"
 	"log"
+	"strconv"
 )
 
 func init() {
@@ -14,91 +14,65 @@ func init() {
 
 var migrate = &cobra.Command{
 	Use:   "migrate",
-	Short: "Migrate to Graph DB",
+	Short: "Migrate to new DB",
 	Run:   migrateExec,
 }
 
 func migrateExec(cmd *cobra.Command, args []string) {
 	// SQLite stuff
-	db := model.DbInit()
-	allFiles := model.CountAllFiles(db)
+	sqlite := model.DbInit()
+	allFiles := model.CountAllFiles(sqlite)
 	log.Printf("all files: %v", allFiles)
 
-	// dgraph stuff
-	dg := model.GraphInit()
+	// MySQL stuff
+	mysql := model2.InitMysql()
 
-	// get files from SQLite
-	for page := 0; ; page++ {
-		log.Printf("Page %v", page)
-		_, imgs := model.List(db, int64(page))
-		//_, imgs := model.FileTagSearchByName(db, int64(page), "belly")
+	// scan all entries in DB
+	imgs := model.ListAll(sqlite)
+	for _, img := range imgs {
 
-		// limit results
-		//if page > 1 {
-		//	log.Println("Max page reached, ending work")
-		//	break
-		//}
+		log.Printf("%v %v %v", img.Fid, img.Name, img.Sha256)
 
-		// finish if no files left
-		if len(imgs) < 1 {
-			log.Println("No results left, ending work")
-			break
+		//time.Sleep(time.Millisecond * 50)
+		//continue
+
+		// upgrade pHash storage
+		pHashA := 0
+		pHashB := 0
+		pHashC := 0
+		pHashD := 0
+		if len(img.Phash) > 1 {
+			pHashA, _ = strconv.Atoi(img.Phash[0:16])
+			pHashB, _ = strconv.Atoi(img.Phash[16:32])
+			pHashC, _ = strconv.Atoi(img.Phash[32:48])
+			pHashD, _ = strconv.Atoi(img.Phash[48:64])
 		}
 
-		// scan all entries in DB
-		for _, img := range imgs {
-			//log.Printf("%v", img.Name)
-
-			// add file
-			model.GraphAddFile(dg, model.GraphFile{
-				Name:   img.Name,
-				Path:   img.Path,
-				Sha256: img.Sha256,
-				Size:   img.Size,
-				Phash:  img.Phash,
-				// created?
-			})
-
-			// add tags to file
-			_, tags := model.TagList(db, img.Fid)
-			for _, tag := range tags {
-				//log.Printf("tag: %+v", tag)
-				// FIXME use UID or something
-				model.GraphSetTag(dg, tag.Name, img.Name)
-			}
-
-			// set mime for file
-			// FIXME use UID or something
-			model.GraphSetMime(dg, img.Mime, img.Name)
-
-			// if this is not image, skip distance calc
-			if len(img.Phash) < 1 {
-				continue
-			}
-			// set distance
-			// add in bulk
-			ctx := context.Background()
-			txn := dg.NewTxn()
-			files := model.GraphSearchPhash(dg)
-			log.Printf("files: %v", len(files))
-			for _, file := range files {
-				if file.Sha256 == img.Sha256 {
-					// don't calc yourself, fool
-					continue
-				}
-				//log.Printf("%+v", file.Uid)
-				//log.Printf("%+v", file.Name)
-				//log.Printf("%+v", file.Phash)
-				distance := phash.GetDistance(img.Phash, file.Phash)
-				//log.Printf("dist: %v", distance)
-				model.GraphSetDistance(txn, img.Name, file.Name, distance)
-			}
-			err := txn.Commit(ctx)
-			if err != nil {
-				log.Fatalf("commit error: %v", err)
-			}
-
+		// save file to DB
+		file := &model2.File{
+			Filename: img.Name,
+			FilePath: img.Path,
+			SizeB:    img.Size,
+			// mime
+			Sha256: img.Sha256,
+			PhashA: pHashA,
+			PhashB: pHashB,
+			PhashC: pHashC,
+			PhashD: pHashD,
 		}
+		mysql.Save(&file)
 
+		//TODO mime
+		// SELECT  HAMMINGDISTANCE(a1,a2,a3,a4,b1,b2,b3,b4) AS res FROM `files` WHERE sha256 = "changeme"
+
+		// add tags to DB
+		found, tags := model.TagList(sqlite, img.Fid)
+		if !found {
+			// finish work if no tags for this file
+			continue
+		}
+		for _, tag := range tags {
+			model2.AddTagToFile(mysql, tag.Name, file.Id)
+		}
 	}
 }

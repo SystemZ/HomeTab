@@ -52,16 +52,12 @@ function build {
     build-windows-amd64
 }
 
-function db {
-    dgraph zero --my=127.0.0.1:5080
+function up {
+    sudo docker-compose up
 }
 
-function db2 {
-    dgraph alpha --lru_mb=1024 --my=127.0.0.1:7080 --zero=127.0.0.1:5080
-}
-
-function db3 {
-    dgraph-ratel
+function dump-schema {
+    sudo docker-compose exec db /bin/sh -c "/usr/bin/mysqldump -udev -pdev --no-data dev" | grep -v "Using a password on the command line interface can be insecure" | sed 's/ AUTO_INCREMENT=[0-9]*//g' > migrations/0.sql
 }
 
 function build-linux-amd64 {

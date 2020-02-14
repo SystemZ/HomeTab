@@ -80,6 +80,31 @@ func List(db *sql.DB, page int64) (found bool, sha256s map[int]File) {
 	return found, sha256s
 }
 
+func ListAll(db *sql.DB) (sha256s []File) {
+	// query
+	rows, err := db.Query("SELECT id, last_path, size, sha256, phash, mime FROM files ORDER BY id")
+	checkErr(err)
+	defer rows.Close()
+
+	for rows.Next() {
+		var id int
+		var last_path string
+		var size int
+		var sha256 string
+		var phash sql.NullString
+		var mime string
+		err = rows.Scan(&id, &last_path, &size, &sha256, &phash, &mime)
+
+		filename := filepath.Base(last_path)
+
+		checkErr(err)
+
+		sha256s = append(sha256s, File{Fid: id, Name: filename, Size: size, Sha256: sha256, Path: last_path, Phash: phash.String, Mime: mime})
+
+	}
+	return sha256s
+}
+
 func ListRandom(db *sql.DB, page int64) (found bool, sha256s map[int]File) {
 	found = false
 
