@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"context"
 	"github.com/carlogit/phash"
 	"github.com/spf13/cobra"
 	"gitlab.com/systemz/gotag/model"
@@ -75,7 +76,11 @@ func migrateExec(cmd *cobra.Command, args []string) {
 				continue
 			}
 			// set distance
+			// add in bulk
+			ctx := context.Background()
+			txn := dg.NewTxn()
 			files := model.GraphSearchPhash(dg)
+			log.Printf("files: %v", len(files))
 			for _, file := range files {
 				if file.Sha256 == img.Sha256 {
 					// don't calc yourself, fool
@@ -86,8 +91,13 @@ func migrateExec(cmd *cobra.Command, args []string) {
 				//log.Printf("%+v", file.Phash)
 				distance := phash.GetDistance(img.Phash, file.Phash)
 				//log.Printf("dist: %v", distance)
-				model.GraphSetDistance(dg, img.Name, file.Name, distance)
+				model.GraphSetDistance(txn, img.Name, file.Name, distance)
 			}
+			err := txn.Commit(ctx)
+			if err != nil {
+				log.Fatalf("commit error: %v", err)
+			}
+
 		}
 
 	}

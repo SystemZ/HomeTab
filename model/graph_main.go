@@ -170,7 +170,7 @@ func GraphSetMime(dg *dgo.Dgraph, mime string, filename string) {
 }
 
 // FIXME use vars properly
-func GraphSetDistance(dg *dgo.Dgraph, filename1 string, filename2 string, distance int) {
+func GraphSetDistance(txn *dgo.Txn, filename1 string, filename2 string, distance int) {
 	distanceStr := strconv.Itoa(distance)
 	query := `
 	query {
@@ -187,14 +187,16 @@ func GraphSetDistance(dg *dgo.Dgraph, filename1 string, filename2 string, distan
 	req := &api.Request{
 		Query:     query,
 		Mutations: []*api.Mutation{mu},
-		CommitNow: true,
+		//CommitNow: true,
 	}
 
-	// Update email only if matching uid found.
 	ctx := context.Background()
-	if _, err := dg.NewTxn().Do(ctx, req); err != nil {
-		log.Fatal(err)
-	}
+	txn.Do(ctx, req)
+	// Update email only if matching uid found.
+	//ctx := context.Background()
+	//if _, err := dg.NewTxn().Do(ctx, req); err != nil {
+	//	log.Fatal(err)
+	//}
 }
 
 func GraphSearchPhash(dg *dgo.Dgraph) []GraphFile {
