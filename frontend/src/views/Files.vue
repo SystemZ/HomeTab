@@ -30,11 +30,29 @@
 
 
         <v-card v-if="bigPic" class="text-center" elevation="0">
+
+            <v-btn :href="apiUrl+'/img/full/'+bigPicInfo.sha256" target="_blank" class="mb-5">Original</v-btn>
+            <br>
+
             <img
                     @click="bigPic = false"
                     :src="apiUrl+'/img/thumbs/700/700/'+bigPicInfo.sha256"/>
             <br>
-            <v-btn :href="apiUrl+'/img/full/'+bigPicInfo.sha256" target="_blank" class="mt-5">Original</v-btn>
+
+            <v-chip
+                    v-for="(tag, tagIndex) in tagz(bigPicInfo.tags)"
+                    :key="tagIndex"
+                    class="ma-2"
+                    color="indigo"
+                    label
+                    text-color="white"
+                    large
+                    close
+                    @click:close="deleteTag(bigPicInfo,tag)"
+            >
+                <v-icon left>mdi-label</v-icon>
+                {{tag}}
+            </v-chip>
         </v-card>
         <v-item-group v-else>
             <v-container class="pa-0">
@@ -44,7 +62,7 @@
                     >
                         <v-item>
                             <v-card
-                                    v-if="item.thumb === 1"
+                                    v-if="isThumbPossible(item.mime)"
                                     width="200"
                                     height="200"
                             >
@@ -140,6 +158,26 @@
       },
       toFile (item) {
         this.$router.push({name: 'file', params: {id: item.id}})
+      },
+      isThumbPossible (mime) {
+        if (
+          mime === 'image/jpeg' ||
+          mime === 'image/png' ||
+          mime === 'image/gif' ||
+          mime === 'video/webm' ||
+          mime === 'video/mp4'
+        ) {
+          return true
+        }
+      },
+      tagz (str) {
+        if (!str.includes(',')) {
+          return []
+        }
+        return str.split(',')
+      },
+      deleteTag (bigPicInfo, tag) {
+        console.log(bigPicInfo, tag)
       },
       getFiles () {
         let vm = this
