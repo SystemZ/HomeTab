@@ -33,7 +33,8 @@
 
             <v-btn :href="apiUrl+'/img/full/'+bigPicInfo.sha256" target="_blank" class="mb-5">Original</v-btn>
             <br>
-
+            {{bigPicInfo.filePath}}
+            <br>
             <img
                     @click="bigPic = false"
                     :src="apiUrl+'/img/thumbs/700/700/'+bigPicInfo.sha256"/>
