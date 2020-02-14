@@ -22,14 +22,15 @@
 DROP TABLE IF EXISTS `file_tags`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `file_tags` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
-  `file_id` int(11) DEFAULT NULL,
-  `tag_id` int(11) DEFAULT NULL,
-  `created_at` datetime DEFAULT NULL,
-  `updated_at` datetime DEFAULT NULL,
-  `deleted_at` datetime DEFAULT NULL,
-  PRIMARY KEY (`id`)
+CREATE TABLE `file_tags`
+(
+    `id`         int(11) NOT NULL AUTO_INCREMENT,
+    `file_id`    int(11)  DEFAULT NULL,
+    `tag_id`     int(11)  DEFAULT NULL,
+    `created_at` datetime DEFAULT NULL,
+    `updated_at` datetime DEFAULT NULL,
+    `deleted_at` datetime DEFAULT NULL,
+    PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -40,22 +41,57 @@ CREATE TABLE `file_tags` (
 DROP TABLE IF EXISTS `files`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `files` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
-  `user_id` int(11) DEFAULT NULL,
-  `file_name` varchar(255) CHARACTER SET utf8mb4 DEFAULT NULL,
-  `file_path` varchar(4096) CHARACTER SET utf8mb4 DEFAULT NULL,
-  `size_b` int(11) DEFAULT NULL,
-  `mime_id` int(11) DEFAULT NULL,
-  `phash_a` bigint(16) DEFAULT NULL,
-  `phash_b` bigint(16) DEFAULT NULL,
-  `phash_c` bigint(16) DEFAULT NULL,
-  `phash_d` bigint(16) DEFAULT NULL,
-  `sha256` char(64) DEFAULT NULL,
-  `created_at` datetime DEFAULT NULL,
-  `updated_at` datetime DEFAULT NULL,
-  `deleted_at` datetime DEFAULT NULL,
-  PRIMARY KEY (`id`)
+CREATE TABLE `files`
+(
+    `id`         int(11) NOT NULL AUTO_INCREMENT,
+    `user_id`    int(11)    DEFAULT NULL,
+    `file_name`  varchar(255) CHARACTER SET utf8mb4 DEFAULT NULL,
+    `file_path`  varchar(4096) CHARACTER SET utf8mb4 DEFAULT NULL,
+    `size_b`     int(11)    DEFAULT NULL,
+    `mime_id`    int(11)    DEFAULT NULL,
+    `phash_a`    bigint(16) DEFAULT NULL,
+    `phash_b`    bigint(16) DEFAULT NULL,
+    `phash_c`    bigint(16) DEFAULT NULL,
+    `phash_d`    bigint(16) DEFAULT NULL,
+    `sha256`     char(64)   DEFAULT NULL,
+    `created_at` datetime   DEFAULT NULL,
+    `updated_at` datetime   DEFAULT NULL,
+    `deleted_at` datetime   DEFAULT NULL,
+    PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `gomigrate`
+--
+
+DROP TABLE IF EXISTS `gomigrate`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `gomigrate`
+(
+    `id`           int(11)    NOT NULL AUTO_INCREMENT,
+    `migration_id` bigint(20) NOT NULL,
+    PRIMARY KEY (`id`),
+    UNIQUE KEY `migration_id` (`migration_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `mimes`
+--
+
+DROP TABLE IF EXISTS `mimes`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `mimes`
+(
+    `id`         int(11) NOT NULL AUTO_INCREMENT,
+    `mime`       varchar(255) DEFAULT NULL,
+    `created_at` datetime     DEFAULT NULL,
+    `updated_at` datetime     DEFAULT NULL,
+    `deleted_at` datetime     DEFAULT NULL,
+    PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -66,13 +102,14 @@ CREATE TABLE `files` (
 DROP TABLE IF EXISTS `tags`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `tags` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
-  `tag` varchar(255) CHARACTER SET utf8mb4 DEFAULT NULL,
-  `created_at` datetime DEFAULT NULL,
-  `updated_at` datetime DEFAULT NULL,
-  `deleted_at` datetime DEFAULT NULL,
-  PRIMARY KEY (`id`)
+CREATE TABLE `tags`
+(
+    `id`         int(11) NOT NULL AUTO_INCREMENT,
+    `tag`        varchar(255) CHARACTER SET utf8mb4 DEFAULT NULL,
+    `created_at` datetime DEFAULT NULL,
+    `updated_at` datetime DEFAULT NULL,
+    `deleted_at` datetime DEFAULT NULL,
+    PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
@@ -85,10 +122,11 @@ CREATE TABLE `tags` (
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2020-02-14  8:39:24
+-- Dump completed on 2020-02-14 11:09:57
 
 
-CREATE FUNCTION HAMMINGDISTANCE(
+CREATE
+FUNCTION HAMMINGDISTANCE(
   A0 BIGINT, A1 BIGINT, A2 BIGINT, A3 BIGINT,
   B0 BIGINT, B1 BIGINT, B2 BIGINT, B3 BIGINT
 )

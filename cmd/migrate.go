@@ -48,21 +48,23 @@ func migrateExec(cmd *cobra.Command, args []string) {
 			pHashD, _ = strconv.Atoi(img.Phash[48:64])
 		}
 
+		// save MIME to DB
+		mimeId := model2.AddMime(mysql, img.Mime)
+
 		// save file to DB
 		file := &model2.File{
 			Filename: img.Name,
 			FilePath: img.Path,
 			SizeB:    img.Size,
-			// mime
-			Sha256: img.Sha256,
-			PhashA: pHashA,
-			PhashB: pHashB,
-			PhashC: pHashC,
-			PhashD: pHashD,
+			MimeId:   mimeId,
+			Sha256:   img.Sha256,
+			PhashA:   pHashA,
+			PhashB:   pHashB,
+			PhashC:   pHashC,
+			PhashD:   pHashD,
 		}
 		mysql.Save(&file)
 
-		//TODO mime
 		// SELECT  HAMMINGDISTANCE(a1,a2,a3,a4,b1,b2,b3,b4) AS res FROM `files` WHERE sha256 = "changeme"
 
 		// add tags to DB
