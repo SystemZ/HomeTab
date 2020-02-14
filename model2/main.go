@@ -42,6 +42,8 @@ func InitMysql() *gorm.DB {
 	migrator, _ := gomigrate.NewMigrator(db.DB(), gomigrate.Mysql{}, "./migrations")
 	err = migrator.Migrate()
 
+	DB = db
+
 	return db
 }
 

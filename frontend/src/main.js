@@ -32,9 +32,9 @@ const mixin = {
   computed: {
     apiUrl () {
       if (process.env.NODE_ENV === 'production') {
-        return 'http://127.0.0.1:3000'
+        return 'http://127.0.0.1:4000'
       } else {
-        return 'http://127.0.0.1:3000'
+        return 'http://127.0.0.1:4000'
       }
     },
     lsToken () {
