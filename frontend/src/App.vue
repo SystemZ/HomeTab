@@ -1,60 +1,85 @@
 <template>
-  <v-app>
-    <v-app-bar
-      app
-      color="primary"
-      dark
-    >
-      <div class="d-flex align-center">
-        <v-img
-          alt="Vuetify Logo"
-          class="shrink mr-2"
-          contain
-          src="https://cdn.vuetifyjs.com/images/logos/vuetify-logo-dark.png"
-          transition="scale-transition"
-          width="40"
-        />
+    <v-app>
+        <v-navigation-drawer
+                v-model="drawer"
+                app
+        >
+            <v-list dense>
+                <v-list-item v-if="$store.state.loggedIn" to="/tasks">
+                    <v-list-item-action>
+                        <v-icon>mdi-file-cabinet</v-icon>
+                    </v-list-item-action>
+                    <v-list-item-content>
+                        <v-list-item-title>Files</v-list-item-title>
+                    </v-list-item-content>
+                </v-list-item>
 
-        <v-img
-          alt="Vuetify Name"
-          class="shrink mt-1 hidden-sm-and-down"
-          contain
-          min-width="100"
-          src="https://cdn.vuetifyjs.com/images/logos/vuetify-name-dark.png"
-          width="100"
-        />
-      </div>
+                <v-list-item v-if="!$store.state.loggedIn" to="/login">
+                    <v-list-item-action>
+                        <v-icon>mdi-login</v-icon>
+                    </v-list-item-action>
+                    <v-list-item-content>
+                        <v-list-item-title>Login</v-list-item-title>
+                    </v-list-item-content>
+                </v-list-item>
+                <v-list-item v-else @click.native="logout" link>
+                    <v-list-item-action>
+                        <v-icon>mdi-exit-run</v-icon>
+                    </v-list-item-action>
+                    <v-list-item-content>
+                        <v-list-item-title>Logout</v-list-item-title>
+                    </v-list-item-content>
+                </v-list-item>
 
-      <v-spacer></v-spacer>
+            </v-list>
+        </v-navigation-drawer>
 
-      <v-btn
-        href="https://github.com/vuetifyjs/vuetify/releases/latest"
-        target="_blank"
-        text
-      >
-        <span class="mr-2">Latest Release</span>
-        <v-icon>mdi-open-in-new</v-icon>
-      </v-btn>
-    </v-app-bar>
+        <v-app-bar
+                app
+                color="green darken-1"
+                dark
+        >
+            <v-app-bar-nav-icon @click.stop="drawer = !drawer"/>
+            <v-toolbar-title>TaskTab</v-toolbar-title>
+        </v-app-bar>
 
-    <v-content>
-      <HelloWorld/>
-    </v-content>
-  </v-app>
+        <v-content>
+            <router-view/>
+        </v-content>
+    </v-app>
 </template>
 
-<script>
-import HelloWorld from './components/HelloWorld';
+<script lang="ts">
+    import Vue from 'vue';
 
-export default {
-  name: 'App',
+    export default Vue.extend({
+        name: 'App',
 
-  components: {
-    HelloWorld,
-  },
-
-  data: () => ({
-    //
-  }),
-};
+        data: () => ({
+            drawer: null,
+        }),
+        created() {
+            this.$root.$on('sessionExpired', this.logout)
+        },
+        destroyed() {
+            this.$root.$off('sessionExpired', this.logout)
+        },
+        mounted() {
+            this.checkToken()
+        },
+        methods: {
+            checkToken() {
+                if (localStorage.getItem("authToken") === null) {
+                    return
+                }
+                this.$store.dispatch('setLoggedIn')
+            },
+            // TODO auto logout if server responds with 401
+            logout() {
+                localStorage.removeItem('authToken')
+                this.$store.dispatch('setLoggedOut')
+                this.$router.push({name: 'login'})
+            }
+        }
+    });
 </script>
