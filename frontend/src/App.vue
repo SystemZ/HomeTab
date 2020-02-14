@@ -5,7 +5,7 @@
                 app
         >
             <v-list dense>
-                <v-list-item v-if="$store.state.loggedIn" to="/tasks">
+                <v-list-item v-if="$store.state.loggedIn" to="/files">
                     <v-list-item-action>
                         <v-icon>mdi-file-cabinet</v-icon>
                     </v-list-item-action>
@@ -36,11 +36,11 @@
 
         <v-app-bar
                 app
-                color="green darken-1"
+                color="indigo lighten-1"
                 dark
         >
             <v-app-bar-nav-icon @click.stop="drawer = !drawer"/>
-            <v-toolbar-title>TaskTab</v-toolbar-title>
+            <v-toolbar-title>GoTag</v-toolbar-title>
         </v-app-bar>
 
         <v-content>
