@@ -118,9 +118,9 @@ func AddFile(db *sql.DB, path string, options AddFileOptions) (dbFile model.File
 	}
 
 	// apply Tags if provided
-	for _, tag := range options.Tags {
-		model.TagFindSert(db, tag, fileInDb.Fid)
-	}
+	//for _, tag := range options.Tags {
+	//	model.TagFindSert(db, tag, fileInDb.Fid)
+	//}
 
 	// update path to file if necessary
 	if isInDb && fileInDb.Name != path {
@@ -151,14 +151,14 @@ func AddFile(db *sql.DB, path string, options AddFileOptions) (dbFile model.File
 		// calc distance between this and rest of images
 		// FIXME support more than 1m rows with count rows before starting
 		//start := timeStart()
-		distances := model.FilesWithPHash(db, 1, sha256sum)
-		tx, stmt := model.DistanceInsertPrepare(db)
+		//distances := model.FilesWithPHash(db, 1, sha256sum)
+		//tx, stmt := model.DistanceInsertPrepare(db)
 		//i := 0
-		for _, v := range distances {
-			model.DistanceInsert(stmt, v.IdA, v.IdB, v.Dist)
-			//i++
-		}
-		model.DistanceInsertEnd(tx)
+		//for _, v := range distances {
+		//	model.DistanceInsert(stmt, v.IdA, v.IdB, v.Dist)
+		//	i++
+		//}
+		//model.DistanceInsertEnd(tx)
 		log.Println("Calculating similarity done")
 	}
 

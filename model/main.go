@@ -3,11 +3,8 @@ package model
 import (
 	"database/sql"
 	"fmt"
-	"log"
-	"path/filepath"
-
-	"github.com/carlogit/phash"
 	_ "github.com/mattn/go-sqlite3"
+	"log"
 )
 
 func checkErr(err error) {
@@ -40,136 +37,6 @@ type File struct {
 
 type Files []File
 
-func List(db *sql.DB, page int64) (found bool, sha256s map[int]File) {
-	found = false
-
-	limit := int64(15)
-	offset := (page - 1) * limit
-	if offset <= 0 {
-		offset = 0
-	}
-
-	// query
-	rows, err := db.Query("SELECT id, last_path, size, sha256, phash, mime FROM files ORDER BY id LIMIT ?, ?", offset, limit)
-	checkErr(err)
-	defer rows.Close()
-
-	for rows.Next() {
-		var id int
-		var last_path string
-		var size int
-		var sha256 string
-		var phash sql.NullString
-		var mime string
-		err = rows.Scan(&id, &last_path, &size, &sha256, &phash, &mime)
-
-		filename := filepath.Base(last_path)
-
-		checkErr(err)
-
-		if sha256s == nil {
-			sha256s = make(map[int]File)
-		}
-		sha256s[id] = File{Fid: id, Name: filename, Size: size, Sha256: sha256, Path: last_path, Phash: phash.String, Mime: mime}
-
-		if !found {
-			found = true
-		}
-	}
-	return found, sha256s
-}
-
-func ListAll(db *sql.DB) (sha256s []File) {
-	// query
-	rows, err := db.Query("SELECT id, last_path, size, sha256, phash, mime FROM files ORDER BY id")
-	checkErr(err)
-	defer rows.Close()
-
-	for rows.Next() {
-		var id int
-		var last_path string
-		var size int
-		var sha256 string
-		var phash sql.NullString
-		var mime string
-		err = rows.Scan(&id, &last_path, &size, &sha256, &phash, &mime)
-
-		filename := filepath.Base(last_path)
-
-		checkErr(err)
-
-		sha256s = append(sha256s, File{Fid: id, Name: filename, Size: size, Sha256: sha256, Path: last_path, Phash: phash.String, Mime: mime})
-
-	}
-	return sha256s
-}
-
-func ListRandom(db *sql.DB, page int64) (found bool, sha256s map[int]File) {
-	found = false
-
-	limit := int64(15)
-	offset := (page - 1) * limit
-	if offset <= 0 {
-		offset = 0
-	}
-
-	// query
-	rows, err := db.Query("SELECT id, last_path, size, sha256 FROM files ORDER BY random() LIMIT ?, ?", offset, limit)
-	checkErr(err)
-	defer rows.Close()
-
-	for rows.Next() {
-		var id int
-		var last_path string
-		var size int
-		var sha256 string
-		err = rows.Scan(&id, &last_path, &size, &sha256)
-
-		filename := filepath.Base(last_path)
-
-		checkErr(err)
-
-		if sha256s == nil {
-			sha256s = make(map[int]File)
-		}
-		sha256s[id] = File{Fid: id, Name: filename, Size: size, Sha256: sha256}
-
-		if !found {
-			found = true
-		}
-	}
-	return found, sha256s
-}
-
-func ListSha256(db *sql.DB, search string) (found bool, sha256s map[int]File) {
-	found = false
-	rows, err := db.Query("SELECT id, last_path, size, sha256 FROM files WHERE sha256 = ? ORDER BY id LIMIT 100", search)
-	checkErr(err)
-	defer rows.Close()
-
-	for rows.Next() {
-		var id int
-		var last_path string
-		var size int
-		var sha256 string
-		err = rows.Scan(&id, &last_path, &size, &sha256)
-
-		filename := filepath.Base(last_path)
-
-		checkErr(err)
-
-		if sha256s == nil {
-			sha256s = make(map[int]File)
-		}
-		sha256s[id] = File{Fid: id, Name: filename, Size: size, Sha256: sha256}
-
-		if !found {
-			found = true
-		}
-	}
-	return found, sha256s
-}
-
 func Find(db *sql.DB, sha256 string) (found bool, file File) {
 	rows, err := db.Query("SELECT id, last_path, size FROM files WHERE sha256 = ?", sha256)
 	checkErr(err)
@@ -184,25 +51,6 @@ func Find(db *sql.DB, sha256 string) (found bool, file File) {
 		checkErr(err)
 		found = true
 		file = File{Fid: id, Name: last_path, Size: size, Sha256: sha256}
-		break
-	}
-	return found, file
-}
-
-func FindById(db *sql.DB, fileId int) (found bool, file File) {
-	rows, err := db.Query("SELECT last_path, size, sha256 FROM files WHERE id = ?", fileId)
-	checkErr(err)
-	defer rows.Close()
-	var last_path string
-	var size int
-	var sha256 string
-	found = false
-
-	for rows.Next() {
-		err = rows.Scan(&last_path, &size, &sha256)
-		checkErr(err)
-		found = true
-		file = File{Fid: fileId, Name: last_path, Size: size, Sha256: sha256}
 		break
 	}
 	return found, file
@@ -283,24 +131,6 @@ func UpdatePath(db *sql.DB, sha256sum string, newPath string) {
 	}
 }
 
-func UpdateParentId(db *sql.DB, sha256sum string, parentId int) {
-	trashSQL, err := db.Prepare("UPDATE files SET parent_id=? WHERE sha256=?")
-	if err != nil {
-		fmt.Println(err)
-	}
-	tx, err := db.Begin()
-	if err != nil {
-		fmt.Println(err)
-	}
-	_, err = tx.Stmt(trashSQL).Exec(parentId, sha256sum)
-	if err != nil {
-		fmt.Println("Doing rollback")
-		tx.Rollback()
-	} else {
-		tx.Commit()
-	}
-}
-
 func FindPHash(db *sql.DB, sha256 string) (found bool) {
 	rows, err := db.Query("SELECT phash FROM files WHERE phash IS NOT NULL AND sha256 = ?", sha256)
 	defer rows.Close()
@@ -339,61 +169,4 @@ type Distance struct {
 	IdA  int
 	IdB  int
 	Dist int
-}
-
-func FilesWithPHash(db *sql.DB, page int64, sha256sum string) (distances map[int]Distance) {
-	distances = make(map[int]Distance)
-
-	rowsOneFile, err := db.Query("SELECT id, phash FROM files WHERE sha256 = ? AND phash IS NOT NULL", sha256sum)
-	checkErr(err)
-
-	var id int
-	var pHash string
-	for rowsOneFile.Next() {
-		err = rowsOneFile.Scan(&id, &pHash)
-		checkErr(err)
-		break
-	}
-	rowsOneFile.Close()
-
-	limit := int64(1000000) //FIXME
-	offset := (page - 1) * limit
-	if offset <= 0 {
-		offset = 0
-	}
-
-	rows, err := db.Query("SELECT id, phash FROM files WHERE sha256 != ? AND phash IS NOT NULL AND mime IN ('image/jpeg', 'image/png') ORDER BY id LIMIT ?, ?", sha256sum, offset, limit)
-	checkErr(err)
-	defer rows.Close()
-
-	for rows.Next() {
-		var rId int
-		var rPHash string
-		err = rows.Scan(&rId, &rPHash)
-
-		checkErr(err)
-
-		if id != rId && id != 0 {
-			distance := phash.GetDistance(pHash, rPHash)
-			/*
-				writes when reading sqlite causes locks and crashes
-				aggregate to map then write outside this function
-			*/
-			distances[rId] = Distance{id, rId, distance}
-		}
-	}
-	return distances
-}
-
-func CountAllFiles(db *sql.DB) (filesCounted int) {
-	rows, err := db.Query("SELECT COUNT(id) FROM files")
-	defer rows.Close()
-	checkErr(err)
-
-	for rows.Next() {
-		err = rows.Scan(&filesCounted)
-		checkErr(err)
-		break
-	}
-	return filesCounted
 }

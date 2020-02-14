@@ -5,7 +5,6 @@ import (
 	"github.com/gorilla/mux"
 	"gitlab.com/systemz/gotag/core"
 	"gitlab.com/systemz/gotag/model2"
-	"log"
 	"net/http"
 	"runtime/debug"
 	"strconv"
@@ -116,55 +115,35 @@ func FilePaginate(w http.ResponseWriter, r *http.Request) {
 	w.Write(fileList)
 }
 
-type TagRequest struct {
-	Tag string `json:"tag"`
-}
-
-func TagAdd(w http.ResponseWriter, r *http.Request) {
-	// get SHA256 from URL
-	vars := mux.Vars(r)
-
-	// get tag name from JSON body
-	// FIXME validate
-	decoder := json.NewDecoder(r.Body)
-	var tagAddReq TagRequest
-	decoder.Decode(&tagAddReq)
-
-	if len(tagAddReq.Tag) < 1 {
-		log.Printf("Tag '%v' too short!", tagAddReq.Tag)
-		w.WriteHeader(http.StatusBadRequest)
-		return
+//func Scan /api/v1/file/scan
+/*
+	type FileScanRequestBody struct {
+		FilePath string   `json:"filePath"`
+		Tags     []string `json:"tags"`
+		ParentId int      `json:"parentId"`
 	}
 
-	var imgInDb model2.File
-	model2.DB.Where("sha256 = ?", vars["sha256"]).First(&imgInDb)
-	model2.AddTagToFile(model2.DB, tagAddReq.Tag, imgInDb.Id)
-}
-
-func TagDelete(w http.ResponseWriter, r *http.Request) {
-	// get SHA256 from URL
-	vars := mux.Vars(r)
-
-	// get tag name from JSON body
-	// FIXME validate
-	decoder := json.NewDecoder(r.Body)
-	var tagDelReq TagRequest
-	decoder.Decode(&tagDelReq)
-
-	if len(tagDelReq.Tag) < 1 {
-		log.Printf("Tag '%v' too short!", tagDelReq.Tag)
-		w.WriteHeader(http.StatusBadRequest)
-		return
+	// parse JSON
+	body, err := ioutil.ReadAll(req.Body)
+	if err != nil {
+		panic(err)
+	}
+	var requestBody FileScanRequestBody
+	err = json.Unmarshal(body, &requestBody)
+	if err != nil {
+		log.Printf("Error when handling file scan: %v", err.Error())
+		panic(err)
 	}
 
-	var imgInDb model2.File
-	model2.DB.Where("sha256 = ?", vars["sha256"]).First(&imgInDb)
+	// make all hard work
+	fileInDb := core.AddFile(db, requestBody.FilePath, core.AddFileOptions{
+		CalcSimilarity: true,
+		GenerateThumbs: true,
+		Tags:           requestBody.Tags,
+		ParentId:       requestBody.ParentId,
+	})
 
-	var tagInDb model2.Tag
-	model2.DB.Where("tag = ?", tagDelReq.Tag).First(&tagInDb)
-
-	// remove link between tag and file
-	model2.DB.Where("file_id = ? AND tag_id = ?", imgInDb.Id, tagInDb.Id).Delete(model2.FileTag{})
-}
-
-//TODO method to totally remove tag from all files
+	// send reponse to user
+	jsonResponse, err := json.Marshal(fileInDb)
+	w.Write(jsonResponse)
+*/

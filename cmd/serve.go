@@ -1,11 +1,8 @@
 package cmd
 
 import (
-	"gitlab.com/systemz/gotag/model2"
-	"log"
-
 	"github.com/spf13/cobra"
-	"gitlab.com/systemz/gotag/model"
+	"gitlab.com/systemz/gotag/model2"
 	"gitlab.com/systemz/gotag/web"
 )
 
@@ -20,13 +17,6 @@ var httpServe = &cobra.Command{
 }
 
 func serveExec(cmd *cobra.Command, args []string) {
-	// old interface and SQLite
-	db := model.DbInit()
-	allFiles := model.CountAllFiles(db)
-	log.Printf("All files in DB: %d \n", allFiles)
-	go web.Server(db)
-
-	// new interface and MySQL
 	model2.InitMysql()
 	web.StartWebInterface()
 }

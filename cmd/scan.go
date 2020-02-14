@@ -1,8 +1,6 @@
 package cmd
 
 import (
-	"log"
-
 	"github.com/spf13/cobra"
 	"gitlab.com/systemz/gotag/core"
 	"gitlab.com/systemz/gotag/model"
@@ -21,7 +19,5 @@ var diskScan = &cobra.Command{
 func diskScanExec(cmd *cobra.Command, args []string) {
 	// DB stuff
 	db := model.DbInit()
-	allFiles := model.CountAllFiles(db)
-	log.Printf("All files in DB: %d \n", allFiles)
 	core.ScanNg(db, args[0])
 }
