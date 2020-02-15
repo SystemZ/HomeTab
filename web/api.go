@@ -85,9 +85,9 @@ func FilePaginate(w http.ResponseWriter, r *http.Request) {
 
 	// get search term
 	decoder := json.NewDecoder(r.Body)
-	var counterQuery PaginateQueryRequest
-	decoder.Decode(&counterQuery)
-	searchTerm := counterQuery.Query
+	var fileQuery PaginateQueryRequest
+	decoder.Decode(&fileQuery)
+	searchTerm := fileQuery.Query
 
 	// gather data, convert from DB model to API model
 	var rawRes PaginateFileResponse

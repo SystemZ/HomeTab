@@ -1,147 +1,192 @@
 <template>
     <v-container fluid>
-
-        <v-img
-                class="text-right pa-2"
-        >
-        </v-img>
-
         <v-row>
-            <v-col cols="11" xs="12">
-                <v-pagination
-                        :disabled="filesLoading"
-                        :length="pages"
-                        v-model="page"
-                        total-visible="5"
-                        @input="getFiles"
+            <v-col cols="2">
+                <v-card
+                        class="mx-auto"
+                        max-width="300"
+                        tile
                 >
-                </v-pagination>
+                    <v-list dense>
+                        <v-subheader>All tags</v-subheader>
+                        <v-list-item-group color="primary">
+                            <v-list-item
+                                    @click="selectTag('all')"
+                            >
+                                <v-list-item-icon>
+                                    <v-icon>mdi-earth</v-icon>
+                                </v-list-item-icon>
+                                <v-list-item-content>
+                                    <v-list-item-title>
+                                        All
+                                        <span class="grey--text">?</span>
+                                    </v-list-item-title>
+                                </v-list-item-content>
+                            </v-list-item>
+                            <v-list-item
+                                    v-for="(item, i) in tagsRaw" :key="i"
+                                    @click="selectTag(item.tag)"
+                            >
+                                <v-list-item-icon>
+                                    <v-icon>mdi-label</v-icon>
+                                </v-list-item-icon>
+                                <v-list-item-content>
+                                    <v-list-item-title>
+                                        {{item.tag}}
+                                        <span class="grey--text">{{item.counter}}</span>
+                                    </v-list-item-title>
+                                </v-list-item-content>
+                            </v-list-item>
+                        </v-list-item-group>
+                    </v-list>
+                </v-card>
             </v-col>
-            <v-col cols="1" xs="12">
-                <v-text-field
-                        v-model="itemsPerPage"
-                        label="Per page"
-                        required
+            <v-col cols="10">
+                <v-img
+                        class="text-right pa-2"
                 >
-                </v-text-field>
+                </v-img>
 
-            </v-col>
-        </v-row>
-
-
-        <v-card v-if="bigPic" class="text-center" elevation="0">
-
-            <v-btn :href="apiUrl+'/img/full/'+bigPicInfo.sha256" target="_blank" class="mb-5">Original</v-btn>
-            <br>
-            {{bigPicInfo.filePath}}
-            <br>
-            <img
-                    @click="bigPic = false"
-                    :src="apiUrl+'/img/thumbs/700/700/'+bigPicInfo.sha256"/>
-            <br>
-
-            <v-combobox
-                    :disabled="tagsLoading"
-                    v-model="bigPicInfo.tagz"
-                    @change="addTag"
-                    :items="tags"
-                    chips
-                    clearable
-                    label="File tags"
-                    multiple
-                    prepend-icon="mdi-label"
-            >
-                <template v-slot:selection="{ attrs, item, select, selected }">
-                    <v-chip
-                            v-bind="attrs"
-                            color="indigo"
-                            dark
-                            class="ma-2"
-                            large
-                            label
-                            :input-value="selected"
-                            close
-                            @click="select"
-                            @click:close="deleteTag(bigPicInfo,item)"
-                    >
-                        <strong>{{ item }}</strong>&nbsp;
-                        <!--<span>(interest)</span>-->
-                    </v-chip>
-                </template>
-            </v-combobox>
-
-        </v-card>
-        <v-item-group v-else>
-            <v-container class="pa-0">
                 <v-row>
-                    <v-col
-                            v-for="(item, itemIndex) in files" :key="itemIndex"
-                    >
-                        <v-item>
-                            <v-card
-                                    v-if="isThumbPossible(item.mime)"
-                                    width="200"
-                                    height="200"
-                            >
-                                <v-img
+                    <v-col cols="11" xs="12">
+                        <v-pagination
+                                :disabled="filesLoading"
+                                :length="pages"
+                                v-model="page"
+                                total-visible="5"
+                                @input="getFiles"
+                        >
+                        </v-pagination>
+                    </v-col>
+                    <v-col cols="1" xs="12">
+                        <v-text-field
+                                v-model="itemsPerPage"
+                                label="Per page"
+                                required
+                        >
+                        </v-text-field>
 
-                                        :src="apiUrl+'/img/thumbs/200/200/'+item.sha256"
-                                        height="200"
-                                        width="200"
-                                        class="text-right pa-2"
-                                        @click="zoom(item)"
-                                >
-                                    <v-btn
-                                            icon
-                                            dark
-                                    >
-                                        <!--<v-icon>{{ active ? 'mdi-heart' : 'mdi-heart-outline' }}</v-icon>-->
-                                    </v-btn>
-                                </v-img>
-
-                            </v-card>
-                            <v-card
-                                    v-else
-                                    width="200"
-                                    height="200"
-                            >
-                                <v-container fill-height>
-                                    <v-row class="text-center">
-                                        <v-col cols="12">
-                                            {{item.filename}}
-                                        </v-col>
-                                    </v-row>
-                                </v-container>
-
-                            </v-card>
-
-                        </v-item>
                     </v-col>
                 </v-row>
-            </v-container>
-        </v-item-group>
 
-        <v-row>
-            <v-col cols="11" xs="12">
-                <v-pagination
-                        :disabled="filesLoading"
-                        :length="pages"
-                        v-model="page"
-                        total-visible="5"
-                        @input="getFiles"
-                >
-                </v-pagination>
-            </v-col>
-            <v-col cols="1" xs="12">
-                <v-text-field
-                        v-model="itemsPerPage"
-                        label="Per page"
-                        required
-                >
-                </v-text-field>
+
+                <v-card v-if="bigPic" class="text-center" elevation="0">
+
+                    <v-btn :href="apiUrl+'/img/full/'+bigPicInfo.sha256" target="_blank" class="mb-5">Original</v-btn>
+                    <br>
+                    {{bigPicInfo.filePath}}
+                    <br>
+                    <img
+                            @click="bigPic = false"
+                            :src="apiUrl+'/img/thumbs/700/700/'+bigPicInfo.sha256"/>
+                    <br>
+
+                    <v-combobox
+                            :disabled="tagsLoading"
+                            v-model="bigPicInfo.tagz"
+                            @change="addTag"
+                            :items="tags"
+                            chips
+                            clearable
+                            label="File tags"
+                            multiple
+                            prepend-icon="mdi-label"
+                    >
+                        <template v-slot:selection="{ attrs, item, select, selected }">
+                            <v-chip
+                                    v-bind="attrs"
+                                    color="indigo"
+                                    dark
+                                    class="ma-2"
+                                    large
+                                    label
+                                    :input-value="selected"
+                                    close
+                                    @click="select"
+                                    @click:close="deleteTag(bigPicInfo,item)"
+                            >
+                                <strong>{{ item }}</strong>&nbsp;
+                                <!--<span>(interest)</span>-->
+                            </v-chip>
+                        </template>
+                    </v-combobox>
+
+                </v-card>
+                <v-item-group v-else>
+                    <v-container class="pa-0">
+                        <v-row>
+                            <v-col
+                                    v-for="(item, itemIndex) in files" :key="itemIndex"
+                            >
+                                <v-item>
+                                    <v-card
+                                            v-if="isThumbPossible(item.mime)"
+                                            width="200"
+                                            height="200"
+                                    >
+                                        <v-img
+
+                                                :src="apiUrl+'/img/thumbs/200/200/'+item.sha256"
+                                                height="200"
+                                                width="200"
+                                                class="text-right pa-2"
+                                                @click="zoom(item)"
+                                        >
+                                            <v-btn
+                                                    icon
+                                                    dark
+                                            >
+                                                <!--<v-icon>{{ active ? 'mdi-heart' : 'mdi-heart-outline' }}</v-icon>-->
+                                            </v-btn>
+                                        </v-img>
+
+                                    </v-card>
+                                    <v-card
+                                            v-else
+                                            width="200"
+                                            height="200"
+                                    >
+                                        <v-container fill-height>
+                                            <v-row class="text-center">
+                                                <v-col cols="12">
+                                                    {{item.filename}}
+                                                </v-col>
+                                            </v-row>
+                                        </v-container>
+
+                                    </v-card>
+
+                                </v-item>
+                            </v-col>
+                        </v-row>
+                    </v-container>
+                </v-item-group>
+
+                <v-row>
+                    <v-col cols="11" xs="12">
+                        <v-pagination
+                                :disabled="filesLoading"
+                                :length="pages"
+                                v-model="page"
+                                total-visible="5"
+                                @input="getFiles"
+                        >
+                        </v-pagination>
+                    </v-col>
+                    <v-col cols="1" xs="12">
+                        <v-text-field
+                                v-model="itemsPerPage"
+                                label="Per page"
+                                required
+                        >
+                        </v-text-field>
+
+                    </v-col>
+                </v-row>
 
             </v-col>
         </v-row>
+
 
     </v-container>
 </template>
@@ -164,6 +209,8 @@
         bigPicInfo: {},
         tagsLoading: false,
         tags: [],
+        tagsRaw: [],
+        tagSelected: '',
         // change me
         active: false,
 
@@ -208,6 +255,10 @@
         this.bigPicInfo = item
         this.bigPicInfo.tagz = this.tagz(item.tags)
         this.bigPicInfo.tagzServer = this.tagz(item.tags)
+      },
+      selectTag (tagName) {
+        this.tagSelected = tagName
+        this.getFiles()
       },
       addTag (currentTags) {
         this.tagsLoading = true
@@ -302,7 +353,11 @@
         vm.prevPage = vm.page
 
         let rawUrl = vm.apiUrl + '/api/v1/files?limit=' + vm.itemsPerPage + '&' + queryType + 'Id=' + lastId
-        axios.post(rawUrl, {}, vm.authConfig())
+        let data = {}
+        if (vm.tagSelected.length > 0 && vm.tagSelected !== 'all') {
+          data = {'q': vm.tagSelected}
+        }
+        axios.post(rawUrl, data, vm.authConfig())
           .then((res) => {
             vm.filesLoading = false
             vm.files = res.data.files
@@ -326,6 +381,9 @@
         let rawUrl = vm.apiUrl + '/api/v1/tags'
         axios.get(rawUrl, vm.authConfig())
           .then((res) => {
+            // for tags widget
+            vm.tagsRaw = res.data
+            // for tags under zoomed file
             res.data.forEach((entry) => {
               vm.tags.push({'text': entry.tag + ' (' + entry.counter + ')', 'value': entry.tag})
             })

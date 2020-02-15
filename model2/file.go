@@ -30,11 +30,27 @@ type File struct {
 }
 
 func FileListPaginate(userId int, limit int, nextId int, prevId int, qTerm string) (result []File, allRecords int) {
-	// count... counters
+	var tagSearch bool
 	if len(qTerm) < 1 {
 		qTerm = "%"
+	} else {
+		tagSearch = true
 	}
+
+	// count how many results we will have for pagination
+	// FIXME allow search by tag and filename at the same time
 	scoutQuery := `SELECT COUNT(*) FROM files WHERE file_name LIKE ?`
+	if tagSearch {
+		scoutQuery = `
+SELECT COUNT(tags.id) AS counter
+FROM tags
+   LEFT JOIN file_tags ON tags.id = file_tags.tag_id
+   WHERE tags.tag = ?
+     GROUP BY tags.id
+ORDER BY COUNT(tags.id)
+DESC
+`
+	}
 	stmt1, err := DB.DB().Prepare(scoutQuery)
 	if err != nil {
 		log.Printf("%v", err)
@@ -68,33 +84,36 @@ func FileListPaginate(userId int, limit int, nextId int, prevId int, qTerm strin
 		sortType = "DESC"
 	}
 
-	// get counters
+	// all files - standard search
 	query := `
-SELECT
-  files.id,
-  files.sha256,
-  files.file_name,
-  files.file_path,
-  files.size_b,
-  files.created_at,
-  files.updated_at,
-  mimes.mime,
-  (SELECT GROUP_CONCAT(tags.tag SEPARATOR ',')
-   FROM tags
-   INNER JOIN file_tags on tags.id = file_tags.tag_id
-   WHERE file_tags.file_id = files.id
-   AND file_tags.deleted_at IS NULL
-  ) AS tagz
-FROM files
-INNER JOIN mimes on files.mime_id = mimes.id
-WHERE files.user_id = ? AND files.id ` + whereSign + ` ?
-AND files.file_name LIKE ?
-GROUP BY files.id
-ORDER BY files.id ` + sortType + `
-LIMIT ?
-`
-	/* this doesn't show not tagged files :(
-	SELECT
+     SELECT
+      files.id,
+      files.sha256,
+      files.file_name,
+      files.file_path,
+      files.size_b,
+      files.created_at,
+      files.updated_at,
+      mimes.mime,
+      (SELECT GROUP_CONCAT(tags.tag SEPARATOR ',')
+       FROM tags
+       INNER JOIN file_tags on tags.id = file_tags.tag_id
+       WHERE file_tags.file_id = files.id
+       AND file_tags.deleted_at IS NULL
+      ) AS tagz
+    FROM files
+    INNER JOIN mimes on files.mime_id = mimes.id
+    WHERE files.user_id = ? AND files.id ` + whereSign + ` ?
+    AND files.file_name LIKE ?
+    GROUP BY files.id
+    ORDER BY files.id ` + sortType + `
+    LIMIT ?`
+	if tagSearch {
+		// show only files with tag X, scoped search
+		// this doesn't show untagged files :(
+		// subquery is nasty but without it we see only one tag
+		query = `
+    SELECT
 	  files.id,
 	  files.sha256,
 	  files.file_name,
@@ -103,17 +122,23 @@ LIMIT ?
 	  files.created_at,
 	  files.updated_at,
 	  mimes.mime,
-	  GROUP_CONCAT(tags.tag SEPARATOR ',') as tags
+      (SELECT GROUP_CONCAT(tags.tag SEPARATOR ',')
+       FROM tags
+       INNER JOIN file_tags on tags.id = file_tags.tag_id
+       WHERE file_tags.file_id = files.id
+       AND file_tags.deleted_at IS NULL
+      ) AS tagz
 	FROM files
 	INNER JOIN mimes on files.mime_id = mimes.id
 	INNER JOIN file_tags on file_tags.file_id = files.id
 	INNER JOIN tags on file_tags.tag_id = tags.id
 	WHERE files.user_id = ? AND files.id ` + whereSign + ` ?
 	AND files.file_name LIKE ?
+	AND tags.tag = ?
 	GROUP BY files.id
 	ORDER BY files.id ` + sortType + `
-	LIMIT ?
-	*/
+	LIMIT ?`
+	}
 
 	stmt, err := DB.DB().Prepare(query)
 	if err != nil {
@@ -121,7 +146,14 @@ LIMIT ?
 		return
 	}
 	defer stmt.Close()
-	rows, err := stmt.Query(userId, nextId, qTerm, limit)
+	var rows *sql.Rows
+	if tagSearch {
+		// TODO make searchable by qTerm and tag simultaneously
+		// in this case qTerm is tag, fix variable names
+		rows, err = stmt.Query(userId, nextId, "%", qTerm, limit)
+	} else {
+		rows, err = stmt.Query(userId, nextId, qTerm, limit)
+	}
 	if err != nil {
 		log.Printf("%v", err)
 		return
