@@ -224,6 +224,7 @@ func SimilarFiles(sha256 string) (result []File) {
 
 	// file with hash not found
 	if imgInDb.Id < 1 {
+		log.Printf("file with hash %v not found")
 		return
 	}
 
