@@ -59,16 +59,13 @@
                     >
                         <v-toolbar-title>{{project}}</v-toolbar-title>
                         <v-spacer></v-spacer>
-                        <v-btn icon
-                        >
+                        <v-btn icon>
                             <v-icon>mdi-check-bold</v-icon>
                         </v-btn>
-                        <v-btn icon
-                        >
+                        <v-btn icon>
                             <v-icon>mdi-alarm-snooze</v-icon>
                         </v-btn>
-                        <v-btn icon
-                        >
+                        <v-btn icon>
                             <v-icon>mdi-delete</v-icon>
                         </v-btn>
                     </v-toolbar>
