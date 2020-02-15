@@ -44,13 +44,12 @@
                     :disabled="tagsLoading"
                     v-model="bigPicInfo.tagz"
                     @change="addTag"
-                    :items="tagItems"
+                    :items="tags"
                     chips
                     clearable
                     label="File tags"
                     multiple
                     prepend-icon="mdi-label"
-                    solo
             >
                 <template v-slot:selection="{ attrs, item, select, selected }">
                     <v-chip
@@ -164,8 +163,7 @@
         bigPic: false,
         bigPicInfo: {},
         tagsLoading: false,
-        //
-        tagItems: ['Streaming', 'Eating', 'Gaming', 'Coding'],
+        tags: [],
         // change me
         active: false,
 
@@ -173,6 +171,7 @@
     },
     mounted () {
       this.getFiles()
+      this.getTags()
     },
     methods: {
       authConfig () {
@@ -218,11 +217,28 @@
 
         let vm = this
         let rawUrl = vm.apiUrl + '/api/v1/file/' + this.bigPicInfo.sha256 + '/tag/add'
-        axios.post(rawUrl, {'tag': diff[0]}, vm.authConfig())
+        console.log(diff)
+        let tagToAdd = ''
+
+        if (diff.length < 1) {
+          console.log('detected to try an empty tag, cancelling...')
+          return
+        }
+
+        if (typeof (diff[0].value) !== 'undefined') {
+          // selected from dropdown
+          tagToAdd = diff[0].value
+        } else {
+          // manually typed by user
+          tagToAdd = diff[0]
+        }
+
+        console.log('Adding tag ' + tagToAdd)
+        axios.post(rawUrl, {'tag': tagToAdd}, vm.authConfig())
           .then((res) => {
             console.log(res)
             vm.bigPicInfo.tagzServer = currentTags
-            this.tagsLoading = false
+            vm.getTags()
           })
           .catch(function (err) {
             if (err.response.status === 401) {
@@ -234,6 +250,7 @@
 
       },
       deleteTag (bigPicInfo, tag) {
+        console.log('Deleting tag ' + tag)
         this.tagsLoading = true
         let vm = this
         let rawUrl = vm.apiUrl + '/api/v1/file/' + bigPicInfo.sha256 + '/tag/delete'
@@ -245,7 +262,7 @@
                 vm.bigPicInfo.tagz.splice(i, 1)
               }
             }
-            this.tagsLoading = false
+            vm.getTags()
           })
           .catch(function (err) {
             if (err.response.status === 401) {
@@ -294,6 +311,25 @@
             }
             // scroll up so user don't need to
             vm.$vuetify.goTo(0)
+          })
+          .catch(function (err) {
+            if (err.response.status === 401) {
+              vm.$root.$emit('sessionExpired')
+            } else {
+              console.log('something wrong')
+            }
+          })
+      },
+      getTags () {
+        this.tagsLoading = true
+        let vm = this
+        let rawUrl = vm.apiUrl + '/api/v1/tags'
+        axios.get(rawUrl, vm.authConfig())
+          .then((res) => {
+            res.data.forEach((entry) => {
+              vm.tags.push({'text': entry.tag + ' (' + entry.counter + ')', 'value': entry.tag})
+            })
+            this.tagsLoading = false
           })
           .catch(function (err) {
             if (err.response.status === 401) {

@@ -19,6 +19,7 @@ func StartWebInterface() {
 	r.HandleFunc("/api/v1/files", FilePaginate).Methods("POST")
 	r.HandleFunc("/api/v1/file/{sha256}/tag/delete", TagDelete).Methods("POST")
 	r.HandleFunc("/api/v1/file/{sha256}/tag/add", TagAdd).Methods("POST")
+	r.HandleFunc("/api/v1/tags", TagList).Methods("GET")
 
 	// no-JSON zone
 	r.HandleFunc("/img/thumbs/{w}/{h}/{sha256}", Thumb).Methods("GET")

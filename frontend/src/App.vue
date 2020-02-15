@@ -13,6 +13,14 @@
                         <v-list-item-title>Files</v-list-item-title>
                     </v-list-item-content>
                 </v-list-item>
+                <v-list-item v-if="$store.state.loggedIn" to="/tags">
+                    <v-list-item-action>
+                        <v-icon>mdi-label</v-icon>
+                    </v-list-item-action>
+                    <v-list-item-content>
+                        <v-list-item-title>Tags</v-list-item-title>
+                    </v-list-item-content>
+                </v-list-item>
 
                 <v-list-item v-if="!$store.state.loggedIn" to="/login">
                     <v-list-item-action>

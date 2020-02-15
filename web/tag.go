@@ -12,6 +12,20 @@ type TagRequest struct {
 	Tag string `json:"tag"`
 }
 
+func TagList(w http.ResponseWriter, r *http.Request) {
+	tags := model2.TagList()
+	// prepare JSON result
+	tagList, err := json.MarshalIndent(tags, "", "  ")
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	// all ok, return list
+	w.WriteHeader(http.StatusOK)
+	w.Write(tagList)
+}
+
 func TagAdd(w http.ResponseWriter, r *http.Request) {
 	// get SHA256 from URL
 	vars := mux.Vars(r)
