@@ -143,8 +143,11 @@
                                             <v-img @click="zoom(similar)"
                                                    width="150"
                                                    height="150"
-                                                   :src="apiUrl+'/img/thumbs/150/150/'+similar.sha256"
-                                            />
+                                                   :src="apiUrl+'/img/thumbs/150/150/'+similar.sha256">
+                                            </v-img>
+                                            <span v-if="similar.tags" class="d-inline-block text-truncate"
+                                                  style="max-width: 150px;">{{similar.tags}}</span>
+                                            <span v-else>-</span>
                                         </v-flex>
                                     </v-row>
                                 </v-container>
