@@ -17,6 +17,7 @@ var (
 	GIT_COMMIT string
 
 	DEV_MODE bool
+	CACHE_DIR string
 )
 
 func init() {
@@ -45,4 +46,7 @@ func init() {
 
 	viper.SetDefault("DEV_MODE", false)
 	DEV_MODE = viper.GetBool("DEV_MODE")
+
+	viper.SetDefault("CACHE_DIR", "")
+	CACHE_DIR = viper.GetString("CACHE_DIR")
 }

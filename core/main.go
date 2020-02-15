@@ -1,9 +1,15 @@
 package core
 
-import "strconv"
+import (
+	"gitlab.com/systemz/gotag/config"
+	"strconv"
+)
 
 func thumbDirPath(sha256 string) (path string) {
 	parent := "./cache"
+	if config.CACHE_DIR != "" {
+		parent = config.CACHE_DIR
+	}
 	lvl1 := string(sha256[0]) + string(sha256[1])
 	lvl2 := string(sha256[2]) + string(sha256[3])
 	lvl3 := string(sha256[4]) + string(sha256[5])

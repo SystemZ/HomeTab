@@ -36,6 +36,24 @@ function build-req {
 }
 
 function build {
+    sudo echo "Building frontend..."
+    cd frontend
+    yarn build
+    cd ../
+    echo "Building backend..."
+    #go build -ldflags='-w -s -extldflags "-static"' -a -o gotag
+    go build -o gotag
+    sudo docker build -t gotag:latest -f Dockerfile .
+    echo "Cleaning up..."
+    rm gotag
+    rm -r frontend/dist
+}
+
+function deploy {
+    sudo docker save gotag:latest | bzip2 | pv | ssh root@192.168.2.2 'bunzip2 | docker load'
+}
+
+function build_old {
     [ -z "$1" ] && echo "Provide commit or version string" >&2 && exit 1
     mkdir -p builds
 

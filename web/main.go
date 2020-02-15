@@ -8,6 +8,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"path/filepath"
 )
 
 func StartWebInterface() {
@@ -25,6 +26,36 @@ func StartWebInterface() {
 	// no-JSON zone
 	r.HandleFunc("/img/thumbs/{w}/{h}/{sha256}", Thumb).Methods("GET")
 	r.HandleFunc("/img/full/{sha256}", FullImg).Methods("GET")
+
+	// serve frontend
+	dir, _ := filepath.Abs(filepath.Dir(os.Args[0]))
+	dir += "/frontend"
+	log.Printf("Serving static content from %v", dir)
+	// TODO check security of this
+	r.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		http.ServeFile(w, r, dir+"/index.html")
+	})
+	r.PathPrefix("/css/").Handler(
+		http.StripPrefix("/css/",
+			http.FileServer(
+				http.Dir(dir+"/css"),
+			),
+		),
+	)
+	r.PathPrefix("/js/").Handler(
+		http.StripPrefix("/js/",
+			http.FileServer(
+				http.Dir(dir+"/js"),
+			),
+		),
+	)
+	r.PathPrefix("/fonts/").Handler(
+		http.StripPrefix("/fonts/",
+			http.FileServer(
+				http.Dir(dir+"/fonts"),
+			),
+		),
+	)
 
 	// start internal http server with logging
 	loggedRouter := handlers.LoggingHandler(os.Stdout, r)
