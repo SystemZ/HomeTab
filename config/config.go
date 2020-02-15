@@ -16,8 +16,9 @@ var (
 
 	GIT_COMMIT string
 
-	DEV_MODE bool
-	CACHE_DIR string
+	DEV_MODE       bool
+	CACHE_DIR      string
+	LIVE_VID_THUMB bool
 )
 
 func init() {
@@ -49,4 +50,7 @@ func init() {
 
 	viper.SetDefault("CACHE_DIR", "")
 	CACHE_DIR = viper.GetString("CACHE_DIR")
+
+	viper.SetDefault("LIVE_VID_THUMB", true)
+	LIVE_VID_THUMB = viper.GetBool("LIVE_VID_THUMB")
 }

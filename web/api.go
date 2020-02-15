@@ -47,7 +47,7 @@ func Thumb(w http.ResponseWriter, r *http.Request) {
 
 	// create thumb on disk if needed
 	done := make(chan bool)
-	go core.CreateThumb(imgInDb.FilePath, imgInDb.Sha256, mimeInDb.Mime, uint(width), uint(height), done)
+	go core.CreateThumb(imgInDb.FilePath, imgInDb.Sha256, mimeInDb.Mime, uint(width), uint(height), done, true)
 	<-done
 	debug.FreeOSMemory()
 

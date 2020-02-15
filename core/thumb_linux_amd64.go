@@ -1,6 +1,7 @@
 package core
 
 import (
+	"gitlab.com/systemz/gotag/config"
 	"image"
 	"image/jpeg"
 	"image/png"
@@ -96,7 +97,7 @@ func createVideoThumb(inputFilename string, sha256 string, mime string, maxWidth
 
 }
 
-func CreateThumb(pathToImg string, sha256 string, mime string, maxWidth uint, maxHeight uint, done chan bool) {
+func CreateThumb(pathToImg string, sha256 string, mime string, maxWidth uint, maxHeight uint, done chan bool, live bool) {
 	// don't overwrite current file
 	// TODO check if image is ok then rewrite if needed
 	imgThumbPath := ThumbPath(sha256, maxWidth, maxHeight)
@@ -130,10 +131,22 @@ func CreateThumb(pathToImg string, sha256 string, mime string, maxWidth uint, ma
 	case "image/png":
 		img, _ = png.Decode(fileRead)
 	case "image/gif":
+		if live && !config.LIVE_VID_THUMB {
+			log.Printf("vid thumbs turned off")
+			done <- true
+		}
 		log.Println("Creating .gif thumb...")
 	case "video/webm":
+		if live && !config.LIVE_VID_THUMB {
+			log.Printf("vid thumbs turned off")
+			done <- true
+		}
 		log.Println("Creating .webm thumb...")
 	case "video/mp4":
+		if live && !config.LIVE_VID_THUMB {
+			log.Printf("vid thumbs turned off")
+			done <- true
+		}
 		log.Println("Creating .mp4 thumb...")
 	default:
 		log.Printf("This MIME is not supported yet: %v", mime)

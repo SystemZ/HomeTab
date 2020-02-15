@@ -175,8 +175,8 @@ func AddFile(db *sql.DB, path string, options AddFileOptions) (dbFile model.File
 func makeThumbs(path string, sha256sum string, mime string) {
 	done1 := make(chan bool)
 	done2 := make(chan bool)
-	go CreateThumb(path, sha256sum, mime, 300, 300, done1)
-	go CreateThumb(path, sha256sum, mime, 700, 700, done2)
+	go CreateThumb(path, sha256sum, mime, 300, 300, done1, false)
+	go CreateThumb(path, sha256sum, mime, 700, 700, done2, false)
 	<-done1
 	<-done2
 	debug.FreeOSMemory()
