@@ -82,35 +82,3 @@ DESC
 	}
 	return result
 }
-
-/*
-
-### Return all tags for a specific file
-
-SELECT tags.tag
-FROM tags
-   INNER JOIN file_tags on tags.id = file_tags.tag_id
-   INNER JOIN files on file_tags.file_id = files.id
-WHERE files.sha256 = "CHANGE_ME"
-
-### Return all files having tag “beer”
-
-SELECT DISTINCT files.id, files.sha256, file_name
-FROM files
-   INNER JOIN file_tags
-      ON file_tags.file_id = files.id
-   INNER JOIN tags
-      ON tags.id = file_tags.tag_id
-   WHERE tags.tag IN ('beer')
-
-
-### Return top tags (most used)
-
-SELECT COUNT(tags.id) AS rank, tags.*
-FROM tags
-   LEFT JOIN file_tags ON tags.id = file_tags.tag_id
-     GROUP BY tags.id
-ORDER BY COUNT(tags.id)
-DESC LIMIT 50
-
-*/

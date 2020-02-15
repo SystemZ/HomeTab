@@ -122,6 +122,25 @@
                                             </v-combobox>
                                         </v-col>
                                     </v-row>
+                                    <v-row>
+                                        <v-flex cols="1" v-for="similar in similarFiles" :key="similar.sha256">
+                                            <a target="_blank" :href="apiUrl+'/img/full/'+similar.sha256">
+                                                {{similar.distance}}
+                                            </a>
+                                            <v-img @click="zoom(similar)"
+                                                   width="150"
+                                                   height="150"
+                                                   :src="apiUrl+'/img/thumbs/150/150/'+similar.sha256"
+                                            />
+                                            <v-overlay
+                                                    v-if="hover"
+                                                    absolute
+                                                    color="#036358"
+                                            >
+                                                <v-btn>See more info</v-btn>
+                                            </v-overlay>
+                                        </v-flex>
+                                    </v-row>
                                 </v-container>
                             </v-form>
                         </v-card>
@@ -229,6 +248,7 @@
         tags: [],
         tagsRaw: [],
         tagSelected: '',
+        similarFiles: [],
         // change me
         active: false,
 
@@ -269,6 +289,7 @@
         return [str]
       },
       zoom (item) {
+        this.getSimilar(item.sha256)
         this.bigPic = true
         this.bigPicInfo = item
         this.bigPicInfo.tagz = this.tagz(item.tags)
@@ -410,6 +431,19 @@
           .catch(function (err) {
             if (err.response.status === 401) {
               vm.$root.$emit('sessionExpired')
+            } else {
+              console.log('something wrong')
+            }
+          })
+      },
+      getSimilar (sha256) {
+        axios.get(this.apiUrl + '/api/v1/file/' + sha256 + '/similar', this.authConfig())
+          .then((res) => {
+            this.similarFiles = res.data
+          })
+          .catch((err) => {
+            if (err.response.status === 401) {
+              this.$root.$emit('sessionExpired')
             } else {
               console.log('something wrong')
             }

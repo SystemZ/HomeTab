@@ -55,6 +55,22 @@ func Thumb(w http.ResponseWriter, r *http.Request) {
 	writeRawFileApi(w, r, core.ThumbPath(imgInDb.Sha256, uint(width), uint(height)), "image/jpeg")
 }
 
+func FileSimilar(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	rawRes := model2.SimilarFiles(vars["sha256"])
+
+	// prepare JSON result
+	fileList, err := json.MarshalIndent(rawRes, "", "  ")
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	// all ok, return list
+	w.WriteHeader(http.StatusOK)
+	w.Write(fileList)
+}
+
 func FilePaginate(w http.ResponseWriter, r *http.Request) {
 	//authUserOk, userInfo := CheckApiAuth(w, r)
 	//if !authUserOk {

@@ -56,8 +56,6 @@ func migrateExec(cmd *cobra.Command, args []string) {
 			}
 			mysql.Save(&file)
 
-			// SELECT  HAMMINGDISTANCE(a1,a2,a3,a4,b1,b2,b3,b4) AS res FROM `files` WHERE sha256 = "changeme"
-
 			// add tags to DB
 			found, tags := model.TagList(sqlite, img.Fid)
 			if !found {

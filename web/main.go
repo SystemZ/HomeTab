@@ -17,6 +17,7 @@ func StartWebInterface() {
 	// JSON API for JS frontend
 	//r.HandleFunc("/api/v1/login", ApiLogin)
 	r.HandleFunc("/api/v1/files", FilePaginate).Methods("POST")
+	r.HandleFunc("/api/v1/file/{sha256}/similar", FileSimilar).Methods("GET")
 	r.HandleFunc("/api/v1/file/{sha256}/tag/delete", TagDelete).Methods("POST")
 	r.HandleFunc("/api/v1/file/{sha256}/tag/add", TagAdd).Methods("POST")
 	r.HandleFunc("/api/v1/tags", TagList).Methods("GET")

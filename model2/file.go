@@ -25,8 +25,9 @@ type File struct {
 	DeletedAt *time.Time `gorm:"column:deleted_at" json:"-"`
 
 	// helpers, not present in DB
-	Mime string `gorm:"-" json:"mime"`
-	Tags string `gorm:"-" json:"tags"`
+	Mime     string `gorm:"-" json:"mime"`
+	Tags     string `gorm:"-" json:"tags"`
+	Distance int    `gorm:"-" json:"distance"`
 }
 
 func FileListPaginate(userId int, limit int, nextId int, prevId int, qTerm string) (result []File, allRecords int) {
@@ -177,4 +178,56 @@ DESC
 		return result[p].Id < result[q].Id
 	})
 	return result, allRecords
+}
+
+func SimilarFiles(sha256 string) (result []File) {
+	var imgInDb File
+	DB.Where("sha256 = ?", sha256).First(&imgInDb)
+
+	// file with hash not found
+	if imgInDb.Id < 1 {
+		return
+	}
+
+	query1 := `
+SELECT HAMMINGDISTANCE(?,?,?,?,files.phash_a,files.phash_b,files.phash_c,files.phash_d) AS dist, 
+       sha256,
+       file_name,
+       file_path,
+       size_b,
+       mimes.mime
+FROM files
+INNER JOIN mimes on files.mime_id = mimes.id
+WHERE sha256 != ?
+AND files.phash_a != 0
+AND files.phash_b != 0
+AND files.phash_c != 0
+AND files.phash_d != 0
+ORDER BY dist ASC
+LIMIT 50
+`
+
+	stmt1, err := DB.DB().Prepare(query1)
+	if err != nil {
+		log.Printf("%v", err)
+		return
+	}
+	defer stmt1.Close()
+	rows1, err := stmt1.Query(imgInDb.PhashA, imgInDb.PhashB, imgInDb.PhashC, imgInDb.PhashD, imgInDb.Sha256)
+	if err != nil {
+		log.Printf("%v", err)
+		return
+	}
+	defer rows1.Close()
+	for rows1.Next() {
+		var list File
+		err := rows1.Scan(&list.Distance, &list.Sha256, &list.Filename, &list.FilePath, &list.SizeB, &list.Mime)
+		if err != nil {
+			log.Printf("sql scan error: %v", err)
+			return
+		}
+		result = append(result, list)
+	}
+
+	return result
 }
