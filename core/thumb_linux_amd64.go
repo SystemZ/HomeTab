@@ -134,18 +134,21 @@ func CreateThumb(pathToImg string, sha256 string, mime string, maxWidth uint, ma
 		if live && !config.LIVE_VID_THUMB {
 			log.Printf("vid thumbs turned off")
 			done <- true
+			return
 		}
 		log.Println("Creating .gif thumb...")
 	case "video/webm":
 		if live && !config.LIVE_VID_THUMB {
 			log.Printf("vid thumbs turned off")
 			done <- true
+			return
 		}
 		log.Println("Creating .webm thumb...")
 	case "video/mp4":
 		if live && !config.LIVE_VID_THUMB {
 			log.Printf("vid thumbs turned off")
 			done <- true
+			return
 		}
 		log.Println("Creating .mp4 thumb...")
 	default:
