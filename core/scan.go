@@ -113,7 +113,7 @@ func AddFile(db *sql.DB, path string, options AddFileOptions) (dbFile model.File
 		log.Printf("MIME: %s\n", mime)
 
 		log.Printf("%s", "Writing to DB...")
-		model.FindSert(db, path, size, mime, sha256sum)
+		//model.FindSert(db, path, size, mime, sha256sum)
 		log.Printf("%s", "...done\n")
 	}
 
@@ -125,7 +125,7 @@ func AddFile(db *sql.DB, path string, options AddFileOptions) (dbFile model.File
 	// update path to file if necessary
 	if isInDb && fileInDb.Name != path {
 		log.Printf("Updating path from %s to %s ...", fileInDb.Name, path)
-		model.UpdatePath(db, sha256sum, path)
+		//model.UpdatePath(db, sha256sum, path)
 		log.Printf("%s\n", "Updating path done")
 	} else if isInDb && fileInDb.Name == path {
 		log.Printf("%s\n", "File path is up to date")
@@ -140,12 +140,12 @@ func AddFile(db *sql.DB, path string, options AddFileOptions) (dbFile model.File
 	if options.CalcSimilarity {
 		log.Println("Calculating similarity to other images, this may take a while")
 		// calc and add perceptual hash to DB for images
-		pHashFound := model.FindPHash(db, sha256sum)
-		if (mime == "image/jpeg" || mime == "image/png") && !pHashFound {
+		//pHashFound := model.FindPHash(db, sha256sum)
+		if mime == "image/jpeg" || mime == "image/png" { //&& !pHashFound {
 			log.Printf("%s\n", "pHash not found, calculating...")
-			pHash := GetPHash(path)
-			log.Printf("%s %s\n", "pHash:", pHash)
-			model.UpdatePHash(db, sha256sum, pHash)
+			//pHash := GetPHash(path)
+			//log.Printf("%s %s\n", "pHash:", pHash)
+			//model.UpdatePHash(db, sha256sum, pHash)
 		}
 
 		// calc distance between this and rest of images

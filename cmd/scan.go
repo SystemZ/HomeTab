@@ -2,8 +2,6 @@ package cmd
 
 import (
 	"github.com/spf13/cobra"
-	"gitlab.com/systemz/gotag/core"
-	"gitlab.com/systemz/gotag/model"
 )
 
 func init() {
@@ -17,7 +15,5 @@ var diskScan = &cobra.Command{
 }
 
 func diskScanExec(cmd *cobra.Command, args []string) {
-	// DB stuff
-	db := model.DbInit()
-	core.ScanNg(db, args[0])
+	//core.ScanNg(db, args[0])
 }

@@ -2,26 +2,12 @@ package model
 
 import (
 	"database/sql"
-	"fmt"
-	_ "github.com/mattn/go-sqlite3"
-	"log"
 )
 
 func checkErr(err error) {
 	if err != nil {
 		panic(err)
 	}
-}
-
-func DbInit() (db *sql.DB) {
-	db, err := sql.Open("sqlite3", "./gotag.sqlite3")
-	checkErr(err)
-
-	//change to https://github.com/mattes/migrate
-	//migrator, _ := gomigrate.NewMigrator(db, gomigrate.Sqlite3{}, "./migrations")
-	//err = migrator.Migrate()
-
-	return db
 }
 
 type File struct {
@@ -91,82 +77,4 @@ func FindByFile(db *sql.DB, filePath string) (found bool, result File) {
 		break
 	}
 	return found, File{}
-}
-
-func Insert(db *sql.DB, lastPath string, size int64, mime string, sha256 string) (id int64) {
-	stmt, err := db.Prepare("INSERT INTO files(last_path, size, mime, sha256) VALUES(?,?,?,?)")
-	checkErr(err)
-
-	res, err := stmt.Exec(lastPath, size, mime, sha256)
-	checkErr(err)
-
-	id, err = res.LastInsertId()
-	checkErr(err)
-
-	return id
-}
-
-func FindSert(db *sql.DB, lastPath string, size int64, mime string, sha256 string) {
-	found, _ := Find(db, sha256)
-	if !found {
-		Insert(db, lastPath, size, mime, sha256)
-	}
-}
-
-func UpdatePath(db *sql.DB, sha256sum string, newPath string) {
-	trashSQL, err := db.Prepare("UPDATE files SET last_path=? WHERE sha256=?")
-	if err != nil {
-		fmt.Println(err)
-	}
-	tx, err := db.Begin()
-	if err != nil {
-		fmt.Println(err)
-	}
-	_, err = tx.Stmt(trashSQL).Exec(newPath, sha256sum)
-	if err != nil {
-		fmt.Println("Doing rollback")
-		tx.Rollback()
-	} else {
-		tx.Commit()
-	}
-}
-
-func FindPHash(db *sql.DB, sha256 string) (found bool) {
-	rows, err := db.Query("SELECT phash FROM files WHERE phash IS NOT NULL AND sha256 = ?", sha256)
-	defer rows.Close()
-
-	checkErr(err)
-	found = false
-
-	for rows.Next() {
-		//err = rows.Scan(&phash)
-		checkErr(err)
-		found = true
-		break
-	}
-	return found //, phash
-}
-
-func UpdatePHash(db *sql.DB, sha256sum string, pHash string) {
-	trashSQL, err := db.Prepare("UPDATE files SET phash=? WHERE sha256=?")
-	if err != nil {
-		fmt.Println(err)
-	}
-	tx, err := db.Begin()
-	if err != nil {
-		fmt.Println(err)
-	}
-	_, err = tx.Stmt(trashSQL).Exec(pHash, sha256sum)
-	if err != nil {
-		log.Println("Doing rollback")
-		tx.Rollback()
-	} else {
-		tx.Commit()
-	}
-}
-
-type Distance struct {
-	IdA  int
-	IdB  int
-	Dist int
 }
