@@ -42,6 +42,7 @@ func FileListPaginate(userId int, limit int, nextId int, prevId int, qTerm strin
 	// FIXME allow search by tag and filename at the same time
 	scoutQuery := `SELECT COUNT(*) FROM files WHERE file_name LIKE ?`
 	if tagSearch {
+		// FIXME ignore untagged
 		scoutQuery = `
 SELECT COUNT(tags.id) AS counter
 FROM tags
@@ -136,6 +137,7 @@ DESC
 	WHERE files.user_id = ? AND files.id ` + whereSign + ` ?
 	AND files.file_name LIKE ?
 	AND tags.tag = ?
+	AND file_tags.deleted_at IS NULL
 	GROUP BY files.id
 	ORDER BY files.id ` + sortType + `
 	LIMIT ?`

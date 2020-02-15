@@ -53,8 +53,9 @@ func TagList() (result []Tag) {
 	query := `
 SELECT COUNT(tags.id) AS counter, tags.id, tags.tag, tags.created_at, tags.updated_at
 FROM tags
-   LEFT JOIN file_tags ON tags.id = file_tags.tag_id
-     GROUP BY tags.id
+LEFT JOIN file_tags ON tags.id = file_tags.tag_id
+WHERE file_tags.deleted_at IS NULL
+GROUP BY tags.id
 ORDER BY COUNT(tags.id)
 DESC 
 `
