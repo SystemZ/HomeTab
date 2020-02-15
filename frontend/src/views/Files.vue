@@ -69,50 +69,59 @@
                     </v-col>
                 </v-row>
 
-
-                <v-card v-if="bigPic" class="text-center" elevation="0">
-
-                    <v-btn :href="apiUrl+'/img/full/'+bigPicInfo.sha256" target="_blank" class="mb-5">Original</v-btn>
-                    <br>
-                    {{bigPicInfo.filePath}}
-                    <br>
-                    <img
+                <v-overlay :value="bigPic" z-index="10">
+                    <v-btn
+                            icon
                             @click="bigPic = false"
-                            :src="apiUrl+'/img/thumbs/700/700/'+bigPicInfo.sha256"/>
-                    <br>
-
-                    <v-combobox
-                            :disabled="tagsLoading"
-                            v-model="bigPicInfo.tagz"
-                            @change="addTag"
-                            :items="tags"
-                            chips
-                            clearable
-                            label="File tags"
-                            multiple
-                            prepend-icon="mdi-label"
                     >
-                        <template v-slot:selection="{ attrs, item, select, selected }">
-                            <v-chip
-                                    v-bind="attrs"
-                                    color="indigo"
-                                    dark
-                                    class="ma-2"
-                                    large
-                                    label
-                                    :input-value="selected"
-                                    close
-                                    @click="select"
-                                    @click:close="deleteTag(bigPicInfo,item)"
-                            >
-                                <strong>{{ item }}</strong>&nbsp;
-                                <!--<span>(interest)</span>-->
-                            </v-chip>
-                        </template>
-                    </v-combobox>
+                        <v-icon>mdi-close</v-icon>
+                    </v-btn>
+                    <v-card v-if="bigPic" class="text-center" elevation="0">
 
-                </v-card>
-                <v-item-group v-else>
+                        <v-btn :href="apiUrl+'/img/full/'+bigPicInfo.sha256" target="_blank" class="mb-5">Original
+                        </v-btn>
+                        <br>
+                        {{bigPicInfo.filePath}}
+                        <br>
+                        <img
+                                @click="bigPic = false"
+                                :src="apiUrl+'/img/thumbs/700/700/'+bigPicInfo.sha256"/>
+                        <br>
+
+                        <v-combobox
+                                :disabled="tagsLoading"
+                                v-model="bigPicInfo.tagz"
+                                @change="addTag"
+                                :items="tags"
+                                chips
+                                clearable
+                                label="File tags"
+                                multiple
+                                prepend-icon="mdi-label"
+                        >
+                            <template v-slot:selection="{ attrs, item, select, selected }">
+                                <v-chip
+                                        v-bind="attrs"
+                                        color="indigo"
+                                        dark
+                                        class="ma-2"
+                                        large
+                                        label
+                                        :input-value="selected"
+                                        close
+                                        @click="select"
+                                        @click:close="deleteTag(bigPicInfo,item)"
+                                >
+                                    <strong>{{ item }}</strong>&nbsp;
+                                    <!--<span>(interest)</span>-->
+                                </v-chip>
+                            </template>
+                        </v-combobox>
+
+                    </v-card>
+                </v-overlay>
+
+                <v-item-group>
                     <v-container class="pa-0">
                         <v-row>
                             <v-col
