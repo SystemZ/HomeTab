@@ -145,13 +145,6 @@
                                                    height="150"
                                                    :src="apiUrl+'/img/thumbs/150/150/'+similar.sha256"
                                             />
-                                            <v-overlay
-                                                    v-if="hover"
-                                                    absolute
-                                                    color="#036358"
-                                            >
-                                                <v-btn>See more info</v-btn>
-                                            </v-overlay>
                                         </v-flex>
                                     </v-row>
                                 </v-container>
