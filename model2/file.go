@@ -200,14 +200,15 @@ func FileListPaginate(userId int, limit int, nextId int, prevId int, qTerm strin
 	defer rows.Close()
 	for rows.Next() {
 		var list File
+		// TODO is this necessary?
 		var tagz sql.NullString
 		err := rows.Scan(&list.Id, &list.Sha256, &list.Filename, &list.FilePath, &list.SizeB, &list.CreatedAt, &list.UpdatedAt, &list.Mime, &tagz)
-		if tagz.Valid {
-			list.Tags = tagz.String
-		}
 		if err != nil {
 			log.Printf("sql scan error: %v", err)
 			return
+		}
+		if tagz.Valid {
+			list.Tags = tagz.String
 		}
 		result = append(result, list)
 	}
@@ -234,7 +235,13 @@ SELECT HAMMINGDISTANCE(?,?,?,?,files.phash_a,files.phash_b,files.phash_c,files.p
        file_name,
        file_path,
        size_b,
-       mimes.mime
+       mimes.mime,
+      (SELECT GROUP_CONCAT(tags.tag SEPARATOR ',')
+       FROM tags
+       INNER JOIN file_tags on tags.id = file_tags.tag_id
+       WHERE file_tags.file_id = files.id
+       AND file_tags.deleted_at IS NULL
+      ) AS tagz
 FROM files
 INNER JOIN mimes on files.mime_id = mimes.id
 WHERE sha256 != ?
@@ -260,10 +267,14 @@ LIMIT 50
 	defer rows1.Close()
 	for rows1.Next() {
 		var list File
-		err := rows1.Scan(&list.Distance, &list.Sha256, &list.Filename, &list.FilePath, &list.SizeB, &list.Mime)
+		var tagz sql.NullString
+		err := rows1.Scan(&list.Distance, &list.Sha256, &list.Filename, &list.FilePath, &list.SizeB, &list.Mime, &tagz)
 		if err != nil {
 			log.Printf("sql scan error: %v", err)
 			return
+		}
+		if tagz.Valid {
+			list.Tags = tagz.String
 		}
 		result = append(result, list)
 	}
