@@ -38,20 +38,25 @@ func FileListPaginate(userId int, limit int, nextId int, prevId int, qTerm strin
 		tagSearch = true
 	}
 
+	filename := "%"
 	// count how many results we will have for pagination
 	// FIXME allow search by tag and filename at the same time
 	scoutQuery := `SELECT COUNT(*) FROM files WHERE file_name LIKE ?`
-	if tagSearch {
+	if tagSearch && qTerm == "none" {
+		scoutQuery = `
+	SELECT COUNT(*) FROM files
+    WHERE (SELECT COUNT(id) FROM file_tags WHERE file_tags.file_id = files.id AND file_tags.deleted_at IS NULL) < 1
+	AND files.file_name LIKE ?`
+	} else if tagSearch {
 		// FIXME ignore untagged
 		scoutQuery = `
-SELECT COUNT(tags.id) AS counter
-FROM tags
-   LEFT JOIN file_tags ON tags.id = file_tags.tag_id
-   WHERE tags.tag = ?
-     GROUP BY tags.id
-ORDER BY COUNT(tags.id)
-DESC
-`
+	SELECT COUNT(tags.id) AS counter
+	FROM tags
+	   LEFT JOIN file_tags ON tags.id = file_tags.tag_id
+	   WHERE tags.tag = ?
+	     GROUP BY tags.id
+	ORDER BY COUNT(tags.id)
+	DESC`
 	}
 	stmt1, err := DB.DB().Prepare(scoutQuery)
 	if err != nil {
@@ -59,7 +64,15 @@ DESC
 		return
 	}
 	defer stmt1.Close()
-	rows1, err := stmt1.Query(qTerm)
+	var rows1 *sql.Rows
+
+	if qTerm != "none" && qTerm != "%" {
+		// tag search
+		rows1, err = stmt1.Query(qTerm)
+	} else {
+		// untagged and all files
+		rows1, err = stmt1.Query(filename)
+	}
 	if err != nil {
 		log.Printf("%v", err)
 		return
@@ -110,7 +123,28 @@ DESC
     GROUP BY files.id
     ORDER BY files.id ` + sortType + `
     LIMIT ?`
-	if tagSearch {
+
+	if tagSearch && qTerm == "none" {
+		query = `
+    SELECT
+      files.id,
+      files.sha256,
+      files.file_name,
+      files.file_path,
+      files.size_b,
+      files.created_at,
+      files.updated_at,
+      mimes.mime,
+      "" as tagz
+    FROM files
+    INNER JOIN mimes on files.mime_id = mimes.id
+    WHERE (SELECT COUNT(id) FROM file_tags WHERE file_tags.file_id = files.id AND file_tags.deleted_at IS NULL) < 1
+    AND files.user_id = ? AND files.id ` + whereSign + ` ?
+	AND files.file_name LIKE ?
+    ORDER BY files.id ` + sortType + `
+	LIMIT ?
+`
+	} else if tagSearch {
 		// show only files with tag X, scoped search
 		// this doesn't show untagged files :(
 		// subquery is nasty but without it we see only one tag
@@ -150,8 +184,10 @@ DESC
 	}
 	defer stmt.Close()
 	var rows *sql.Rows
-	if tagSearch {
-		// TODO make searchable by qTerm and tag simultaneously
+	// TODO make searchable by qTerm and tag simultaneously
+	if tagSearch && qTerm == "none" {
+		rows, err = stmt.Query(userId, nextId, "%", limit)
+	} else if tagSearch {
 		// in this case qTerm is tag, fix variable names
 		rows, err = stmt.Query(userId, nextId, "%", qTerm, limit)
 	} else {

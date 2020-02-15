@@ -24,11 +24,24 @@
                                 </v-list-item-content>
                             </v-list-item>
                             <v-list-item
+                                    @click="selectTag('none')"
+                            >
+                                <v-list-item-icon>
+                                    <v-icon>mdi-label-off</v-icon>
+                                </v-list-item-icon>
+                                <v-list-item-content>
+                                    <v-list-item-title>
+                                        Without
+                                        <span class="grey--text">?</span>
+                                    </v-list-item-title>
+                                </v-list-item-content>
+                            </v-list-item>
+                            <v-list-item
                                     v-for="(item, i) in tagsRaw" :key="i"
                                     @click="selectTag(item.tag)"
                             >
                                 <v-list-item-icon>
-                                    <v-icon>mdi-label</v-icon>
+                                    <v-icon>mdi-label-outline</v-icon>
                                 </v-list-item-icon>
                                 <v-list-item-content>
                                     <v-list-item-title>
