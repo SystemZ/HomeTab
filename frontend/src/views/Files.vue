@@ -69,57 +69,66 @@
                     </v-col>
                 </v-row>
 
-                <v-overlay :value="bigPic" z-index="10">
-                    <v-btn
-                            icon
-                            @click="bigPic = false"
-                    >
-                        <v-icon>mdi-close</v-icon>
-                    </v-btn>
-                    <v-card v-if="bigPic" class="text-center" elevation="0">
+                <v-dialog v-model="bigPic" dark max-width="90%">
+                    <v-card>
+                        <v-card class="text-center" elevation="0">
+                            <v-btn :href="apiUrl+'/img/full/'+bigPicInfo.sha256" target="_blank" class="mb-5">
+                                Original
+                            </v-btn>
+                            <br>
+                            {{bigPicInfo.filePath}}
+                            <br>
+                            <img
+                                    @click="bigPic = false"
+                                    :src="apiUrl+'/img/thumbs/700/700/'+bigPicInfo.sha256"/>
+                            <br>
+                            <v-form>
+                                <v-container>
+                                    <v-row>
+                                        <v-col
+                                                cols="12"
+                                                lg="6"
+                                                offset-lg="3"
+                                        >
+                                            <v-combobox
+                                                    :disabled="tagsLoading"
+                                                    v-model="bigPicInfo.tagz"
+                                                    @change="addTag"
+                                                    :items="tags"
+                                                    chips
+                                                    label="File tags"
+                                                    multiple
+                                                    prepend-icon="mdi-label"
+                                            >
 
-                        <v-btn :href="apiUrl+'/img/full/'+bigPicInfo.sha256" target="_blank" class="mb-5">Original
-                        </v-btn>
-                        <br>
-                        {{bigPicInfo.filePath}}
-                        <br>
-                        <img
-                                @click="bigPic = false"
-                                :src="apiUrl+'/img/thumbs/700/700/'+bigPicInfo.sha256"/>
-                        <br>
-
-                        <v-combobox
-                                :disabled="tagsLoading"
-                                v-model="bigPicInfo.tagz"
-                                @change="addTag"
-                                :items="tags"
-                                chips
-                                clearable
-                                label="File tags"
-                                multiple
-                                prepend-icon="mdi-label"
-                        >
-                            <template v-slot:selection="{ attrs, item, select, selected }">
-                                <v-chip
-                                        v-bind="attrs"
-                                        color="indigo"
-                                        dark
-                                        class="ma-2"
-                                        large
-                                        label
-                                        :input-value="selected"
-                                        close
-                                        @click="select"
-                                        @click:close="deleteTag(bigPicInfo,item)"
-                                >
-                                    <strong>{{ item }}</strong>&nbsp;
-                                    <!--<span>(interest)</span>-->
-                                </v-chip>
-                            </template>
-                        </v-combobox>
+                                                <!-- clearable -->
+                                                <template v-slot:selection="{ attrs, item, select, selected }">
+                                                    <v-chip
+                                                            v-bind="attrs"
+                                                            color="indigo"
+                                                            dark
+                                                            class="ma-2"
+                                                            large
+                                                            label
+                                                            :input-value="selected"
+                                                            close
+                                                            @click="select"
+                                                            @click:close="deleteTag(bigPicInfo,item)"
+                                                    >
+                                                        <strong>{{ item }}</strong>&nbsp;
+                                                        <!--<span>(interest)</span>-->
+                                                    </v-chip>
+                                                </template>
+                                            </v-combobox>
+                                        </v-col>
+                                    </v-row>
+                                </v-container>
+                            </v-form>
+                        </v-card>
 
                     </v-card>
-                </v-overlay>
+
+                </v-dialog>
 
                 <v-item-group>
                     <v-container class="pa-0">
