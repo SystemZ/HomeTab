@@ -22,13 +22,17 @@
                         placeholder="Buy a yacht"
                         solo
                         clearable
-                ></v-text-field>
+                        v-model="task"
+                >
+                    {{task}}
+                </v-text-field>
             </v-col>
             <v-col>
                 <v-btn
                         block
                         color="success"
                         v-if="$vuetify.breakpoint.smAndDown"
+                        @click="addTask"
                 >
                     Add
                 </v-btn>
@@ -37,6 +41,7 @@
                         large
                         height="48px"
                         v-else
+                        @click="addTask"
                 >
                     Add
                 </v-btn>
@@ -52,7 +57,7 @@
                             color="green"
                             dark
                     >
-                        <v-toolbar-title>Project name</v-toolbar-title>
+                        <v-toolbar-title>{{project}}</v-toolbar-title>
                         <v-spacer></v-spacer>
                         <v-btn icon
                         >
@@ -70,39 +75,25 @@
                     <v-list
                             subheader
                             two-line
-                            flat
                     >
                         <v-subheader>Tasks</v-subheader>
-                        <!-- two items to show multiple choice -->
                         <v-list-item-group multiple>
-                            <v-list-item>
+                            <v-list-item
+                                    v-for="(item, i) in items"
+                                    :key="i"
+                                    active-class="green--text text--darken-4"
+                            >
                                 <template v-slot:default="{ active, toggle }">
                                     <v-list-item-action>
                                         <v-checkbox
                                                 v-model="active"
-                                                color="success"
+                                                color="green darken-2"
                                                 @click="toggle"
                                         ></v-checkbox>
                                     </v-list-item-action>
 
                                     <v-list-item-content>
-                                        <v-list-item-title>Take out the trash</v-list-item-title>
-                                    </v-list-item-content>
-                                </template>
-                            </v-list-item>
-
-                            <v-list-item>
-                                <template v-slot:default="{ active, toggle }">
-                                    <v-list-item-action>
-                                        <v-checkbox
-                                                v-model="active"
-                                                color="success"
-                                                @click="toggle"
-                                        ></v-checkbox>
-                                    </v-list-item-action>
-
-                                    <v-list-item-content>
-                                        <v-list-item-title>Buy batteries</v-list-item-title>
+                                        <v-list-item-title v-text="item.title"></v-list-item-title>
                                     </v-list-item-content>
                                 </template>
                             </v-list-item>
@@ -117,5 +108,19 @@
 <script>
     export default {
         name: 'tasks',
+        data() {
+            return {
+                project: "Cool project name placeholder",
+                task: "",
+                items: [],
+            }
+        },
+        mounted() {
+        },
+        methods: {
+            addTask() {
+                this.items.push({"title": this.task})
+            },
+        },
     }
 </script>
