@@ -22,6 +22,10 @@ Only changes are made in app's folder to sqlite DB and thumbnails cache
 
 Currently webm/mp4/gif thumbnails are supported only on Linux amd64 build as a limitation of [lilliput](https://github.com/discordapp/lilliput) library
 
+### Deploy notes
+
+Try to use best practices for image:
+* https://github.com/chemidy/smallest-secured-golang-docker-image/blob/master/Dockerfile
 
 ### Dev notes
 
