@@ -26,6 +26,7 @@ Currently webm/mp4/gif thumbnails are supported only on Linux amd64 build as a l
 ### Dev notes
 
 * https://github.com/discordapp/lilliput/issues/55
+* https://github.com/discordapp/lilliput/issues/24
 
 Lilliput lib have problems with build when go mod is used.  
 
