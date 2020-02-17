@@ -31,7 +31,7 @@
                         block
                         color="success"
                         v-if="$vuetify.breakpoint.smAndDown"
-                        @click="addTask"
+                        @click.native="addTask"
                 >
                     Add
                 </v-btn>
@@ -40,7 +40,7 @@
                         large
                         height="48px"
                         v-else
-                        @click="addTask"
+                        @click.native="addTask"
                 >
                     Add
                 </v-btn>
@@ -115,8 +115,10 @@
         },
         methods: {
             addTask() {
-                this.items.push({"title": this.taskTitle})
-                this.taskTitle = ""
+                if (this.taskTitle !== "") {
+                    this.items.push({"title": this.taskTitle});
+                    this.taskTitle = ""
+                }
             },
         },
     }
