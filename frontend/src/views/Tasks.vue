@@ -22,9 +22,9 @@
                         placeholder="Buy a yacht"
                         solo
                         clearable
-                        v-model="task"
+                        v-model="taskTitle"
+                        @keydown.enter.native="addTask"
                 >
-                    {{task}}
                 </v-text-field>
             </v-col>
             <v-col>
@@ -32,7 +32,7 @@
                         block
                         color="success"
                         v-if="$vuetify.breakpoint.smAndDown"
-                        @click="addTask"
+                        @click.native="addTask"
                 >
                     Add
                 </v-btn>
@@ -41,7 +41,7 @@
                         large
                         height="48px"
                         v-else
-                        @click="addTask"
+                        @click.native="addTask"
                 >
                     Add
                 </v-btn>
@@ -108,7 +108,7 @@
         data() {
             return {
                 project: "Cool project name placeholder",
-                task: "",
+                taskTitle: "",
                 items: [],
             }
         },
@@ -116,7 +116,10 @@
         },
         methods: {
             addTask() {
-                this.items.push({"title": this.task})
+                if (this.taskTitle !== "") {
+                    this.items.push({"title": this.taskTitle});
+                    this.taskTitle = ""
+                }
             },
         },
     }
