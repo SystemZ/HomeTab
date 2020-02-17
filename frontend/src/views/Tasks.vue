@@ -23,6 +23,7 @@
                         solo
                         clearable
                         v-model="taskTitle"
+                        @keydown.enter.native="addTask"
                 >
                 </v-text-field>
             </v-col>
