@@ -22,9 +22,8 @@
                         placeholder="Buy a yacht"
                         solo
                         clearable
-                        v-model="task"
+                        v-model="taskTitle"
                 >
-                    {{task}}
                 </v-text-field>
             </v-col>
             <v-col>
@@ -108,7 +107,7 @@
         data() {
             return {
                 project: "Cool project name placeholder",
-                task: "",
+                taskTitle: "",
                 items: [],
             }
         },
@@ -116,7 +115,8 @@
         },
         methods: {
             addTask() {
-                this.items.push({"title": this.task})
+                this.items.push({"title": this.taskTitle})
+                this.taskTitle = ""
             },
         },
     }
