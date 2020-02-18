@@ -1,5 +1,37 @@
 <template>
     <v-container fluid>
+        <v-dialog
+                v-model="dialog"
+                max-width="290"
+        >
+            <v-card>
+                <v-card-title class="headline">{{taskTitleInDialog}}</v-card-title>
+
+                <v-card-text>
+                    Run off table persian cat jump eat fish meeeeouw but more napping, more napping all the napping is exhausting.
+                </v-card-text>
+
+                <v-card-actions>
+                    <v-spacer></v-spacer>
+
+                    <v-btn
+                            color="red darken-1"
+                            text
+                            @click="dialog = false"
+                    >
+                        Cancel
+                    </v-btn>
+
+                    <v-btn
+                            color="green darken-1"
+                            dark
+                            @click="dialog = false"
+                    >
+                        Submit
+                    </v-btn>
+                </v-card-actions>
+            </v-card>
+        </v-dialog>
         <v-row>
             <v-col>
                 <v-card
@@ -22,7 +54,7 @@
                         placeholder="Buy a yacht"
                         solo
                         clearable
-                        v-model="taskTitle"
+                        v-model="newTaskTitle"
                         @keydown.enter.native="addTask"
                 >
                 </v-text-field>
@@ -57,7 +89,7 @@
                             color="green"
                             dark
                     >
-                        <v-toolbar-title>{{project}}</v-toolbar-title>
+                        <v-toolbar-title>{{projectTitle}}</v-toolbar-title>
                         <v-spacer></v-spacer>
                         <v-btn icon>
                             <v-icon>mdi-check-bold</v-icon>
@@ -76,7 +108,7 @@
                         <v-subheader>Tasks</v-subheader>
                         <v-list-item-group multiple>
                             <v-list-item
-                                    v-for="(item, i) in items"
+                                    v-for="(task, i) in tasks"
                                     :key="i"
                                     active-class="green--text text--darken-4"
                             >
@@ -89,8 +121,8 @@
                                         ></v-checkbox>
                                     </v-list-item-action>
 
-                                    <v-list-item-content>
-                                        <v-list-item-title v-text="item.title"></v-list-item-title>
+                                    <v-list-item-content @click.stop="showDialog(task)">
+                                        <v-list-item-title v-text="task.title"></v-list-item-title>
                                     </v-list-item-content>
                                 </template>
                             </v-list-item>
@@ -107,19 +139,25 @@
         name: 'tasks',
         data() {
             return {
-                project: "Cool project name placeholder",
-                taskTitle: "",
-                items: [],
+                projectTitle: "Cool project name placeholder",
+                newTaskTitle: "",
+                tasks: [],
+                dialog: false,
+                taskTitleInDialog: "",
             }
         },
         mounted() {
         },
         methods: {
             addTask() {
-                if (this.taskTitle !== "") {
-                    this.items.push({"title": this.taskTitle});
-                    this.taskTitle = ""
+                if (this.newTaskTitle !== "") {
+                    this.tasks.push({"title": this.newTaskTitle});
+                    this.newTaskTitle = ""
                 }
+            },
+            showDialog(task) {
+                this.taskTitleInDialog = task.title
+                this.dialog = true
             },
         },
     }
