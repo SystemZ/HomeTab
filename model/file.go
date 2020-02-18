@@ -9,7 +9,6 @@ import (
 
 type File struct {
 	Id       int    `gorm:"AUTO_INCREMENT" json:"id"`
-	UserId   int    `gorm:"column:user_id" json:"userId"`
 	Filename string `gorm:"column:file_name" json:"filename"`
 	FilePath string `gorm:"column:file_path;type:varchar(4096)" json:"filePath"`
 	SizeB    int    `gorm:"column:size_b" json:"sizeB"`
