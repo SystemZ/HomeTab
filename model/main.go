@@ -8,6 +8,9 @@ import (
 	_ "github.com/jinzhu/gorm/dialects/mysql"
 	"github.com/sirupsen/logrus"
 	"gitlab.com/systemz/gotag/config"
+	"log"
+	"os"
+	"path/filepath"
 )
 
 var (
@@ -39,7 +42,12 @@ func InitMysql() *gorm.DB {
 
 	logrus.Info("Starting DB migrations")
 	//change to https://github.com/mattes/migrate
-	migrator, _ := gomigrate.NewMigrator(db.DB(), gomigrate.Mysql{}, "./migrations")
+	dirWithBinary, err := filepath.Abs(filepath.Dir(os.Args[0]))
+	if err != nil {
+		log.Printf("%v", err)
+	}
+	pathToMigrations := dirWithBinary + "/migrations"
+	migrator, _ := gomigrate.NewMigrator(db.DB(), gomigrate.Mysql{}, pathToMigrations)
 	err = migrator.Migrate()
 
 	DB = db
