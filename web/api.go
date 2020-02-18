@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"github.com/gorilla/mux"
 	"gitlab.com/systemz/gotag/core"
-	"gitlab.com/systemz/gotag/model2"
+	"gitlab.com/systemz/gotag/model"
 	"net/http"
 	"runtime/debug"
 	"strconv"
@@ -18,15 +18,15 @@ type PaginateFileResponse struct {
 	Pagination struct {
 		AllRecords int `json:"allRecords"`
 	} `json:"pagination"`
-	Files []model2.File `json:"files"`
+	Files []model.File `json:"files"`
 }
 
 func FullImg(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
-	var imgInDb model2.File
-	model2.DB.Where("sha256 = ?", vars["sha256"]).First(&imgInDb)
-	var mimeInDb model2.Mime
-	model2.DB.First(&mimeInDb, imgInDb.MimeId)
+	var imgInDb model.File
+	model.DB.Where("sha256 = ?", vars["sha256"]).First(&imgInDb)
+	var mimeInDb model.Mime
+	model.DB.First(&mimeInDb, imgInDb.MimeId)
 
 	writeRawFileApi(w, r, imgInDb.FilePath, mimeInDb.Mime)
 }
@@ -35,10 +35,10 @@ func Thumb(w http.ResponseWriter, r *http.Request) {
 	debug.FreeOSMemory()
 	vars := mux.Vars(r)
 
-	var imgInDb model2.File
-	model2.DB.Where("sha256 = ?", vars["sha256"]).First(&imgInDb)
-	var mimeInDb model2.Mime
-	model2.DB.First(&mimeInDb, imgInDb.MimeId)
+	var imgInDb model.File
+	model.DB.Where("sha256 = ?", vars["sha256"]).First(&imgInDb)
+	var mimeInDb model.Mime
+	model.DB.First(&mimeInDb, imgInDb.MimeId)
 
 	// FIXME check if img exists in DB
 
@@ -57,7 +57,7 @@ func Thumb(w http.ResponseWriter, r *http.Request) {
 
 func FileSimilar(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
-	rawRes := model2.SimilarFiles(vars["sha256"])
+	rawRes := model.SimilarFiles(vars["sha256"])
 
 	// prepare JSON result
 	fileList, err := json.MarshalIndent(rawRes, "", "  ")
@@ -108,13 +108,13 @@ func FilePaginate(w http.ResponseWriter, r *http.Request) {
 	// gather data, convert from DB model to API model
 	var rawRes PaginateFileResponse
 	//var counters []CounterApi
-	dbFiles, allRecords := model2.FileListPaginate(userId, limit, nextId, prevId, searchTerm)
+	dbFiles, allRecords := model.FileListPaginate(userId, limit, nextId, prevId, searchTerm)
 
 	rawRes.Pagination.AllRecords = allRecords
 	rawRes.Files = dbFiles
 	// prevent null result in JSON, make empty array instead
 	if allRecords < 1 {
-		rawRes.Files = []model2.File{}
+		rawRes.Files = []model.File{}
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}

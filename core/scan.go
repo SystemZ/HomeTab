@@ -13,8 +13,6 @@ import (
 	"runtime"
 	"runtime/debug"
 	"time"
-
-	"gitlab.com/systemz/gotag/model"
 )
 
 func ScanNg(db *sql.DB, dir string) {
@@ -43,11 +41,11 @@ func ScanNg(db *sql.DB, dir string) {
 
 		go func() {
 			log.Printf("Starting work...")
-			AddFile(db, file, AddFileOptions{
-				GenerateThumbs: true,
-				CalcSimilarity: true,
-				OnlyAddNew:     true,
-			})
+			//AddFile(db, file, AddFileOptions{
+			//	GenerateThumbs: true,
+			//	CalcSimilarity: true,
+			//	OnlyAddNew:     true,
+			//})
 			fmt.Println("Finished work:", time.Now())
 			<-guard
 		}()
@@ -66,111 +64,111 @@ type AddFileOptions struct {
 	ParentId       int
 }
 
-func AddFile(db *sql.DB, path string, options AddFileOptions) (dbFile model.File) {
-	log.Printf("Checking: %s\n", path)
+//func AddFile(db *sql.DB, path string, options AddFileOptions) (dbFile model.File) {
+//log.Printf("Checking: %s\n", path)
 
-	// don't continue if folder
-	info, nil := os.Stat(path)
-	if info.IsDir() {
-		log.Printf("%s\n", "It's a dir, skipping...")
-		return
-	}
+//// don't continue if folder
+//info, nil := os.Stat(path)
+//if info.IsDir() {
+//	log.Printf("%s\n", "It's a dir, skipping...")
+//	return
+//}
 
-	fileInfo, err := os.Stat(path)
-	size := fileInfo.Size()
-	log.Printf("Size: %d\n", size)
+//fileInfo, err := os.Stat(path)
+//size := fileInfo.Size()
+//log.Printf("Size: %d\n", size)
 
-	if options.OnlyAddNew {
-		isInDb, fileInDb := model.FindByFile(db, path)
-		if isInDb && fileInDb.Size == int(size) {
-			// this file already exists in DB, skip it
-			log.Printf("Skipping...")
-			return
-		}
-	}
+//if options.OnlyAddNew {
+//	isInDb, fileInDb := model.FindByFile(db, path)
+//	if isInDb && fileInDb.Size == int(size) {
+//		// this file already exists in DB, skip it
+//		log.Printf("Skipping...")
+//		return
+//	}
+//}
 
-	//TODO use size for fast check
-	log.Printf("%s\n", "Calculating SHA256...")
-	sha256sum, _ := hashFileSha256(path)
-	log.Printf("SHA256: %s\n", sha256sum)
-	isInDb, _, _, mime := model.FindSha256(db, sha256sum)
+////TODO use size for fast check
+//log.Printf("%s\n", "Calculating SHA256...")
+//sha256sum, _ := hashFileSha256(path)
+//log.Printf("SHA256: %s\n", sha256sum)
+//isInDb, _, _, mime := model.FindSha256(db, sha256sum)
 
-	// check if it's already in DB
-	_, fileInDb := model.Find(db, sha256sum)
+// check if it's already in DB
+//_, fileInDb := model.Find(db, sha256sum)
 
-	// add new file to DB if needed
-	if !isInDb {
-		log.Printf("%s\n", "File not in DB, check info and add to DB!")
+// add new file to DB if needed
+//if !isInDb {
+//	log.Printf("%s\n", "File not in DB, check info and add to DB!")
+//
+//	if err != nil {
+//		log.Printf("Error when getting info for %v: %v", path, err)
+//		return
+//	}
+//
+//	name := fileInfo.Name()
+//	log.Printf("Name: %s\n", name)
+//	mime, _ = getType(path)
+//	log.Printf("MIME: %s\n", mime)
+//
+//	log.Printf("%s", "Writing to DB...")
+//	//model.FindSert(db, path, size, mime, sha256sum)
+//	log.Printf("%s", "...done\n")
+//}
 
-		if err != nil {
-			log.Printf("Error when getting info for %v: %v", path, err)
-			return
-		}
+// apply Tags if provided
+//for _, tag := range options.Tags {
+//	model.TagFindSert(db, tag, fileInDb.Fid)
+//}
 
-		name := fileInfo.Name()
-		log.Printf("Name: %s\n", name)
-		mime, _ = getType(path)
-		log.Printf("MIME: %s\n", mime)
+// update path to file if necessary
+//if isInDb && fileInDb.Name != path {
+//log.Printf("Updating path from %s to %s ...", fileInDb.Name, path)
+//model.UpdatePath(db, sha256sum, path)
+//log.Printf("%s\n", "Updating path done")
+//} else if isInDb && fileInDb.Name == path {
+//log.Printf("%s\n", "File path is up to date")
+//}
 
-		log.Printf("%s", "Writing to DB...")
-		//model.FindSert(db, path, size, mime, sha256sum)
-		log.Printf("%s", "...done\n")
-	}
+//// update parent id
+//if isInDb && fileInDb.ParentId != options.ParentId {
+//	model.UpdateParentId(db, fileInDb.Sha256, options.ParentId)
+//}
 
-	// apply Tags if provided
-	//for _, tag := range options.Tags {
-	//	model.TagFindSert(db, tag, fileInDb.Fid)
-	//}
+// check similarity to other images
+//if options.CalcSimilarity {
+//log.Println("Calculating similarity to other images, this may take a while")
+// calc and add perceptual hash to DB for images
+//pHashFound := model.FindPHash(db, sha256sum)
+//if mime == "image/jpeg" || mime == "image/png" { //&& !pHashFound {
+//log.Printf("%s\n", "pHash not found, calculating...")
+//pHash := GetPHash(path)
+//log.Printf("%s %s\n", "pHash:", pHash)
+//model.UpdatePHash(db, sha256sum, pHash)
+//}
 
-	// update path to file if necessary
-	if isInDb && fileInDb.Name != path {
-		log.Printf("Updating path from %s to %s ...", fileInDb.Name, path)
-		//model.UpdatePath(db, sha256sum, path)
-		log.Printf("%s\n", "Updating path done")
-	} else if isInDb && fileInDb.Name == path {
-		log.Printf("%s\n", "File path is up to date")
-	}
+// calc distance between this and rest of images
+// FIXME support more than 1m rows with count rows before starting
+//start := timeStart()
+//distances := model.FilesWithPHash(db, 1, sha256sum)
+//tx, stmt := model.DistanceInsertPrepare(db)
+//i := 0
+//for _, v := range distances {
+//	model.DistanceInsert(stmt, v.IdA, v.IdB, v.Dist)
+//	i++
+//}
+//model.DistanceInsertEnd(tx)
+//log.Println("Calculating similarity done")
+//}
 
-	//// update parent id
-	//if isInDb && fileInDb.ParentId != options.ParentId {
-	//	model.UpdateParentId(db, fileInDb.Sha256, options.ParentId)
-	//}
+// thumbs creation
+//if options.GenerateThumbs {
+//	log.Printf("%s\n", "Creating thumbs...")
+//	makeThumbs(path, sha256sum, mime)
+//	log.Printf("%s\n", "Thumbs work done")
+//}
 
-	// check similarity to other images
-	if options.CalcSimilarity {
-		log.Println("Calculating similarity to other images, this may take a while")
-		// calc and add perceptual hash to DB for images
-		//pHashFound := model.FindPHash(db, sha256sum)
-		if mime == "image/jpeg" || mime == "image/png" { //&& !pHashFound {
-			log.Printf("%s\n", "pHash not found, calculating...")
-			//pHash := GetPHash(path)
-			//log.Printf("%s %s\n", "pHash:", pHash)
-			//model.UpdatePHash(db, sha256sum, pHash)
-		}
-
-		// calc distance between this and rest of images
-		// FIXME support more than 1m rows with count rows before starting
-		//start := timeStart()
-		//distances := model.FilesWithPHash(db, 1, sha256sum)
-		//tx, stmt := model.DistanceInsertPrepare(db)
-		//i := 0
-		//for _, v := range distances {
-		//	model.DistanceInsert(stmt, v.IdA, v.IdB, v.Dist)
-		//	i++
-		//}
-		//model.DistanceInsertEnd(tx)
-		log.Println("Calculating similarity done")
-	}
-
-	// thumbs creation
-	if options.GenerateThumbs {
-		log.Printf("%s\n", "Creating thumbs...")
-		makeThumbs(path, sha256sum, mime)
-		log.Printf("%s\n", "Thumbs work done")
-	}
-
-	return fileInDb
-}
+//return fileInDb
+//}
 
 func makeThumbs(path string, sha256sum string, mime string) {
 	done1 := make(chan bool)

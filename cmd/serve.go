@@ -2,7 +2,7 @@ package cmd
 
 import (
 	"github.com/spf13/cobra"
-	"gitlab.com/systemz/gotag/model2"
+	"gitlab.com/systemz/gotag/model"
 	"gitlab.com/systemz/gotag/web"
 )
 
@@ -17,6 +17,6 @@ var httpServe = &cobra.Command{
 }
 
 func serveExec(cmd *cobra.Command, args []string) {
-	model2.InitMysql()
+	model.InitMysql()
 	web.StartWebInterface()
 }

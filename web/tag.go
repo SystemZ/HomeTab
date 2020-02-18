@@ -3,7 +3,7 @@ package web
 import (
 	"encoding/json"
 	"github.com/gorilla/mux"
-	"gitlab.com/systemz/gotag/model2"
+	"gitlab.com/systemz/gotag/model"
 	"log"
 	"net/http"
 )
@@ -13,7 +13,7 @@ type TagRequest struct {
 }
 
 func TagList(w http.ResponseWriter, r *http.Request) {
-	tags := model2.TagList()
+	tags := model.TagList()
 	// prepare JSON result
 	tagList, err := json.MarshalIndent(tags, "", "  ")
 	if err != nil {
@@ -42,9 +42,9 @@ func TagAdd(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var imgInDb model2.File
-	model2.DB.Where("sha256 = ?", vars["sha256"]).First(&imgInDb)
-	model2.AddTagToFile(model2.DB, tagAddReq.Tag, imgInDb.Id)
+	var imgInDb model.File
+	model.DB.Where("sha256 = ?", vars["sha256"]).First(&imgInDb)
+	model.AddTagToFile(model.DB, tagAddReq.Tag, imgInDb.Id)
 }
 
 func TagDelete(w http.ResponseWriter, r *http.Request) {
@@ -63,14 +63,14 @@ func TagDelete(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var imgInDb model2.File
-	model2.DB.Where("sha256 = ?", vars["sha256"]).First(&imgInDb)
+	var imgInDb model.File
+	model.DB.Where("sha256 = ?", vars["sha256"]).First(&imgInDb)
 
-	var tagInDb model2.Tag
-	model2.DB.Where("tag = ?", tagDelReq.Tag).First(&tagInDb)
+	var tagInDb model.Tag
+	model.DB.Where("tag = ?", tagDelReq.Tag).First(&tagInDb)
 
 	// remove link between tag and file
-	model2.DB.Where("file_id = ? AND tag_id = ?", imgInDb.Id, tagInDb.Id).Delete(model2.FileTag{})
+	model.DB.Where("file_id = ? AND tag_id = ?", imgInDb.Id, tagInDb.Id).Delete(model.FileTag{})
 }
 
 //TODO method to totally remove tag from all files
