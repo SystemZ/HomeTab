@@ -3,10 +3,8 @@ package web
 import (
 	"encoding/json"
 	"github.com/gorilla/mux"
-	"gitlab.com/systemz/gotag/core"
 	"gitlab.com/systemz/gotag/model"
 	"net/http"
-	"runtime/debug"
 	"strconv"
 )
 
@@ -19,40 +17,6 @@ type PaginateFileResponse struct {
 		AllRecords int `json:"allRecords"`
 	} `json:"pagination"`
 	Files []model.File `json:"files"`
-}
-
-func FullImg(w http.ResponseWriter, r *http.Request) {
-	vars := mux.Vars(r)
-	var imgInDb model.File
-	model.DB.Where("sha256 = ?", vars["sha256"]).First(&imgInDb)
-	var mimeInDb model.Mime
-	model.DB.First(&mimeInDb, imgInDb.MimeId)
-
-	writeRawFileApi(w, r, imgInDb.FilePath, mimeInDb.Mime)
-}
-
-func Thumb(w http.ResponseWriter, r *http.Request) {
-	debug.FreeOSMemory()
-	vars := mux.Vars(r)
-
-	var imgInDb model.File
-	model.DB.Where("sha256 = ?", vars["sha256"]).First(&imgInDb)
-	var mimeInDb model.Mime
-	model.DB.First(&mimeInDb, imgInDb.MimeId)
-
-	// FIXME check if img exists in DB
-
-	width, _ := strconv.ParseUint(vars["w"], 10, 32)
-	height, _ := strconv.ParseUint(vars["h"], 10, 32)
-
-	// create thumb on disk if needed
-	done := make(chan bool)
-	go core.CreateThumb(imgInDb.FilePath, imgInDb.Sha256, mimeInDb.Mime, uint(width), uint(height), done, true)
-	<-done
-	debug.FreeOSMemory()
-
-	// push thumb to browser, thumb will be always .jpg
-	writeRawFileApi(w, r, core.ThumbPath(imgInDb.Sha256, uint(width), uint(height)), "image/jpeg")
 }
 
 func FileSimilar(w http.ResponseWriter, r *http.Request) {
