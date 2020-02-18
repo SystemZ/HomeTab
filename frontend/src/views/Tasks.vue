@@ -8,7 +8,8 @@
                 <v-card-title class="headline">{{taskTitleInDialog}}</v-card-title>
 
                 <v-card-text>
-                    Run off table persian cat jump eat fish meeeeouw but more napping, more napping all the napping is exhausting.
+                    Run off table persian cat jump eat fish meeeeouw but more napping, more napping all the napping is
+                    exhausting.
                 </v-card-text>
 
                 <v-card-actions>
@@ -97,27 +98,27 @@
                         <v-btn icon>
                             <v-icon>mdi-alarm-snooze</v-icon>
                         </v-btn>
-                        <v-btn icon>
+                        <v-btn icon @click="deleteTasks">
                             <v-icon>mdi-delete</v-icon>
                         </v-btn>
                     </v-toolbar>
                     <v-list
                             subheader
-                            two-line
+                            one-line
                     >
                         <v-subheader>Tasks</v-subheader>
                         <v-list-item-group multiple>
+                            <!--  TODO fix checkbox after deleting tasks -->
                             <v-list-item
                                     v-for="(task, i) in tasks"
                                     :key="i"
-                                    active-class="green--text text--darken-4"
+                                    inactive
                             >
-                                <template v-slot:default="{ active, toggle }">
+                                <template v-slot:default>
                                     <v-list-item-action>
                                         <v-checkbox
-                                                v-model="active"
+                                                v-model="task.selected"
                                                 color="green darken-2"
-                                                @click="toggle"
                                         ></v-checkbox>
                                     </v-list-item-action>
 
@@ -154,6 +155,11 @@
                     this.tasks.push({"title": this.newTaskTitle});
                     this.newTaskTitle = ""
                 }
+            },
+            deleteTasks() {
+                this.tasks = this.tasks.filter(function (task) {
+                    return !task.selected
+                })
             },
             showDialog(task) {
                 this.taskTitleInDialog = task.title
