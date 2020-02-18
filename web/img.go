@@ -13,6 +13,9 @@ import (
 	"strings"
 )
 
+// TODO check for auth
+// TODO check if user have this file in collection
+
 func FullImg(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	var imgInDb model.File

@@ -13,7 +13,16 @@ type TagRequest struct {
 }
 
 func TagList(w http.ResponseWriter, r *http.Request) {
-	tags := model.TagList()
+	authUserOk, userInfo := CheckApiAuth(w, r)
+	if !authUserOk {
+		w.WriteHeader(http.StatusUnauthorized)
+		return
+	}
+	tags := model.TagList(int(userInfo.Id))
+	// prevent returning null in JSON
+	if len(tags) < 1 {
+		tags = []model.Tag{}
+	}
 	// prepare JSON result
 	tagList, err := json.MarshalIndent(tags, "", "  ")
 	if err != nil {
@@ -27,6 +36,12 @@ func TagList(w http.ResponseWriter, r *http.Request) {
 }
 
 func TagAdd(w http.ResponseWriter, r *http.Request) {
+	authUserOk, userInfo := CheckApiAuth(w, r)
+	if !authUserOk {
+		w.WriteHeader(http.StatusUnauthorized)
+		return
+	}
+
 	// get SHA256 from URL
 	vars := mux.Vars(r)
 
@@ -44,10 +59,16 @@ func TagAdd(w http.ResponseWriter, r *http.Request) {
 
 	var imgInDb model.File
 	model.DB.Where("sha256 = ?", vars["sha256"]).First(&imgInDb)
-	model.AddTagToFile(model.DB, tagAddReq.Tag, imgInDb.Id)
+	model.AddTagToFile(model.DB, tagAddReq.Tag, imgInDb.Id, int(userInfo.Id))
 }
 
 func TagDelete(w http.ResponseWriter, r *http.Request) {
+	authUserOk, userInfo := CheckApiAuth(w, r)
+	if !authUserOk {
+		w.WriteHeader(http.StatusUnauthorized)
+		return
+	}
+
 	// get SHA256 from URL
 	vars := mux.Vars(r)
 
@@ -70,7 +91,7 @@ func TagDelete(w http.ResponseWriter, r *http.Request) {
 	model.DB.Where("tag = ?", tagDelReq.Tag).First(&tagInDb)
 
 	// remove link between tag and file
-	model.DB.Where("file_id = ? AND tag_id = ?", imgInDb.Id, tagInDb.Id).Delete(model.FileTag{})
+	model.DB.Where("file_id = ? AND tag_id = ? AND user_id = ?", imgInDb.Id, tagInDb.Id, int(userInfo.Id)).Delete(model.FileTag{})
 }
 
 //TODO method to totally remove tag from all files

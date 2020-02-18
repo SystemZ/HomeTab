@@ -17,7 +17,7 @@
                 </v-alert>
                 <v-card class="elevation-12 mt-5 mb-5" color="gray darken-3">
                     <v-toolbar
-                            color="green darken-1"
+                            color="indigo lighten-1"
                             dark
                             flat
                     >
@@ -47,7 +47,7 @@
                     </v-card-text>
                     <v-card-actions>
                         <v-spacer/>
-                        <v-btn color="primary" @click.native="login">
+                        <v-btn color="green" dark @click.native="login">
                             <span>Log in</span>
                         </v-btn>
                     </v-card-actions>
@@ -88,7 +88,7 @@
                     vm.password = ''
                     localStorage.setItem('authToken', res.data.token)
                     this.$store.dispatch('setLoggedIn')
-                    vm.$router.push({name: 'notes'})
+                    vm.$router.push({name: 'files'})
                 }).catch(function (err) {
                     vm.loginError = true;
                     if (err.response.status === 401) {

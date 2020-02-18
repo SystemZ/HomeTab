@@ -16,9 +16,10 @@ var (
 
 	GIT_COMMIT string
 
-	DEV_MODE       bool
-	CACHE_DIR      string
-	LIVE_VID_THUMB bool
+	DEV_MODE        bool
+	CACHE_DIR       string
+	LIVE_VID_THUMB  bool
+	SESSION_VALID_S int
 )
 
 func init() {
@@ -53,4 +54,7 @@ func init() {
 
 	viper.SetDefault("LIVE_VID_THUMB", true)
 	LIVE_VID_THUMB = viper.GetBool("LIVE_VID_THUMB")
+
+	viper.SetDefault("SESSION_VALID_S", 2592000)
+	SESSION_VALID_S = viper.GetInt("SESSION_VALID_S")
 }

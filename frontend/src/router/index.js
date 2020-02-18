@@ -1,5 +1,6 @@
 import Vue from 'vue'
 import VueRouter from 'vue-router'
+import Home from '../views/Home.vue'
 import Files from '../views/Files.vue'
 import Tags from '../views/Tags.vue'
 import Login from '../views/Login.vue'
@@ -7,6 +8,11 @@ import Login from '../views/Login.vue'
 Vue.use(VueRouter)
 
 const routes = [
+  {
+    path: '/',
+    name: 'home',
+    component: Home
+  },
   {
     path: '/files',
     name: 'files',

@@ -20,8 +20,13 @@ type PaginateFileResponse struct {
 }
 
 func FileSimilar(w http.ResponseWriter, r *http.Request) {
+	authUserOk, userInfo := CheckApiAuth(w, r)
+	if !authUserOk {
+		w.WriteHeader(http.StatusUnauthorized)
+		return
+	}
 	vars := mux.Vars(r)
-	rawRes := model.SimilarFiles(vars["sha256"])
+	rawRes := model.SimilarFiles(vars["sha256"], int(userInfo.Id))
 
 	// prepare JSON result
 	fileList, err := json.MarshalIndent(rawRes, "", "  ")
@@ -36,14 +41,11 @@ func FileSimilar(w http.ResponseWriter, r *http.Request) {
 }
 
 func FilePaginate(w http.ResponseWriter, r *http.Request) {
-	//authUserOk, userInfo := CheckApiAuth(w, r)
-	//if !authUserOk {
-	//	w.WriteHeader(http.StatusUnauthorized)
-	//	return
-	//}
-	//userId := userInfo.Id
-	userId := 0
-
+	authUserOk, userInfo := CheckApiAuth(w, r)
+	if !authUserOk {
+		w.WriteHeader(http.StatusUnauthorized)
+		return
+	}
 	// get limitStr on one page
 	limitStr := r.URL.Query().Get("limit")
 	limit, err := strconv.Atoi(limitStr)
@@ -72,7 +74,7 @@ func FilePaginate(w http.ResponseWriter, r *http.Request) {
 	// gather data, convert from DB model to API model
 	var rawRes PaginateFileResponse
 	//var counters []CounterApi
-	dbFiles, allRecords := model.FileListPaginate(userId, limit, nextId, prevId, searchTerm)
+	dbFiles, allRecords := model.FileListPaginate(int(userInfo.Id), limit, nextId, prevId, searchTerm)
 
 	rawRes.Pagination.AllRecords = allRecords
 	rawRes.Files = dbFiles

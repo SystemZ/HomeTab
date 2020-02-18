@@ -18,5 +18,6 @@ var httpServe = &cobra.Command{
 
 func serveExec(cmd *cobra.Command, args []string) {
 	model.InitMysql()
+	model.InitRedis()
 	web.StartWebInterface()
 }

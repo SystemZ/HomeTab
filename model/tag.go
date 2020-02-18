@@ -18,7 +18,7 @@ type Tag struct {
 	Counter int `gorm:"-" json:"counter"`
 }
 
-func AddTagToFile(db *gorm.DB, tag string, fileId int) {
+func AddTagToFile(db *gorm.DB, tag string, fileId int, userId int) {
 	// get tag if exists already
 	// FIXME use transactions
 	var tagInDb Tag
@@ -35,7 +35,7 @@ func AddTagToFile(db *gorm.DB, tag string, fileId int) {
 
 	// check if link file <-> tag is present too
 	var fileTagInDb FileTag
-	db.Where("tag_id = ? AND file_id = ?", tagInDb.Id, fileId).First(&fileTagInDb)
+	db.Where("tag_id = ? AND file_id = ? AND user_id = ?", tagInDb.Id, fileId, userId).First(&fileTagInDb)
 
 	// link is not in DB, create new
 	//log.Printf("%v", fileTagInDb)
@@ -43,18 +43,20 @@ func AddTagToFile(db *gorm.DB, tag string, fileId int) {
 		fileTagInDb = FileTag{
 			FileId: fileId,
 			TagId:  tagInDb.Id,
+			UserId: userId,
 		}
 		db.Create(&fileTagInDb)
 	}
 
 }
 
-func TagList() (result []Tag) {
+func TagList(userId int) (result []Tag) {
 	query := `
 SELECT COUNT(tags.id) AS counter, tags.id, tags.tag, tags.created_at, tags.updated_at
 FROM tags
 LEFT JOIN file_tags ON tags.id = file_tags.tag_id
-WHERE file_tags.deleted_at IS NULL
+WHERE file_tags.user_id = ?
+AND file_tags.deleted_at IS NULL
 GROUP BY tags.id
 ORDER BY COUNT(tags.id)
 DESC 
@@ -66,7 +68,7 @@ DESC
 		return
 	}
 	defer stmt.Close()
-	rows, err := stmt.Query()
+	rows, err := stmt.Query(userId)
 	if err != nil {
 		log.Printf("%v", err)
 		return

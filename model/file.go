@@ -41,22 +41,28 @@ func FileListPaginate(userId int, limit int, nextId int, prevId int, qTerm strin
 	filename := "%"
 	// count how many results we will have for pagination
 	// FIXME allow search by tag and filename at the same time
-	scoutQuery := `SELECT COUNT(*) FROM files WHERE file_name LIKE ?`
+	scoutQuery := `
+		SELECT COUNT(*) 
+		FROM files 
+		JOIN file_users ON files.id = file_users.file_id 
+		WHERE file_users.user_id = ? 
+		AND file_name LIKE ?`
 	if tagSearch && qTerm == "none" {
 		scoutQuery = `
-	SELECT COUNT(*) FROM files
-    WHERE (SELECT COUNT(id) FROM file_tags WHERE file_tags.file_id = files.id AND file_tags.deleted_at IS NULL) < 1
-	AND files.file_name LIKE ?`
-	} else if tagSearch {
+			SELECT COUNT(*) 
+			FROM files
+    		WHERE (SELECT COUNT(id) FROM file_tags WHERE file_tags.user_id = ? AND file_tags.file_id = files.id AND file_tags.deleted_at IS NULL) < 1
+			AND files.file_name LIKE ?`
+	} else if tagSearch { // file with tag X
 		// FIXME ignore untagged
 		scoutQuery = `
-	SELECT COUNT(tags.id) AS counter
-	FROM tags
-	   LEFT JOIN file_tags ON tags.id = file_tags.tag_id
-	   WHERE tags.tag = ?
-	     GROUP BY tags.id
-	ORDER BY COUNT(tags.id)
-	DESC`
+			SELECT COUNT(tags.id) AS counter
+			FROM tags
+	   			LEFT JOIN file_tags ON tags.id = file_tags.tag_id
+	   			WHERE file_tags.user_id = ?
+       			AND tags.tag = ?
+	    	 	GROUP BY tags.id
+			ORDER BY COUNT(tags.id) DESC`
 	}
 	stmt1, err := DB.DB().Prepare(scoutQuery)
 	if err != nil {
@@ -68,10 +74,10 @@ func FileListPaginate(userId int, limit int, nextId int, prevId int, qTerm strin
 
 	if qTerm != "none" && qTerm != "%" {
 		// tag search
-		rows1, err = stmt1.Query(qTerm)
+		rows1, err = stmt1.Query(userId, qTerm)
 	} else {
 		// untagged and all files
-		rows1, err = stmt1.Query(filename)
+		rows1, err = stmt1.Query(userId, filename)
 	}
 	if err != nil {
 		log.Printf("%v", err)
@@ -114,11 +120,14 @@ func FileListPaginate(userId int, limit int, nextId int, prevId int, qTerm strin
        FROM tags
        INNER JOIN file_tags on tags.id = file_tags.tag_id
        WHERE file_tags.file_id = files.id
+       AND file_tags.user_id = ?
        AND file_tags.deleted_at IS NULL
       ) AS tagz
     FROM files
-    INNER JOIN mimes on files.mime_id = mimes.id
-    WHERE files.user_id = ? AND files.id ` + whereSign + ` ?
+    INNER JOIN mimes ON files.mime_id = mimes.id
+    INNER JOIN file_users ON file_users.file_id = files.id
+    WHERE file_users.user_id = ?
+    AND files.id ` + whereSign + ` ?
     AND files.file_name LIKE ?
     GROUP BY files.id
     ORDER BY files.id ` + sortType + `
@@ -138,8 +147,10 @@ func FileListPaginate(userId int, limit int, nextId int, prevId int, qTerm strin
       "" as tagz
     FROM files
     INNER JOIN mimes on files.mime_id = mimes.id
+    INNER JOIN file_users ON file_users.file_id = files.id
     WHERE (SELECT COUNT(id) FROM file_tags WHERE file_tags.file_id = files.id AND file_tags.deleted_at IS NULL) < 1
-    AND files.user_id = ? AND files.id ` + whereSign + ` ?
+    AND file_users.user_id = ?
+    AND files.id ` + whereSign + ` ?
 	AND files.file_name LIKE ?
     ORDER BY files.id ` + sortType + `
 	LIMIT ?
@@ -162,13 +173,16 @@ func FileListPaginate(userId int, limit int, nextId int, prevId int, qTerm strin
        FROM tags
        INNER JOIN file_tags on tags.id = file_tags.tag_id
        WHERE file_tags.file_id = files.id
+       AND file_tags.user_id = ?
        AND file_tags.deleted_at IS NULL
       ) AS tagz
 	FROM files
 	INNER JOIN mimes on files.mime_id = mimes.id
 	INNER JOIN file_tags on file_tags.file_id = files.id
 	INNER JOIN tags on file_tags.tag_id = tags.id
-	WHERE files.user_id = ? AND files.id ` + whereSign + ` ?
+    INNER JOIN file_users ON file_users.file_id = files.id
+	WHERE file_users.user_id = ?
+	AND files.id ` + whereSign + ` ?
 	AND files.file_name LIKE ?
 	AND tags.tag = ?
 	AND file_tags.deleted_at IS NULL
@@ -189,9 +203,9 @@ func FileListPaginate(userId int, limit int, nextId int, prevId int, qTerm strin
 		rows, err = stmt.Query(userId, nextId, "%", limit)
 	} else if tagSearch {
 		// in this case qTerm is tag, fix variable names
-		rows, err = stmt.Query(userId, nextId, "%", qTerm, limit)
+		rows, err = stmt.Query(userId, userId, nextId, "%", qTerm, limit)
 	} else {
-		rows, err = stmt.Query(userId, nextId, qTerm, limit)
+		rows, err = stmt.Query(userId, userId, nextId, qTerm, limit)
 	}
 	if err != nil {
 		log.Printf("%v", err)
@@ -219,7 +233,8 @@ func FileListPaginate(userId int, limit int, nextId int, prevId int, qTerm strin
 	return result, allRecords
 }
 
-func SimilarFiles(sha256 string) (result []File) {
+// TODO userId as a option, cross user suggestions
+func SimilarFiles(sha256 string, userId int) (result []File) {
 	var imgInDb File
 	DB.Where("sha256 = ?", sha256).First(&imgInDb)
 
@@ -238,13 +253,15 @@ SELECT HAMMINGDISTANCE(?,?,?,?,files.phash_a,files.phash_b,files.phash_c,files.p
        mimes.mime,
       (SELECT GROUP_CONCAT(tags.tag SEPARATOR ',')
        FROM tags
-       INNER JOIN file_tags on tags.id = file_tags.tag_id
+       INNER JOIN file_tags ON tags.id = file_tags.tag_id
        WHERE file_tags.file_id = files.id
        AND file_tags.deleted_at IS NULL
       ) AS tagz
 FROM files
-INNER JOIN mimes on files.mime_id = mimes.id
+INNER JOIN mimes ON files.mime_id = mimes.id
+INNER JOIN file_users ON files.id = file_users.file_id
 WHERE sha256 != ?
+AND file_users.user_id = ?
 AND files.phash_a != 0
 AND files.phash_b != 0
 AND files.phash_c != 0
@@ -259,7 +276,7 @@ LIMIT 50
 		return
 	}
 	defer stmt1.Close()
-	rows1, err := stmt1.Query(imgInDb.PhashA, imgInDb.PhashB, imgInDb.PhashC, imgInDb.PhashD, imgInDb.Sha256)
+	rows1, err := stmt1.Query(imgInDb.PhashA, imgInDb.PhashB, imgInDb.PhashC, imgInDb.PhashD, imgInDb.Sha256, userId)
 	if err != nil {
 		log.Printf("%v", err)
 		return
