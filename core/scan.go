@@ -2,9 +2,10 @@ package core
 
 import (
 	"crypto/sha256"
-	"database/sql"
 	"encoding/hex"
 	"fmt"
+	"github.com/jinzhu/gorm"
+	"gitlab.com/systemz/gotag/model"
 	"io"
 	"log"
 	"net/http"
@@ -12,48 +13,83 @@ import (
 	"path/filepath"
 	"runtime"
 	"runtime/debug"
+	"strconv"
 	"time"
 )
 
-func ScanNg(db *sql.DB, dir string) {
-	//log.Printf("Will work with %v threads", runtime.GOMAXPROCS(0))
-	log.Printf("Scanning...")
+func ScanMulti(db *gorm.DB, dir string) {
+	// search for folders and files recursively
+	log.Printf("Searching for files to scan...")
 	var fileList []string
 	_ = filepath.Walk(dir, func(path string, f os.FileInfo, err error) error {
 		fileList = append(fileList, path)
 		return nil
 	})
-	log.Printf("Scanning complete")
+	log.Printf("Files and folders found: %v", len(fileList))
 
-	//maxGoroutines := 2
+	// set how many threads to use
 	maxGoroutines := runtime.GOMAXPROCS(0)
+	log.Printf("Scanning with %v threads ...", maxGoroutines)
 	guard := make(chan struct{}, maxGoroutines)
+
 	// other implementation of concurrency:
 	// https://stackoverflow.com/questions/43789362/is-it-possible-to-limit-how-many-goroutines-run-per-second/43792222#43792222
 
 	// limit concurrency
 	start := time.Now()
-	fmt.Println("getting ready to do some work...")
+	fmt.Println("Starting file scan...")
 
 	for _, file := range fileList {
-		log.Printf("%v", file)
+		fileStart := time.Now()
+		log.Printf("Scanning: %v", file)
 		guard <- struct{}{} // would block if guard channel is already filled
 
 		go func() {
-			log.Printf("Starting work...")
-			//AddFile(db, file, AddFileOptions{
-			//	GenerateThumbs: true,
-			//	CalcSimilarity: true,
-			//	OnlyAddNew:     true,
-			//})
-			fmt.Println("Finished work:", time.Now())
+			AddFile(db, file, AddFileOptions{
+				GenerateThumbs: true,
+				CalcSimilarity: true,
+				OnlyAddNew:     true,
+			})
+			log.Printf("Done in %v: %v ", time.Since(fileStart), file)
 			<-guard
 		}()
 	}
 
+	// the end, show summary
 	dur := time.Since(start)
-	fmt.Println("scanned in", dur)
+	log.Printf("Scanned in %v", dur)
+}
 
+func ScanMono(db *gorm.DB, dir string, userId int) {
+	// search for folders and files recursively
+	log.Printf("Searching for files to scan...")
+	var fileList []string
+	_ = filepath.Walk(dir, func(path string, f os.FileInfo, err error) error {
+		fileList = append(fileList, path)
+		return nil
+	})
+	log.Printf("Files and folders found: %v", len(fileList))
+
+	// limit concurrency
+	start := time.Now()
+	fmt.Println("Starting file scan...")
+
+	for _, file := range fileList {
+		fileStart := time.Now()
+		log.Printf("Scanning: %v", file)
+		AddFile(db, file, AddFileOptions{
+			GenerateThumbs: true,
+			CalcSimilarity: true,
+			OnlyAddNew:     true,
+			UserId:         userId,
+		})
+		log.Printf("Done in %v: %v ", time.Since(fileStart), file)
+		log.Println("")
+	}
+
+	// the end, show summary
+	dur := time.Since(start)
+	log.Printf("Scanned in %v", dur)
 }
 
 type AddFileOptions struct {
@@ -62,113 +98,121 @@ type AddFileOptions struct {
 	CalcSimilarity bool
 	Tags           []string
 	ParentId       int
+	UserId         int
 }
 
-//func AddFile(db *sql.DB, path string, options AddFileOptions) (dbFile model.File) {
-//log.Printf("Checking: %s\n", path)
+func AddFile(db *gorm.DB, path string, options AddFileOptions) {
+	log.Printf("Checking: %s\n", path)
 
-//// don't continue if folder
-//info, nil := os.Stat(path)
-//if info.IsDir() {
-//	log.Printf("%s\n", "It's a dir, skipping...")
-//	return
-//}
+	// don't continue if folder
+	info, _ := os.Stat(path)
+	if info.IsDir() {
+		log.Printf("Dir, skip: %v", path)
+		return
+	}
 
-//fileInfo, err := os.Stat(path)
-//size := fileInfo.Size()
-//log.Printf("Size: %d\n", size)
+	fileInfo, err := os.Stat(path)
+	if err != nil {
+		log.Printf("Problem with access, skip: %v", path)
+		return
+	}
+	// TODO use size and filepath for quick scan
+	size := fileInfo.Size()
+	log.Printf("Size: %d %v", size, path)
 
-//if options.OnlyAddNew {
-//	isInDb, fileInDb := model.FindByFile(db, path)
-//	if isInDb && fileInDb.Size == int(size) {
-//		// this file already exists in DB, skip it
-//		log.Printf("Skipping...")
-//		return
-//	}
-//}
+	//if options.OnlyAddNew {
+	//	isInDb, fileInDb := model.FindByFile(db, path)
+	//	if isInDb && fileInDb.Size == int(size) {
+	//		// this file already exists in DB, skip it
+	//		log.Printf("Skipping...")
+	//		return
+	//	}
+	//}
 
-////TODO use size for fast check
-//log.Printf("%s\n", "Calculating SHA256...")
-//sha256sum, _ := hashFileSha256(path)
-//log.Printf("SHA256: %s\n", sha256sum)
-//isInDb, _, _, mime := model.FindSha256(db, sha256sum)
+	////TODO use size for fast check
+	log.Printf("%s\n", "Check SHA256...")
+	sha256sum, _ := hashFileSha256(path)
+	log.Printf("SHA256: %s\n", sha256sum)
 
-// check if it's already in DB
-//_, fileInDb := model.Find(db, sha256sum)
+	// check if file is already in DB
+	var fileInDb model.File
+	model.DB.Where("sha256 = ?", sha256sum).First(&fileInDb)
 
-// add new file to DB if needed
-//if !isInDb {
-//	log.Printf("%s\n", "File not in DB, check info and add to DB!")
-//
-//	if err != nil {
-//		log.Printf("Error when getting info for %v: %v", path, err)
-//		return
-//	}
-//
-//	name := fileInfo.Name()
-//	log.Printf("Name: %s\n", name)
-//	mime, _ = getType(path)
-//	log.Printf("MIME: %s\n", mime)
-//
-//	log.Printf("%s", "Writing to DB...")
-//	//model.FindSert(db, path, size, mime, sha256sum)
-//	log.Printf("%s", "...done\n")
-//}
+	// add new file to DB if needed
+	if fileInDb.Id < 1 {
+		log.Printf("%s\n", "File not in DB, adding...")
 
-// apply Tags if provided
-//for _, tag := range options.Tags {
-//	model.TagFindSert(db, tag, fileInDb.Fid)
-//}
+		// save MIME to DB
+		mime, err := getType(path)
+		if err != nil {
+			log.Printf("Problem with getting MIME, skip: %v", path)
+			return
+		}
+		mimeId := model.AddMime(db, mime)
 
-// update path to file if necessary
-//if isInDb && fileInDb.Name != path {
-//log.Printf("Updating path from %s to %s ...", fileInDb.Name, path)
-//model.UpdatePath(db, sha256sum, path)
-//log.Printf("%s\n", "Updating path done")
-//} else if isInDb && fileInDb.Name == path {
-//log.Printf("%s\n", "File path is up to date")
-//}
+		// check similarity to other images
+		// calc and add perceptual hash to DB for images
+		var pHash string
+		var pHashA, pHashB, pHashC, pHashD int
+		if mime == "image/jpeg" || mime == "image/png" {
+			pHash = GetPHash(path)
+			log.Printf("%s %s\n", "pHash:", pHash)
+			// divide pHash for optimal storage in DB
+			pHashA, _ = strconv.Atoi(pHash[0:16])
+			pHashB, _ = strconv.Atoi(pHash[16:32])
+			pHashC, _ = strconv.Atoi(pHash[32:48])
+			pHashD, _ = strconv.Atoi(pHash[48:64])
+		}
 
-//// update parent id
-//if isInDb && fileInDb.ParentId != options.ParentId {
-//	model.UpdateParentId(db, fileInDb.Sha256, options.ParentId)
-//}
+		// get original filename
+		fileName := filepath.Base(path)
 
-// check similarity to other images
-//if options.CalcSimilarity {
-//log.Println("Calculating similarity to other images, this may take a while")
-// calc and add perceptual hash to DB for images
-//pHashFound := model.FindPHash(db, sha256sum)
-//if mime == "image/jpeg" || mime == "image/png" { //&& !pHashFound {
-//log.Printf("%s\n", "pHash not found, calculating...")
-//pHash := GetPHash(path)
-//log.Printf("%s %s\n", "pHash:", pHash)
-//model.UpdatePHash(db, sha256sum, pHash)
-//}
+		// add file to DB, finally...
+		fileInDb = model.File{
+			Filename: fileName,
+			FilePath: path,
+			SizeB:    int(size),
+			MimeId:   mimeId,
+			PhashA:   pHashA,
+			PhashB:   pHashB,
+			PhashC:   pHashC,
+			PhashD:   pHashD,
+			Sha256:   sha256sum,
+			Mime:     mime,
+		}
+		db.Save(&fileInDb)
+		log.Printf("%+v", fileInDb)
+	} else {
+		log.Printf("Already in DB, skip add")
+	}
 
-// calc distance between this and rest of images
-// FIXME support more than 1m rows with count rows before starting
-//start := timeStart()
-//distances := model.FilesWithPHash(db, 1, sha256sum)
-//tx, stmt := model.DistanceInsertPrepare(db)
-//i := 0
-//for _, v := range distances {
-//	model.DistanceInsert(stmt, v.IdA, v.IdB, v.Dist)
-//	i++
-//}
-//model.DistanceInsertEnd(tx)
-//log.Println("Calculating similarity done")
-//}
+	// add permissions to file if necessary
+	var fileUser model.FileUser
+	db.Where("file_id = ? AND user_id = ?", fileInDb.Id, options.UserId).First(&fileUser)
 
-// thumbs creation
-//if options.GenerateThumbs {
-//	log.Printf("%s\n", "Creating thumbs...")
-//	makeThumbs(path, sha256sum, mime)
-//	log.Printf("%s\n", "Thumbs work done")
-//}
+	// permissions not found, add to DB
+	if fileUser.Id < 1 {
+		log.Printf("%s\n", "Permissions not in DB, adding...")
+		fileUser = model.FileUser{
+			FileId:    fileInDb.Id,
+			UserId:    options.UserId,
+			CreatedAt: fileInDb.CreatedAt,
+			UpdatedAt: fileInDb.UpdatedAt,
+			DeletedAt: nil,
+		}
+		model.DB.Create(&fileUser)
+	}
 
-//return fileInDb
-//}
+	// add tags to DB
+	//found, tags := model.TagList(sqlite, img.Fid)
+	//if !found {
+	//	// finish work if no tags for this file
+	//	continue
+	//}
+	//for _, tag := range tags {
+	//	model.AddTagToFile(mysql, tag.Name, file.Id)
+	//}
+}
 
 func makeThumbs(path string, sha256sum string, mime string) {
 	done1 := make(chan bool)
