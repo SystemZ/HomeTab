@@ -104,6 +104,7 @@
                                                 offset-lg="3"
                                         >
                                             <v-combobox
+                                                    :search-input.sync="tagTyped"
                                                     :disabled="tagsLoading"
                                                     v-model="bigPicInfo.tagz"
                                                     @change="addTag"
@@ -112,6 +113,7 @@
                                                     label="File tags"
                                                     multiple
                                                     prepend-icon="mdi-label"
+                                                    :return-object="false"
                                             >
 
                                                 <!-- clearable -->
@@ -260,7 +262,8 @@
         similarFiles: [],
         // change me
         active: false,
-
+        // tag typed by user in zoomed image
+        tagTyped: ''
       }
     },
     mounted () {
@@ -314,9 +317,6 @@
           .filter(x => !this.bigPicInfo.tagzServer.includes(x))
           .concat(this.bigPicInfo.tagzServer.filter(x => !currentTags.includes(x)))
 
-        let vm = this
-        let rawUrl = vm.apiUrl + '/api/v1/file/' + this.bigPicInfo.sha256 + '/tag/add'
-        console.log(diff)
         let tagToAdd = ''
 
         if (diff.length < 1) {
@@ -324,18 +324,19 @@
           return
         }
 
-        if (typeof (diff[0].value) !== 'undefined') {
-          // selected from dropdown
-          tagToAdd = diff[0].value
-        } else {
-          // manually typed by user
-          tagToAdd = diff[0]
-        }
-
+        // this requires combobox :return-object="false"
+        // it makes tag selecting work properly without objects visible for user
+        // https://github.com/vuetifyjs/vuetify/issues/5358#issuecomment-431312918
+        tagToAdd = diff[0]
         console.log('Adding tag ' + tagToAdd)
+
+        // this removes manually typed tag if user clicks on tag suggestion
+        this.tagTyped = ''
+
+        let vm = this
+        let rawUrl = vm.apiUrl + '/api/v1/file/' + this.bigPicInfo.sha256 + '/tag/add'
         axios.post(rawUrl, {'tag': tagToAdd}, vm.authConfig())
-          .then((res) => {
-            console.log(res)
+          .then(() => {
             vm.bigPicInfo.tagzServer = currentTags
             vm.getTags()
           })
@@ -343,6 +344,7 @@
             if (err.response.status === 401) {
               vm.$root.$emit('sessionExpired')
             } else {
+              console.log(err)
               console.log('something wrong')
             }
           })
@@ -354,8 +356,7 @@
         let vm = this
         let rawUrl = vm.apiUrl + '/api/v1/file/' + bigPicInfo.sha256 + '/tag/delete'
         axios.post(rawUrl, {'tag': tag}, vm.authConfig())
-          .then((res) => {
-            console.log(res)
+          .then(() => {
             for (let i = vm.bigPicInfo.tagz.length - 1; i >= 0; i--) {
               if (vm.bigPicInfo.tagz[i] === tag) {
                 vm.bigPicInfo.tagz.splice(i, 1)
@@ -364,6 +365,7 @@
             vm.getTags()
           })
           .catch(function (err) {
+            console.log(err)
             if (err.response.status === 401) {
               vm.$root.$emit('sessionExpired')
             } else {
