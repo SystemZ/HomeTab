@@ -3,6 +3,7 @@ package core
 import (
 	"crypto/sha256"
 	"encoding/hex"
+	"errors"
 	"fmt"
 	"github.com/jinzhu/gorm"
 	"gitlab.com/systemz/gotag/model"
@@ -17,7 +18,7 @@ import (
 	"time"
 )
 
-func ScanMulti(db *gorm.DB, dir string) {
+func ScanMulti(db *gorm.DB, dir string, userId int) {
 	// search for folders and files recursively
 	log.Printf("Searching for files to scan...")
 	var fileList []string
@@ -46,9 +47,7 @@ func ScanMulti(db *gorm.DB, dir string) {
 
 		go func() {
 			AddFile(db, file, AddFileOptions{
-				GenerateThumbs: true,
-				CalcSimilarity: true,
-				OnlyAddNew:     true,
+				UserId: userId,
 			})
 			log.Printf("Done in %v: %v ", time.Since(fileStart), file)
 			<-guard
@@ -73,12 +72,17 @@ func ScanMono(db *gorm.DB, dir string, userId int) {
 	start := time.Now()
 	fmt.Println("Starting file scan...")
 
+	errorCounter := 0
 	for _, file := range fileList {
 		fileStart := time.Now()
 		log.Printf("Scanning: %v", file)
-		AddFile(db, file, AddFileOptions{
+		err := AddFile(db, file, AddFileOptions{
 			UserId: userId,
 		})
+		if err != nil {
+			errorCounter++
+			model.AddLog(db, err.Error())
+		}
 		log.Printf("Done in %v: %v ", time.Since(fileStart), file)
 		log.Println("")
 	}
@@ -86,49 +90,44 @@ func ScanMono(db *gorm.DB, dir string, userId int) {
 	// the end, show summary
 	dur := time.Since(start)
 	log.Printf("Scanned in %v", dur)
+	log.Printf("Scan errors %v", errorCounter)
 }
 
 type AddFileOptions struct {
-	OnlyAddNew     bool
-	GenerateThumbs bool
-	CalcSimilarity bool
-	Tags           []string
-	ParentId       int
-	UserId         int
+	UserId int
 }
 
-func AddFile(db *gorm.DB, path string, options AddFileOptions) {
-	log.Printf("Checking: %s\n", path)
+func AddFile(db *gorm.DB, path string, options AddFileOptions) error {
+	//log.Printf("Checking: %s\n", path)
 
 	// don't continue if folder
 	info, _ := os.Stat(path)
 	if info.IsDir() {
 		log.Printf("Dir, skip: %v", path)
-		return
+		return nil
 	}
 
 	fileInfo, err := os.Stat(path)
 	if err != nil {
-		log.Printf("Problem with access, skip: %v", path)
-		return
+		return errors.New(path + " access problem")
 	}
 
 	// check if file is already in DB by size and file path
 	sizeB := fileInfo.Size()
-	log.Printf("Size: %d %v", sizeB, path)
+	//log.Printf("Size: %d %v", sizeB, path)
 	var fileInDb model.File
 	model.DB.Where("file_path = ? AND size_b = ?", path, sizeB).First(&fileInDb)
 
 	// fast scan match, just check perms and finish - fastest way
 	if fileInDb.Id > 0 {
 		addPerms(model.DB, fileInDb, options.UserId)
-		return
+		return nil
 	}
 
 	// check if file is already in DB by sha256 - slower
-	log.Printf("%s\n", "Check SHA256...")
+	//log.Printf("%s\n", "Check SHA256...")
 	sha256sum, _ := hashFileSha256(path)
-	log.Printf("SHA256: %s\n", sha256sum)
+	//log.Printf("SHA256: %s\n", sha256sum)
 	model.DB.Where("sha256 = ?", sha256sum).First(&fileInDb)
 
 	// update file path if needed
@@ -146,8 +145,7 @@ func AddFile(db *gorm.DB, path string, options AddFileOptions) {
 		// save MIME to DB
 		mime, err := getType(path)
 		if err != nil {
-			log.Printf("Problem with getting MIME, skip: %v", path)
-			return
+			return errors.New(path + " mime check error")
 		}
 		mimeId := model.AddMime(db, mime)
 
@@ -156,8 +154,11 @@ func AddFile(db *gorm.DB, path string, options AddFileOptions) {
 		var pHash string
 		var pHashA, pHashB, pHashC, pHashD int
 		if mime == "image/jpeg" || mime == "image/png" {
-			pHash = GetPHash(path)
-			log.Printf("%s %s\n", "pHash:", pHash)
+			pHash, err = GetPHash(path)
+			if err != nil {
+				return errors.New(path + " phash problem")
+			}
+			//log.Printf("%s %s\n", "pHash:", pHash)
 			// divide pHash for optimal storage in DB
 			pHashA, _ = strconv.Atoi(pHash[0:16])
 			pHashB, _ = strconv.Atoi(pHash[16:32])
@@ -198,6 +199,8 @@ func AddFile(db *gorm.DB, path string, options AddFileOptions) {
 	//for _, tag := range tags {
 	//	model.AddTagToFile(mysql, tag.Name, file.Id)
 	//}
+
+	return nil
 }
 
 func addPerms(db *gorm.DB, fileInDb model.File, userId int) {
