@@ -70,7 +70,6 @@ func ScanMono(db *gorm.DB, dir string, userId int) {
 	})
 	log.Printf("Files and folders found: %v", len(fileList))
 
-	// limit concurrency
 	start := time.Now()
 	fmt.Println("Starting file scan...")
 
@@ -78,10 +77,7 @@ func ScanMono(db *gorm.DB, dir string, userId int) {
 		fileStart := time.Now()
 		log.Printf("Scanning: %v", file)
 		AddFile(db, file, AddFileOptions{
-			GenerateThumbs: true,
-			CalcSimilarity: true,
-			OnlyAddNew:     true,
-			UserId:         userId,
+			UserId: userId,
 		})
 		log.Printf("Done in %v: %v ", time.Since(fileStart), file)
 		log.Println("")
@@ -116,27 +112,31 @@ func AddFile(db *gorm.DB, path string, options AddFileOptions) {
 		log.Printf("Problem with access, skip: %v", path)
 		return
 	}
-	// TODO use size and filepath for quick scan
-	size := fileInfo.Size()
-	log.Printf("Size: %d %v", size, path)
 
-	//if options.OnlyAddNew {
-	//	isInDb, fileInDb := model.FindByFile(db, path)
-	//	if isInDb && fileInDb.Size == int(size) {
-	//		// this file already exists in DB, skip it
-	//		log.Printf("Skipping...")
-	//		return
-	//	}
-	//}
+	// check if file is already in DB by size and file path
+	sizeB := fileInfo.Size()
+	log.Printf("Size: %d %v", sizeB, path)
+	var fileInDb model.File
+	model.DB.Where("file_path = ? AND size_b = ?", path, sizeB).First(&fileInDb)
 
-	////TODO use size for fast check
+	// fast scan match, just check perms and finish - fastest way
+	if fileInDb.Id > 0 {
+		addPerms(model.DB, fileInDb, options.UserId)
+		return
+	}
+
+	// check if file is already in DB by sha256 - slower
 	log.Printf("%s\n", "Check SHA256...")
 	sha256sum, _ := hashFileSha256(path)
 	log.Printf("SHA256: %s\n", sha256sum)
-
-	// check if file is already in DB
-	var fileInDb model.File
 	model.DB.Where("sha256 = ?", sha256sum).First(&fileInDb)
+
+	// update file path if needed
+	if fileInDb.FilePath != path {
+		log.Println("Updating file path")
+		fileInDb.FilePath = path
+		db.Save(&fileInDb)
+	}
 
 	// add new file to DB if needed
 	if fileInDb.Id < 1 {
@@ -171,7 +171,7 @@ func AddFile(db *gorm.DB, path string, options AddFileOptions) {
 		fileInDb = model.File{
 			Filename: fileName,
 			FilePath: path,
-			SizeB:    int(size),
+			SizeB:    int(sizeB),
 			MimeId:   mimeId,
 			PhashA:   pHashA,
 			PhashB:   pHashB,
@@ -186,22 +186,7 @@ func AddFile(db *gorm.DB, path string, options AddFileOptions) {
 		log.Printf("Already in DB, skip add")
 	}
 
-	// add permissions to file if necessary
-	var fileUser model.FileUser
-	db.Where("file_id = ? AND user_id = ?", fileInDb.Id, options.UserId).First(&fileUser)
-
-	// permissions not found, add to DB
-	if fileUser.Id < 1 {
-		log.Printf("%s\n", "Permissions not in DB, adding...")
-		fileUser = model.FileUser{
-			FileId:    fileInDb.Id,
-			UserId:    options.UserId,
-			CreatedAt: fileInDb.CreatedAt,
-			UpdatedAt: fileInDb.UpdatedAt,
-			DeletedAt: nil,
-		}
-		model.DB.Create(&fileUser)
-	}
+	addPerms(model.DB, fileInDb, options.UserId)
 
 	// add tags to DB
 	//found, tags := model.TagList(sqlite, img.Fid)
@@ -212,6 +197,25 @@ func AddFile(db *gorm.DB, path string, options AddFileOptions) {
 	//for _, tag := range tags {
 	//	model.AddTagToFile(mysql, tag.Name, file.Id)
 	//}
+}
+
+func addPerms(db *gorm.DB, fileInDb model.File, userId int) {
+	// add permissions to file if necessary
+	var fileUser model.FileUser
+	db.Where("file_id = ? AND user_id = ?", fileInDb.Id, userId).First(&fileUser)
+
+	// permissions not found, add to DB
+	if fileUser.Id < 1 {
+		log.Printf("%s\n", "Permissions not in DB, adding...")
+		fileUser = model.FileUser{
+			FileId:    fileInDb.Id,
+			UserId:    userId,
+			CreatedAt: fileInDb.CreatedAt,
+			UpdatedAt: fileInDb.UpdatedAt,
+			DeletedAt: nil,
+		}
+		model.DB.Create(&fileUser)
+	}
 }
 
 func makeThumbs(path string, sha256sum string, mime string) {

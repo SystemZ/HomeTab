@@ -243,6 +243,7 @@ func SimilarFiles(sha256 string, userId int) (result []File) {
 		return
 	}
 
+	// FIXME eliminate subquery for better performance
 	query1 := `
 SELECT HAMMINGDISTANCE(?,?,?,?,files.phash_a,files.phash_b,files.phash_c,files.phash_d) AS dist, 
        sha256,
