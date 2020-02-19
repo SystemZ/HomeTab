@@ -18,6 +18,7 @@ services:
     environment:
       - PMA_USER=root
       - PMA_PASSWORD=dev
+      - UPLOAD_LIMIT="1G"
   redis:
     image: redis
     ports:
