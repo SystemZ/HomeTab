@@ -101,6 +101,23 @@ CREATE TABLE `gomigrate`
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
+-- Table structure for table `logs`
+--
+
+DROP TABLE IF EXISTS `logs`;
+/*!40101 SET @saved_cs_client = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `logs`
+(
+    `id`         int(11) NOT NULL AUTO_INCREMENT,
+    `body`       text    NOT NULL,
+    `created_at` datetime DEFAULT NULL,
+    PRIMARY KEY (`id`)
+) ENGINE = InnoDB
+  DEFAULT CHARSET = utf8mb4;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
 -- Table structure for table `mimes`
 --
 
@@ -170,17 +187,15 @@ CREATE TABLE `users`
 /*!40101 SET COLLATION_CONNECTION = @OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES = @OLD_SQL_NOTES */;
 
--- Dump completed on 2020-02-18 23:05:00
+-- Dump completed on 2020-02-19 17:25:26
 
 
 DROP
     FUNCTION IF EXISTS HAMMINGDISTANCE;
 
 CREATE
-    FUNCTION HAMMINGDISTANCE(
-    A0 BIGINT, A1 BIGINT, A2 BIGINT, A3 BIGINT,
-    B0 BIGINT, B1 BIGINT, B2 BIGINT, B3 BIGINT
-)
+    FUNCTION HAMMINGDISTANCE(A0 BIGINT, A1 BIGINT, A2 BIGINT, A3 BIGINT,
+                             B0 BIGINT, B1 BIGINT, B2 BIGINT, B3 BIGINT)
     RETURNS INT DETERMINISTIC
     RETURN
             BIT_COUNT(A0 ^ B0) +
