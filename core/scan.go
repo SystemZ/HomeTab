@@ -132,7 +132,8 @@ func AddFile(db *gorm.DB, path string, options AddFileOptions) {
 	model.DB.Where("sha256 = ?", sha256sum).First(&fileInDb)
 
 	// update file path if needed
-	if fileInDb.FilePath != path {
+	// prevent update if file is not yet added to DB by checking existing ID
+	if fileInDb.Id > 0 && fileInDb.FilePath != path {
 		log.Println("Updating file path")
 		fileInDb.FilePath = path
 		db.Save(&fileInDb)
