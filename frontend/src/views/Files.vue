@@ -316,7 +316,12 @@
           // TODO notify user about loading
           // this prevents skipping tag loading for similar images
           return
+        } else if (!similar && this.fileListTagsLoading) {
+          // TODO notify user about loading
+          // this prevents skipping tag loading for file list
+          return
         }
+
         this.getSimilar(item.sha256)
         this.bigPic = true
         this.bigPicInfo = item
@@ -354,7 +359,10 @@
         axios.post(rawUrl, {'tag': tagToAdd}, vm.authConfig())
           .then(() => {
             vm.bigPicInfo.tagzServer = currentTags
+            // get global tag list
             vm.getTags()
+            // ask server about tags for this one file on main list
+            this.getTagsForFiles([{'fileId': this.bigPicInfo.id}], false)
           })
           .catch(function (err) {
             if (err.response.status === 401) {
@@ -378,7 +386,10 @@
                 vm.bigPicInfo.tagz.splice(i, 1)
               }
             }
+            // get global tag list
             vm.getTags()
+            // ask server about tags for this one file on main list
+            this.getTagsForFiles([{'fileId': this.bigPicInfo.id}], false)
           })
           .catch(function (err) {
             console.log(err)
