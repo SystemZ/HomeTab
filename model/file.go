@@ -114,14 +114,7 @@ func FileListPaginate(userId int, limit int, nextId int, prevId int, qTerm strin
       files.size_b,
       files.created_at,
       files.updated_at,
-      mimes.mime,
-      (SELECT GROUP_CONCAT(tags.tag SEPARATOR ',')
-       FROM tags
-       INNER JOIN file_tags on tags.id = file_tags.tag_id
-       WHERE file_tags.file_id = files.id
-       AND file_tags.user_id = ?
-       AND file_tags.deleted_at IS NULL
-      ) AS tagz
+      mimes.mime
     FROM files
     INNER JOIN mimes ON files.mime_id = mimes.id
     INNER JOIN file_users ON file_users.file_id = files.id
@@ -142,8 +135,7 @@ func FileListPaginate(userId int, limit int, nextId int, prevId int, qTerm strin
       files.size_b,
       files.created_at,
       files.updated_at,
-      mimes.mime,
-      "" as tagz
+      mimes.mime
     FROM files
     INNER JOIN mimes on files.mime_id = mimes.id
     INNER JOIN file_users ON file_users.file_id = files.id
@@ -167,14 +159,7 @@ func FileListPaginate(userId int, limit int, nextId int, prevId int, qTerm strin
 	  files.size_b,
 	  files.created_at,
 	  files.updated_at,
-	  mimes.mime,
-      (SELECT GROUP_CONCAT(tags.tag SEPARATOR ',')
-       FROM tags
-       INNER JOIN file_tags on tags.id = file_tags.tag_id
-       WHERE file_tags.file_id = files.id
-       AND file_tags.user_id = ?
-       AND file_tags.deleted_at IS NULL
-      ) AS tagz
+	  mimes.mime
 	FROM files
 	INNER JOIN mimes on files.mime_id = mimes.id
 	INNER JOIN file_tags on file_tags.file_id = files.id
@@ -202,9 +187,9 @@ func FileListPaginate(userId int, limit int, nextId int, prevId int, qTerm strin
 		rows, err = stmt.Query(userId, nextId, "%", limit)
 	} else if tagSearch {
 		// in this case qTerm is tag, fix variable names
-		rows, err = stmt.Query(userId, userId, nextId, "%", qTerm, limit)
+		rows, err = stmt.Query(userId, nextId, "%", qTerm, limit)
 	} else {
-		rows, err = stmt.Query(userId, userId, nextId, qTerm, limit)
+		rows, err = stmt.Query(userId, nextId, qTerm, limit)
 	}
 	if err != nil {
 		log.Printf("%v", err)
@@ -214,14 +199,10 @@ func FileListPaginate(userId int, limit int, nextId int, prevId int, qTerm strin
 	for rows.Next() {
 		var list File
 		// TODO is this necessary?
-		var tagz sql.NullString
-		err := rows.Scan(&list.Id, &list.Sha256, &list.Filename, &list.FilePath, &list.SizeB, &list.CreatedAt, &list.UpdatedAt, &list.Mime, &tagz)
+		err := rows.Scan(&list.Id, &list.Sha256, &list.Filename, &list.FilePath, &list.SizeB, &list.CreatedAt, &list.UpdatedAt, &list.Mime)
 		if err != nil {
 			log.Printf("sql scan error: %v", err)
 			return
-		}
-		if tagz.Valid {
-			list.Tags = tagz.String
 		}
 		result = append(result, list)
 	}

@@ -190,6 +190,13 @@
                                             </v-btn>
                                         </v-img>
 
+                                        <span v-if="item.tags"
+                                              class="d-inline-block text-truncate"
+                                              style="max-width: 200px;">
+                                            {{item.tags}}
+                                        </span>
+                                        <span v-else-if="fileListTagsLoading">...</span>
+                                        <span v-else>-</span>
                                     </v-card>
                                     <v-card
                                             v-else
@@ -259,6 +266,7 @@
         bigPic: false,
         bigPicInfo: {},
         tagsLoading: false,
+        fileListTagsLoading: true,
         tags: [],
         tagsRaw: [],
         tagSelected: '',
@@ -384,6 +392,7 @@
       getFiles () {
         let vm = this
         vm.notesLoading = true
+        vm.fileListTagsLoading = true
         let queryType = 'next'
         let lastId = 0
 
@@ -418,7 +427,17 @@
         axios.post(rawUrl, data, vm.authConfig())
           .then((res) => {
             vm.filesLoading = false
+            // show files to user
             vm.files = res.data.files
+            // meanwhile...
+            // prepare list of files to get tags from
+            let fileList = []
+            res.data.files.forEach((file) => {
+              fileList.push({'fileId': file.id})
+            })
+            // ask server about tags
+            this.getTagsForFiles(fileList, false)
+            // add page to pagination
             if (vm.files.length === vm.itemsPerPage) {
               vm.pages++
             }
@@ -469,7 +488,7 @@
               fileList.push({'fileId': file.id})
             })
             // ask server about tags
-            this.getTagsForFiles(fileList)
+            this.getTagsForFiles(fileList, true)
           })
           .catch((err) => {
             if (err.response.status === 401) {
@@ -479,10 +498,17 @@
             }
           })
       },
-      getTagsForFiles (files) {
+      getTagsForFiles (files, similar) {
         axios.post(this.apiUrl + '/api/v1/file/tags', files, this.authConfig())
           .then((tagsRes) => {
-            this.similarFiles.forEach((file) => {
+            let filesToCheck = []
+            if (similar) {
+              filesToCheck = this.similarFiles
+            } else {
+              filesToCheck = this.files
+            }
+
+            filesToCheck.forEach((file) => {
               // we need to go deeper...
               // check through all files
               tagsRes.data.forEach((tagEntry) => {
@@ -492,7 +518,12 @@
                 }
               })
             })
-            this.similarLoading = false
+
+            if (similar) {
+              this.similarLoading = false
+            } else {
+              this.fileListTagsLoading = false
+            }
           })
           .catch((err) => {
             if (err.response.status === 401) {
