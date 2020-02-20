@@ -142,13 +142,15 @@
                                             <a target="_blank" :href="apiUrl+'/img/full/'+similar.sha256">
                                                 {{similar.distance}}
                                             </a>
-                                            <v-img @click="zoom(similar)"
+                                            <v-img @click="zoom(similar,true)"
                                                    width="150"
                                                    height="150"
                                                    :src="apiUrl+'/img/thumbs/150/150/'+similar.sha256">
                                             </v-img>
-                                            <span v-if="similar.tags" class="d-inline-block text-truncate"
+                                            <span v-if="similar.tags"
+                                                  class="d-inline-block text-truncate"
                                                   style="max-width: 150px;">{{similar.tags}}</span>
+                                            <span v-else-if="similarLoading">...</span>
                                             <span v-else>-</span>
                                         </v-flex>
                                     </v-row>
@@ -178,7 +180,7 @@
                                                 height="200"
                                                 width="200"
                                                 class="text-right pa-2"
-                                                @click="zoom(item)"
+                                                @click="zoom(item,false)"
                                         >
                                             <v-btn
                                                     icon
@@ -247,6 +249,7 @@
       return {
         search: '',
         filesLoading: true,
+        similarLoading: true,
         files: [],
         page: 1,
         pages: 1,
@@ -300,7 +303,12 @@
         // one tag
         return [str]
       },
-      zoom (item) {
+      zoom (item, similar) {
+        if (similar && this.similarLoading) {
+          // TODO notify user about loading
+          // this prevents skipping tag loading for similar images
+          return
+        }
         this.getSimilar(item.sha256)
         this.bigPic = true
         this.bigPicInfo = item
@@ -450,7 +458,41 @@
       getSimilar (sha256) {
         axios.get(this.apiUrl + '/api/v1/file/' + sha256 + '/similar', this.authConfig())
           .then((res) => {
+            // prevent strange user clicks
+            this.similarLoading = true
+            // show user suggested files
             this.similarFiles = res.data
+            // meanwhile...
+            // prepare list of files to get tags from
+            let fileList = []
+            res.data.forEach((file) => {
+              fileList.push({'fileId': file.id})
+            })
+            // ask server about tags
+            this.getTagsForFiles(fileList)
+          })
+          .catch((err) => {
+            if (err.response.status === 401) {
+              this.$root.$emit('sessionExpired')
+            } else {
+              console.log('something wrong')
+            }
+          })
+      },
+      getTagsForFiles (files) {
+        axios.post(this.apiUrl + '/api/v1/file/tags', files, this.authConfig())
+          .then((tagsRes) => {
+            this.similarFiles.forEach((file) => {
+              // we need to go deeper...
+              // check through all files
+              tagsRes.data.forEach((tagEntry) => {
+                // file get tags attached
+                if (file.id === tagEntry.fileId) {
+                  file.tags = tagEntry.tags
+                }
+              })
+            })
+            this.similarLoading = false
           })
           .catch((err) => {
             if (err.response.status === 401) {

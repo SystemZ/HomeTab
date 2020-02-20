@@ -233,7 +233,7 @@ func FileListPaginate(userId int, limit int, nextId int, prevId int, qTerm strin
 }
 
 // TODO userId as a option, cross user suggestions
-func SimilarFiles(sha256 string, userId int) (result []File) {
+func SimilarFiles(sha256 string, userId int, limit int) (result []File) {
 	var imgInDb File
 	DB.Where("sha256 = ?", sha256).First(&imgInDb)
 
@@ -243,20 +243,14 @@ func SimilarFiles(sha256 string, userId int) (result []File) {
 		return
 	}
 
-	// FIXME eliminate subquery for better performance
 	query1 := `
-SELECT HAMMINGDISTANCE(?,?,?,?,files.phash_a,files.phash_b,files.phash_c,files.phash_d) AS dist, 
+SELECT HAMMINGDISTANCE(?,?,?,?,files.phash_a,files.phash_b,files.phash_c,files.phash_d) AS dist,
+       files.id,
        sha256,
        file_name,
        file_path,
        size_b,
-       mimes.mime,
-      (SELECT GROUP_CONCAT(tags.tag SEPARATOR ',')
-       FROM tags
-       INNER JOIN file_tags ON tags.id = file_tags.tag_id
-       WHERE file_tags.file_id = files.id
-       AND file_tags.deleted_at IS NULL
-      ) AS tagz
+       mimes.mime
 FROM files
 INNER JOIN mimes ON files.mime_id = mimes.id
 INNER JOIN file_users ON files.id = file_users.file_id
@@ -267,7 +261,7 @@ AND files.phash_b != 0
 AND files.phash_c != 0
 AND files.phash_d != 0
 ORDER BY dist ASC
-LIMIT 50
+LIMIT ?
 `
 
 	stmt1, err := DB.DB().Prepare(query1)
@@ -276,7 +270,7 @@ LIMIT 50
 		return
 	}
 	defer stmt1.Close()
-	rows1, err := stmt1.Query(imgInDb.PhashA, imgInDb.PhashB, imgInDb.PhashC, imgInDb.PhashD, imgInDb.Sha256, userId)
+	rows1, err := stmt1.Query(imgInDb.PhashA, imgInDb.PhashB, imgInDb.PhashC, imgInDb.PhashD, imgInDb.Sha256, userId, limit)
 	if err != nil {
 		log.Printf("%v", err)
 		return
@@ -284,14 +278,10 @@ LIMIT 50
 	defer rows1.Close()
 	for rows1.Next() {
 		var list File
-		var tagz sql.NullString
-		err := rows1.Scan(&list.Distance, &list.Sha256, &list.Filename, &list.FilePath, &list.SizeB, &list.Mime, &tagz)
+		err := rows1.Scan(&list.Distance, &list.Id, &list.Sha256, &list.Filename, &list.FilePath, &list.SizeB, &list.Mime)
 		if err != nil {
 			log.Printf("sql scan error: %v", err)
 			return
-		}
-		if tagz.Valid {
-			list.Tags = tagz.String
 		}
 		result = append(result, list)
 	}

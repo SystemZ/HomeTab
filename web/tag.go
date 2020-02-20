@@ -35,6 +35,36 @@ func TagList(w http.ResponseWriter, r *http.Request) {
 	w.Write(tagList)
 }
 
+// separate endpoint for tags
+// allows to construct simpler and faster SQL queries for images
+func TagListForFiles(w http.ResponseWriter, r *http.Request) {
+	authUserOk, userInfo := CheckApiAuth(w, r)
+	if !authUserOk {
+		w.WriteHeader(http.StatusUnauthorized)
+		return
+	}
+
+	// get file list from JSON body
+	// FIXME validate
+	decoder := json.NewDecoder(r.Body)
+	var tagList []model.FileTagList
+	decoder.Decode(&tagList)
+
+	// get info from DB
+	tagList = model.FileTagsList(tagList, int(userInfo.Id))
+
+	// prepare JSON result
+	res, err := json.MarshalIndent(tagList, "", "  ")
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	// all ok, return list
+	w.WriteHeader(http.StatusOK)
+	w.Write(res)
+}
+
 func TagAdd(w http.ResponseWriter, r *http.Request) {
 	authUserOk, userInfo := CheckApiAuth(w, r)
 	if !authUserOk {

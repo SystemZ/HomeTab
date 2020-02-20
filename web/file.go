@@ -26,7 +26,7 @@ func FileSimilar(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	vars := mux.Vars(r)
-	rawRes := model.SimilarFiles(vars["sha256"], int(userInfo.Id))
+	rawRes := model.SimilarFiles(vars["sha256"], int(userInfo.Id), 50)
 
 	// prepare JSON result
 	fileList, err := json.MarshalIndent(rawRes, "", "  ")
