@@ -178,49 +178,55 @@
                                     v-for="(item, itemIndex) in files" :key="itemIndex"
                             >
                                 <v-item>
-                                    <v-card
-                                            v-if="isThumbPossible(item.mime)"
-                                            width="200"
-                                            height="200"
-                                    >
-                                        <v-img
-
-                                                :src="urlToThumb(item,200)"
-                                                height="200"
-                                                width="200"
-                                                class="text-right pa-2"
-                                                @click="zoom(item,false)"
+                                    <v-row no-gutters style="height: 220px;">
+                                        <v-col
+                                                align="center"
+                                                align-self="center"
                                         >
-                                            <v-btn
-                                                    icon
-                                                    dark
+                                            <v-card
+                                                    v-if="isThumbPossible(item.mime)"
                                             >
-                                                <!--<v-icon>{{ active ? 'mdi-heart' : 'mdi-heart-outline' }}</v-icon>-->
-                                            </v-btn>
-                                        </v-img>
+                                                <!--<v-icon>mdi-movie-open-outline</v-icon>-->
+                                                <video
+                                                        v-if="isVideo(item.mime)"
+                                                        @click="zoom(item,false)"
+                                                        height="200px" width="200px" loop muted autoplay
+                                                >
+                                                    <source :src="apiUrl+'/img/full/'+item.sha256" :type="item.mime">
+                                                </video>
+                                                <v-img
+                                                        v-else-if="isThumbPossible(item.mime)"
+                                                        :src="urlToThumb(item,200)"
+                                                        height="200"
+                                                        width="200"
+                                                        @click="zoom(item,false)"
+                                                />
+                                                <span
+                                                        v-if="item.tags"
+                                                        class="d-inline-block text-truncate"
+                                                        style="max-width: 200px;"
+                                                >
+                                                    {{item.tags}}
+                                                </span>
+                                                <span v-else-if="fileListTagsLoading">...</span>
+                                                <span v-else>-</span>
+                                            </v-card>
+                                            <v-card
+                                                    v-else
+                                                    width="200"
+                                                    height="200"
+                                            >
+                                                <v-container fill-height>
+                                                    <v-row class="text-center">
+                                                        <v-col cols="12">
+                                                            {{item.filename}}
+                                                        </v-col>
+                                                    </v-row>
+                                                </v-container>
 
-                                        <span v-if="item.tags"
-                                              class="d-inline-block text-truncate"
-                                              style="max-width: 200px;">
-                                            {{item.tags}}
-                                        </span>
-                                        <span v-else-if="fileListTagsLoading">...</span>
-                                        <span v-else>-</span>
-                                    </v-card>
-                                    <v-card
-                                            v-else
-                                            width="200"
-                                            height="200"
-                                    >
-                                        <v-container fill-height>
-                                            <v-row class="text-center">
-                                                <v-col cols="12">
-                                                    {{item.filename}}
-                                                </v-col>
-                                            </v-row>
-                                        </v-container>
-
-                                    </v-card>
+                                            </v-card>
+                                        </v-col>
+                                    </v-row>
 
                                 </v-item>
                             </v-col>
