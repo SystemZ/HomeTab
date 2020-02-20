@@ -52,6 +52,10 @@ func TagListForFiles(w http.ResponseWriter, r *http.Request) {
 
 	// get info from DB
 	tagList = model.FileTagsList(tagList, int(userInfo.Id))
+	// prevent returning 'null' in JSON by using empty array
+	if len(tagList) < 1 {
+		tagList = []model.FileTagList{}
+	}
 
 	// prepare JSON result
 	res, err := json.MarshalIndent(tagList, "", "  ")
