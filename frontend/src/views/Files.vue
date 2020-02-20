@@ -85,15 +85,13 @@
                 <v-dialog v-model="bigPic" dark max-width="90%">
                     <v-card>
                         <v-card class="text-center" elevation="0">
-                            <v-btn :href="apiUrl+'/img/full/'+bigPicInfo.sha256" target="_blank" class="mb-5">
+                            <v-btn :href="apiUrl+'/img/full/'+bigPicInfo.sha256" target="_blank" class="mb-2 mt-2">
                                 Original
                             </v-btn>
                             <br>
-                            {{bigPicInfo.filePath}}
+                            <kbd class="mt-1 mb-2">{{bigPicInfo.filePath}}</kbd>
                             <br>
-                            <img
-                                    @click="bigPic = false"
-                                    :src="apiUrl+'/img/thumbs/700/700/'+bigPicInfo.sha256"/>
+                            <img @click="bigPic = false" :src="urlToThumb(bigPicInfo,700)"/>
                             <br>
                             <v-form>
                                 <v-container>
@@ -176,7 +174,7 @@
                                     >
                                         <v-img
 
-                                                :src="apiUrl+'/img/thumbs/200/200/'+item.sha256"
+                                                :src="urlToThumb(item,200)"
                                                 height="200"
                                                 width="200"
                                                 class="text-right pa-2"
@@ -298,6 +296,12 @@
         ) {
           return true
         }
+      },
+      urlToThumb (file, width) {
+        if (file.mime === 'image/gif') {
+          return this.apiUrl + '/img/full/' + file.sha256
+        }
+        return this.apiUrl + '/img/thumbs/' + width + '/' + width + '/' + file.sha256
       },
       tagz (str) {
         // no tags
