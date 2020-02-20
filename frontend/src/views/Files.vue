@@ -85,13 +85,24 @@
                 <v-dialog v-model="bigPic" dark max-width="90%">
                     <v-card>
                         <v-card class="text-center" elevation="0">
-                            <v-btn :href="apiUrl+'/img/full/'+bigPicInfo.sha256" target="_blank" class="mb-2 mt-2">
+                            <v-btn :href="apiUrl+'/img/full/'+bigPicInfo.sha256" target="_blank" class="mb-2 mt-2 mr-5">
                                 Original
                             </v-btn>
-                            <br>
-                            <kbd class="mt-1 mb-2">{{bigPicInfo.filePath}}</kbd>
-                            <br>
-                            <img @click="bigPic = false" :src="urlToThumb(bigPicInfo,700)"/>
+                            <v-btn @click="(showFilePath) ? showFilePath = false : showFilePath = true">
+                                Path
+                            </v-btn>
+                            <div v-if="showFilePath">
+                                <kbd class="mt-1 mb-2">{{bigPicInfo.filePath}}</kbd>
+                            </div>
+                            <div v-if="isVideo(bigPicInfo.mime) && bigPic">
+                                <video height="600" controls loop autoplay>
+                                    <source :src="apiUrl+'/img/full/'+bigPicInfo.sha256" :type="bigPicInfo.mime">
+                                    Your browser does not support the video tag.
+                                </video>
+                            </div>
+                            <div v-else>
+                                <img @click="bigPic = false" :src="urlToThumb(bigPicInfo,700)"/>
+                            </div>
                             <br>
                             <v-form>
                                 <v-container>
@@ -272,7 +283,8 @@
         // change me
         active: false,
         // tag typed by user in zoomed image
-        tagTyped: ''
+        tagTyped: '',
+        showFilePath: false
       }
     },
     mounted () {
@@ -285,6 +297,12 @@
       },
       toFile (item) {
         this.$router.push({name: 'file', params: {id: item.id}})
+      },
+      isVideo (mime) {
+        if (mime === 'video/webm' || mime === 'video/mp4') {
+          return true
+        }
+        return false
       },
       isThumbPossible (mime) {
         if (
