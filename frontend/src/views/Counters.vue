@@ -121,7 +121,7 @@
           },
           {text: 'Title', value: 'name'},
           {text: 'Tags', value: 'tags'},
-          {text: 'Time', value: 'seconds'},
+          {text: 'Time', value: 'secondsF'},
           // {text: 'Created at', value: 'createdAt'},
         ],
         counters: [],

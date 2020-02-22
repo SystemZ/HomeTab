@@ -13,6 +13,7 @@ type CounterApi struct {
 	Name       string            `json:"name"`
 	Tags       []string          `json:"tags"`
 	Seconds    uint              `json:"seconds"`
+	SecondsF   string            `json:"secondsF"`
 	InProgress bool              `json:"inProgress"`
 	Stats      model.CounterList `json:"stats"`
 	Sessions   []CounterLogApi   `json:"sessions"`
@@ -122,6 +123,7 @@ func ApiCounterListPagination(w http.ResponseWriter, r *http.Request) {
 			Name:       counter.Name,
 			Tags:       []string{counter.Tags},
 			Seconds:    counter.SecondsAll,
+			SecondsF:   counter.SecondsAllFormatted,
 			InProgress: counter.Running == 1,
 		})
 	}
