@@ -1,5 +1,51 @@
 <template>
     <v-container fluid>
+
+        <v-dialog
+                v-model="newCounterDialogShow"
+                max-width="290"
+        >
+            <v-card>
+                <v-card-title>
+                    <span class="headline">Add new counter</span>
+                </v-card-title>
+                <v-card-text>
+                    <v-container>
+                        <v-row>
+                            <v-col cols="12">
+                                <v-text-field :disabled="newCounterInProgress"
+                                              v-model="newCounterName"
+                                              label="Name*"
+                                              required></v-text-field>
+                            </v-col>
+                        </v-row>
+                        <v-row>
+                            <v-col cols="12">
+                                <v-text-field
+                                        :disabled="newCounterInProgress"
+                                        v-model="newCounterTag"
+                                        label="Tag*"
+                                        required></v-text-field>
+                            </v-col>
+                        </v-row>
+                    </v-container>
+                    <small>*indicates required field</small>
+                </v-card-text>
+                <v-card-actions>
+                    <v-spacer></v-spacer>
+                    <v-btn color="blue darken-1" text @click="newCounterDialogShow = false">Close</v-btn>
+
+                    <v-progress-circular v-if="newCounterInProgress" indeterminate color="green"
+                                         class="ml-5 ml-5"></v-progress-circular>
+                    <v-btn v-else dark color="green" @click="addCounter">Add</v-btn>
+                </v-card-actions>
+            </v-card>
+        </v-dialog>
+
+        <v-btn class="ma-5" color="primary" @click="newCounterDialogShow = true">
+            Add new counter
+        </v-btn>
+
         <v-card class="ma-5">
             <v-card-title>
                 All counters
@@ -41,6 +87,14 @@
                 </template>
             </v-data-table>
         </v-card>
+
+        <v-snackbar v-model="snackbarShow">
+            {{ snackbarText }}
+            <v-btn color="pink" text @click="snackbarShow = false">
+                Close
+            </v-btn>
+        </v-snackbar>
+
     </v-container>
 </template>
 
@@ -73,7 +127,12 @@
         counters: [],
         prevItemsPerPage: 0,
         prevPage: 0,
+        snackbarShow: false,
+        snackbarText: '',
+        newCounterInProgress: false,
         newCounterDialogShow: false,
+        newCounterName: '',
+        newCounterTag: 'PC',
       }
     },
     methods: {
@@ -145,6 +204,37 @@
       doSearch () {
         clearTimeout(this.searchTimeout)
         this.searchTimeout = setTimeout(this.getCounters, 500, undefined, true)
+      },
+      addCounter () {
+        // prevent user fiddling when we waiting for server's answer
+        this.newCounterInProgress = true
+        let data = {'name': this.newCounterName, 'tag': this.newCounterTag}
+        axios.post(this.apiUrl + '/api/v1/counter', data, this.authConfig())
+          .then((res) => {
+            // empty form for faster adding many records and unlock it
+            this.newCounterName = ''
+            this.newCounterTag = 'PC'
+            this.newCounterInProgress = false
+            // notify user
+            this.snackbarText = 'Counter added'
+            this.snackbarShow = true
+            // hide form
+            this.newCounterDialogShow = false
+            // load all counters again
+            this.getCounters(undefined, true)
+          })
+          .catch((err) => {
+            if (err.response.status === 401) {
+              console.log('logged out')
+              this.$root.$emit('sessionExpired')
+            } else if (err.response.status === 400) {
+              console.log('empty result / wrong request')
+              this.snackbarText = 'Both fields should not be empty'
+              this.snackbarShow = true
+            } else {
+              console.log('something wrong')
+            }
+          })
       },
     }
   }

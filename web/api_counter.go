@@ -219,3 +219,37 @@ func ApiCounterStopFrontend(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 	w.Write([]byte{})
 }
+
+type NewCounterRequest struct {
+	Tag  string `json:"tag"`
+	Name string `json:"name"`
+}
+
+func ApiCounterAdd(w http.ResponseWriter, r *http.Request) {
+	authUserOk, _ := CheckApiAuth(w, r)
+	if !authUserOk {
+		w.WriteHeader(http.StatusUnauthorized)
+		return
+	}
+
+	// FIXME validate
+	decoder := json.NewDecoder(r.Body)
+	var newCounter NewCounterRequest
+	decoder.Decode(&newCounter)
+
+	if len(newCounter.Tag) < 1 || len(newCounter.Name) < 1 {
+		log.Printf("Too short counter")
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
+	counterId := model.CreateCounter(newCounter.Name)
+	newTag := model.CounterTag{
+		CounterId: counterId,
+		Name:      newCounter.Tag,
+	}
+	model.DB.Save(&newTag)
+
+	w.WriteHeader(http.StatusOK)
+	w.Write([]byte{})
+}

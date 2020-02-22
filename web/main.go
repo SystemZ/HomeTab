@@ -80,6 +80,7 @@ func StartWebInterface() {
 	r.HandleFunc("/api/v1/note", ApiNoteList).Methods("GET")
 	r.HandleFunc("/api/v1/note/{id}", ApiNote).Methods("GET")
 	r.HandleFunc("/api/v1/note/{id}", ApiNoteEdit).Methods("PUT")
+	r.HandleFunc("/api/v1/counter", ApiCounterAdd).Methods("POST")
 	r.HandleFunc("/api/v1/counter/{id}/info", ApiCounterFrontend).Methods("GET")
 	r.HandleFunc("/api/v1/counter/{id}/start", ApiCounterStartFrontend).Methods("PUT")
 	r.HandleFunc("/api/v1/counter/{id}/stop", ApiCounterStopFrontend).Methods("PUT")
