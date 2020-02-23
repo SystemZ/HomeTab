@@ -2,14 +2,39 @@
     <v-container fluid>
         <v-dialog
                 v-model="dialog"
-                max-width="290"
+                max-width="600"
         >
             <v-card>
                 <v-card-title class="headline">{{taskTitleInDialog}}</v-card-title>
 
                 <v-card-text>
-                    Run off table persian cat jump eat fish meeeeouw but more napping, more napping all the napping is
-                    exhausting.
+                    <v-container>
+                        <v-row>
+                            <v-col cols="12">
+                                <v-text-field
+                                        label="Task title"
+                                        v-model="taskTitleInDialog"
+                                >
+                                </v-text-field>
+                            </v-col>
+                            <v-col cols="12">
+                                <v-text-field label="Additional info"></v-text-field>
+                            </v-col>
+                            <v-col cols="12" sm="6">
+                                <v-select
+                                        :items="['S', 'P', 'Others']"
+                                        label="Assigned to"
+                                ></v-select>
+                            </v-col>
+                            <v-col cols="12" sm="6">
+                                <v-autocomplete
+                                        :items="['Shopping', 'Reading', 'Writing', 'Coding', 'Cleaning']"
+                                        label="Tags"
+                                        multiple
+                                ></v-autocomplete>
+                            </v-col>
+                        </v-row>
+                    </v-container>
                 </v-card-text>
 
                 <v-card-actions>
@@ -132,7 +157,12 @@
             return {
                 projectTitle: "Cool project name placeholder",
                 newTaskTitle: "",
-                tasks: [],
+                tasks: [
+                    {
+                        title: "Buy cat food",
+                        selected: false,
+                    }
+                ],
                 dialog: false,
                 taskTitleInDialog: "",
             }
