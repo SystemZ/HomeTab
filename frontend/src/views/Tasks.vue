@@ -173,7 +173,7 @@
                         ></v-select>
 
                         <v-spacer></v-spacer>
-                        <v-btn icon>
+                        <v-btn icon @click="setAsDoneTasks" :disabled="tasksDoneInProgress">
                             <v-icon>mdi-check-bold</v-icon>
                         </v-btn>
                         <v-btn icon @click="showSnoozeDialog">
@@ -249,6 +249,7 @@
                 tasksLoading: true,
                 tasksDeleting: false,
                 taskSaving: false,
+                tasksDoneInProgress: false,
             }
         },
         mounted() {
@@ -336,6 +337,35 @@
                 // refresh task list
                 this.getTasks(this.projectIdSelected)
                 // TODO add snackbar with info for user
+            },
+            setAsDoneTasks() {
+                this.tasksDoneInProgress = true
+                // get selected tasks
+                let tasksForDone = []
+                this.tasks.forEach((task) => {
+                    if (task.selected) {
+                        tasksForDone.push({"id": task.id, "done": true})
+                    }
+                })
+                // send task IDs to server
+                let url = this.apiUrl + '/api/v1/project/' + this.projectIdSelected + '/task'
+                axios.put(url, tasksForDone, this.authConfig())
+                    .then((res) => {
+                        this.tasksDoneInProgress = false
+                        // refresh task list
+                        this.getTasks(this.projectIdSelected)
+                        // TODO add snackbar with info for user
+                    })
+                    .catch(((err) => {
+                        if (err.response.status === 401) {
+                            console.log('logged out')
+                            this.$root.$emit('sessionExpired')
+                        } else if (err.response.status === 400) {
+                            console.log('empty result / wrong request')
+                        } else {
+                            console.log('something wrong')
+                        }
+                    }))
             },
             snoozeTasks() {
                 // get selected tasks

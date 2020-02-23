@@ -238,6 +238,7 @@ CREATE TABLE `tasks` (
   `estimate_s` int(10) unsigned NOT NULL,
   `master_task_id` int(10) unsigned NOT NULL,
   `separate_children` tinyint(3) unsigned NOT NULL,
+  `done_at` datetime DEFAULT NULL,
   `created_at` datetime NOT NULL,
   `updated_at` datetime NOT NULL,
   `deleted_at` datetime DEFAULT NULL,
@@ -327,4 +328,4 @@ CREATE TABLE `webhook_receivers` (
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2019-10-18 22:52:50
+-- Dump completed on 2020-02-23 19:36:08

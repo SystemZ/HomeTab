@@ -36,7 +36,7 @@ func ApiTaskList(w http.ResponseWriter, r *http.Request) {
 	var rawResponse []TaskApiResponse
 	// get data from DB, prepare other format
 	var tasks []model.Task
-	model.DB.Order("updated_at desc").Where("project_id = ? AND (snooze_to <= ? OR snooze_to IS NULL)", projectId, time.Now()).Find(&tasks)
+	model.DB.Order("updated_at desc").Where("project_id = ? AND (snooze_to <= ? OR snooze_to IS NULL) AND done_at IS NULL", projectId, time.Now()).Find(&tasks)
 	//model.DB.Order("updated_at desc").Where(&model.Task{ProjectId: user.DefaultProjectId}).Find(&tasks)
 	var project model.Project
 	model.DB.Where(&model.Project{Id: uint(projectId)}).First(&project)
@@ -112,6 +112,7 @@ type EditTaskApiReq struct {
 	Title  string     `json:"title"`
 	Snooze *time.Time `json:"snoozeTo"`
 	Delete bool       `json:"delete"`
+	Done   bool       `json:"done"`
 }
 
 func ApiTaskEdit(w http.ResponseWriter, r *http.Request) {
@@ -155,6 +156,12 @@ func ApiTaskEdit(w http.ResponseWriter, r *http.Request) {
 		// edit title
 		if len(task.Title) > 0 {
 			taskInDb.Subject = task.Title
+			model.DB.Save(&taskInDb)
+		}
+		// set as done
+		if task.Done {
+			timeNow := time.Now()
+			taskInDb.DoneAt = &timeNow
 			model.DB.Save(&taskInDb)
 		}
 	}
