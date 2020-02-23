@@ -2,7 +2,8 @@
     <v-container fluid>
         <v-dialog
                 v-model="dialog"
-                max-width="600"
+                max-width="700"
+                :fullscreen="$vuetify.breakpoint.xsOnly"
         >
             <v-card>
                 <v-card-title class="headline">{{taskTitleInDialog}}</v-card-title>
@@ -64,6 +65,7 @@
         <v-row>
             <v-col md="3"></v-col>
             <v-col cols="12" xs="12" md="6">
+                <h1 class="headline mt-5 mb-5">New task</h1>
                 <v-text-field
                         placeholder="Buy a yacht"
                         solo
