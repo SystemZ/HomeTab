@@ -22,6 +22,7 @@ type Task struct {
 	EstimateS        uint       `gorm:"column:estimate_s"`
 	MasterTaskId     uint       `gorm:"column:master_task_id"`
 	SeparateChildren uint       `gorm:"column:separate_children"`
+	DoneAt           *time.Time `gorm:"column:done_at" json:"doneAt"`
 	CreatedAt        *time.Time `gorm:"column:created_at" json:"created_at"`
 	UpdatedAt        *time.Time `gorm:"column:updated_at" json:"updated_at"`
 	DeletedAt        *time.Time `gorm:"column:deleted_at" json:"deleted_at"`

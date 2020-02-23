@@ -1,9 +1,78 @@
 <template>
     <v-container fluid>
-        <v-dialog
-                v-model="dialog"
-                max-width="600"
-        >
+        <v-dialog v-model="deleteTaskDialog" max-width="700" :fullscreen="$vuetify.breakpoint.xsOnly">
+            <v-card>
+                <v-card-title>
+                    Delete task
+                </v-card-title>
+                <v-card-subtitle>
+                    Are you sure that you don't need these tasks?
+                </v-card-subtitle>
+                <v-card-text>
+                </v-card-text>
+                <v-card-actions>
+                    <v-spacer></v-spacer>
+                    <v-btn
+                            color="green darken-1"
+                            text
+                            @click="deleteTaskDialog = false"
+                    >
+                        Cancel
+                    </v-btn>
+                    <v-btn
+                            color="red darken-1"
+                            dark
+                            :disabled="tasksDeleting"
+                            @click="deleteTasks"
+                    >
+                        <v-icon>mdi-delete</v-icon>
+                        Delete
+                    </v-btn>
+                </v-card-actions>
+            </v-card>
+        </v-dialog>
+        <v-dialog v-model="snoozeTaskDialog" max-width="700" :fullscreen="$vuetify.breakpoint.xsOnly">
+            <v-card>
+                <v-card-title>
+                    Snooze task
+                </v-card-title>
+                <v-card-subtitle>
+                    Select date after I should nag you again
+                </v-card-subtitle>
+                <v-card-text>
+                    <v-row>
+                        <v-col>
+                            <v-date-picker
+                                    v-model="taskSnoozeDateInDialog"
+                                    class="mt-4"
+                                    :min="taskSnoozeDateInDialogMin"
+                            ></v-date-picker>
+                        </v-col>
+                        <v-col>
+                            <v-time-picker v-model="taskSnoozeTimeInDialog" format="24hr"></v-time-picker>
+                        </v-col>
+                    </v-row>
+                </v-card-text>
+                <v-card-actions>
+                    <v-spacer></v-spacer>
+                    <v-btn
+                            color="red darken-1"
+                            text
+                            @click="snoozeTaskDialog = false"
+                    >
+                        Cancel
+                    </v-btn>
+                    <v-btn
+                            color="green darken-1"
+                            dark
+                            @click="snoozeTasks"
+                    >
+                        Snooze
+                    </v-btn>
+                </v-card-actions>
+            </v-card>
+        </v-dialog>
+        <v-dialog v-model="editTaskDialog" max-width="700" :fullscreen="$vuetify.breakpoint.xsOnly">
             <v-card>
                 <v-card-title class="headline">{{taskTitleInDialog}}</v-card-title>
 
@@ -17,8 +86,12 @@
                                 >
                                 </v-text-field>
                             </v-col>
+                            <!--
                             <v-col cols="12">
-                                <v-text-field label="Additional info"></v-text-field>
+                                <v-text-field
+                                        label="Additional info"
+                                        v-model="taskInfoInDialog"
+                                ></v-text-field>
                             </v-col>
                             <v-col cols="12" sm="6">
                                 <v-select
@@ -33,25 +106,24 @@
                                         multiple
                                 ></v-autocomplete>
                             </v-col>
+                            -->
                         </v-row>
                     </v-container>
                 </v-card-text>
-
                 <v-card-actions>
                     <v-spacer></v-spacer>
-
                     <v-btn
                             color="red darken-1"
                             text
-                            @click="dialog = false"
+                            @click="editTaskDialog = false"
                     >
                         Cancel
                     </v-btn>
-
                     <v-btn
                             color="green darken-1"
                             dark
-                            @click="dialog = false"
+                            :disabled="taskSaving"
+                            @click="saveTask"
                     >
                         Submit
                     </v-btn>
@@ -59,24 +131,9 @@
             </v-card>
         </v-dialog>
         <v-row>
-            <v-col>
-                <v-card
-                        class="mx-auto"
-                >
-                    <v-toolbar
-                            class="mb-2"
-                            color="green"
-                            dark
-                            flat
-                    >
-                        <v-toolbar-title>TODO</v-toolbar-title>
-                    </v-toolbar>
-                </v-card>
-            </v-col>
-        </v-row>
-        <v-row>
             <v-col md="3"></v-col>
             <v-col cols="12" xs="12" md="6">
+                <h1 class="headline mt-5 mb-5">New task</h1>
                 <v-text-field
                         placeholder="Buy a yacht"
                         solo
@@ -104,18 +161,29 @@
                             color="green"
                             dark
                     >
-                        <v-toolbar-title>{{projectTitle}}</v-toolbar-title>
+                        <v-select
+                                class="pt-8"
+                                :items="projectList"
+                                v-model="projectIdSelected"
+                                label="Project"
+                                item-text="name"
+                                item-value="id"
+                                outlined
+                                @change="getTasks(projectIdSelected)"
+                        ></v-select>
+
                         <v-spacer></v-spacer>
-                        <v-btn icon>
+                        <v-btn icon @click="setAsDoneTasks" :disabled="tasksDoneInProgress">
                             <v-icon>mdi-check-bold</v-icon>
                         </v-btn>
-                        <v-btn icon>
+                        <v-btn icon @click="showSnoozeDialog">
                             <v-icon>mdi-alarm-snooze</v-icon>
                         </v-btn>
-                        <v-btn icon @click="deleteTasks">
+                        <v-btn :disabled="tasksDeleting" icon @click="confirmDeleteTasks">
                             <v-icon>mdi-delete</v-icon>
                         </v-btn>
                     </v-toolbar>
+                    <v-progress-linear v-if="tasksLoading || projectLoading" indeterminate/>
                     <v-list
                             subheader
                     >
@@ -151,41 +219,259 @@
 </template>
 
 <script>
+    import axios from "axios";
+
     export default {
         name: 'tasks',
         data() {
             return {
-                projectTitle: "Cool project name placeholder",
-                newTaskTitle: "",
+                editTaskDialog: false,
+                snoozeTaskDialog: false,
+                deleteTaskDialog: false,
+                projectLoading: true,
+                projectList: [{}],
+                projectIdSelected: 0,
+                newTaskTitle: '',
                 tasks: [
                     {
-                        title: "Buy cat food",
+                        id: 0,
+                        title: '',
                         selected: false,
+                        info: '',
                     }
                 ],
-                dialog: false,
-                taskTitleInDialog: "",
+                taskTitleInDialog: '',
+                taskInfoInDialog: '',
+                taskIdInDialog: 0,
+                taskSnoozeDateInDialog: '',
+                taskSnoozeDateInDialogMin: '',
+                taskSnoozeTimeInDialog: '',
+                tasksLoading: true,
+                tasksDeleting: false,
+                taskSaving: false,
+                tasksDoneInProgress: false,
             }
         },
         mounted() {
+            this.getProjects()
         },
         methods: {
             addTask() {
-                if (this.newTaskTitle !== "") {
-                    this.tasks.push({"title": this.newTaskTitle, "selected": false,});
-                    this.newTaskTitle = ""
+                if (this.newTaskTitle.length < 1) {
+                    // TODO show snackbar
+                    return
                 }
-            },
-            deleteTasks() {
-                this.tasks = this.tasks.filter(function (task) {
-                    return !task.selected
-                })
+                this.tasksLoading = true
+                let url = this.apiUrl + '/api/v1/project/' + this.projectIdSelected + '/task'
+                let data = {"title": this.newTaskTitle}
+                axios.post(url, data, this.authConfig())
+                    .then((res) => {
+                        this.getTasks(this.projectIdSelected)
+                    })
+                    .catch(((err) => {
+                        if (err.response.status === 401) {
+                            console.log('logged out')
+                            this.$root.$emit('sessionExpired')
+                        } else if (err.response.status === 400) {
+                            console.log('empty result / wrong request')
+                        } else {
+                            console.log('something wrong')
+                        }
+                    }))
+                this.newTaskTitle = ''
             },
             showDialog(task) {
+                this.taskIdInDialog = task.id
                 this.taskTitleInDialog = task.title
+                this.taskInfoInDialog = task.info
                 this.tasks.selected = false
-                this.dialog = true
+                this.editTaskDialog = true
             },
+            showSnoozeDialog(task) {
+                let now = new Date()
+                let year = now.getFullYear()
+                let month = now.getMonth()
+                month++
+                if (month < 10) {
+                    month = "0" + month
+                }
+                let day = now.getDate()
+                let today = year + "-" + month + "-" + day
+
+                this.taskSnoozeDateInDialogMin = today
+                this.taskSnoozeDateInDialog = today
+                this.snoozeTaskDialog = true
+            },
+            confirmDeleteTasks() {
+                this.deleteTaskDialog = true
+            },
+            deleteTasks() {
+                this.tasksDeleting = true
+                // get selected tasks
+                let tasksForDelete = []
+                this.tasks.forEach((task) => {
+                    if (task.selected) {
+                        tasksForDelete.push({"id": task.id, "delete": true})
+                    }
+                })
+                // send task IDs to server
+                let url = this.apiUrl + '/api/v1/project/' + this.projectIdSelected + '/task'
+                axios.put(url, tasksForDelete, this.authConfig())
+                    .then((res) => {
+                        this.tasksDeleting = false
+                        this.deleteTaskDialog = false
+                        this.getTasks(this.projectIdSelected)
+                    })
+                    .catch(((err) => {
+                        if (err.response.status === 401) {
+                            console.log('logged out')
+                            this.$root.$emit('sessionExpired')
+                        } else if (err.response.status === 400) {
+                            console.log('empty result / wrong request')
+                        } else {
+                            console.log('something wrong')
+                        }
+                    }))
+                // hide dialog
+                this.snoozeTaskDialog = false
+                // refresh task list
+                this.getTasks(this.projectIdSelected)
+                // TODO add snackbar with info for user
+            },
+            setAsDoneTasks() {
+                this.tasksDoneInProgress = true
+                // get selected tasks
+                let tasksForDone = []
+                this.tasks.forEach((task) => {
+                    if (task.selected) {
+                        tasksForDone.push({"id": task.id, "done": true})
+                    }
+                })
+                // send task IDs to server
+                let url = this.apiUrl + '/api/v1/project/' + this.projectIdSelected + '/task'
+                axios.put(url, tasksForDone, this.authConfig())
+                    .then((res) => {
+                        this.tasksDoneInProgress = false
+                        // refresh task list
+                        this.getTasks(this.projectIdSelected)
+                        // TODO add snackbar with info for user
+                    })
+                    .catch(((err) => {
+                        if (err.response.status === 401) {
+                            console.log('logged out')
+                            this.$root.$emit('sessionExpired')
+                        } else if (err.response.status === 400) {
+                            console.log('empty result / wrong request')
+                        } else {
+                            console.log('something wrong')
+                        }
+                    }))
+            },
+            snoozeTasks() {
+                // get selected tasks
+                let tasksForSnooze = []
+                this.tasks.forEach((task) => {
+                    if (task.selected) {
+                        // 2020-02-23T17:47:36Z
+                        let offset = new Date().getTimezoneOffset() / -60
+                        if (offset < 10) {
+                            offset = "0" + offset
+                        }
+                        // format this in Go way
+                        let timeStr = this.taskSnoozeDateInDialog + "T" + this.taskSnoozeTimeInDialog + ":00+" + offset + ":00"
+                        tasksForSnooze.push({"id": task.id, "snoozeTo": timeStr})
+                    }
+                })
+                // send task IDs to server
+                let url = this.apiUrl + '/api/v1/project/' + this.projectIdSelected + '/task'
+                axios.put(url, tasksForSnooze, this.authConfig())
+                    .then((res) => {
+                        this.getTasks(this.projectIdSelected)
+                    })
+                    .catch(((err) => {
+                        if (err.response.status === 401) {
+                            console.log('logged out')
+                            this.$root.$emit('sessionExpired')
+                        } else if (err.response.status === 400) {
+                            console.log('empty result / wrong request')
+                        } else {
+                            console.log('something wrong')
+                        }
+                    }))
+                // hide dialog
+                this.snoozeTaskDialog = false
+                // refresh task list
+                this.getTasks(this.projectIdSelected)
+                // TODO add snackbar with info for user
+            },
+            saveTask() {
+                this.taskSaving = true
+                // get selected tasks
+                let data = [{"id": this.taskIdInDialog, "title": this.taskTitleInDialog}]
+                // send task IDs to server
+                let url = this.apiUrl + '/api/v1/project/' + this.projectIdSelected + '/task'
+                axios.put(url, data, this.authConfig())
+                    .then((res) => {
+                        this.taskSaving = false
+                        // hide dialog
+                        this.editTaskDialog = false
+                        // refresh task list
+                        this.getTasks(this.projectIdSelected)
+                        //TODO add snackbar with info for user
+                    })
+                    .catch(((err) => {
+                        if (err.response.status === 401) {
+                            console.log('logged out')
+                            this.$root.$emit('sessionExpired')
+                        } else if (err.response.status === 400) {
+                            console.log('empty result / wrong request')
+                        } else {
+                            console.log('something wrong')
+                        }
+                    }))
+            },
+            authConfig() {
+                return {headers: {Authorization: 'Bearer ' + localStorage.getItem(this.lsToken)}}
+            },
+            getProjects() {
+                this.projectLoading = true
+                axios.get(this.apiUrl + '/api/v1/project', this.authConfig())
+                    .then((res) => {
+                        this.projectList = res.data
+                        this.getTasks(res.data[0].id)
+                        this.projectIdSelected = res.data[0].id
+                        this.projectLoading = false
+                    })
+                    .catch(function (err) {
+                        if (err.response.status === 401) {
+                            console.log('logged out')
+                            vm.$root.$emit('sessionExpired')
+                        } else if (err.response.status === 400) {
+                            console.log('empty result / wrong request')
+                        } else {
+                            console.log('something wrong')
+                        }
+                    })
+            },
+            getTasks(projectId) {
+                this.tasksLoading = true
+                let url = this.apiUrl + '/api/v1/project/' + projectId + '/task'
+                axios.get(url, this.authConfig())
+                    .then((res) => {
+                        this.tasks = res.data
+                        this.tasksLoading = false
+                    })
+                    .catch(function (err) {
+                        if (err.response.status === 401) {
+                            console.log('logged out')
+                            vm.$root.$emit('sessionExpired')
+                        } else if (err.response.status === 400) {
+                            console.log('empty result / wrong request')
+                        } else {
+                            console.log('something wrong')
+                        }
+                    })
+            }
         },
     }
 </script>
