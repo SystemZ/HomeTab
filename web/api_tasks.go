@@ -106,3 +106,52 @@ func ApiTaskCreate(w http.ResponseWriter, r *http.Request) {
 	model.CreateTask(task)
 
 }
+
+type EditTaskApiReq struct {
+	Id     int        `json:"id"`
+	Title  string     `json:"title"`
+	Snooze *time.Time `json:"snoozeTo"`
+	Delete bool       `json:"delete"`
+}
+
+func ApiTaskEdit(w http.ResponseWriter, r *http.Request) {
+	// check auth
+	ok, _ := CheckApiAuth(w, r)
+	if !ok {
+		w.WriteHeader(http.StatusUnauthorized)
+		return
+	}
+
+	// check ID in URL
+	vars := mux.Vars(r)
+	projectId, err := strconv.Atoi(vars["id"])
+	if err != nil {
+		log.Printf("Wrong project ID requested")
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
+	// FIXME validate
+	decoder := json.NewDecoder(r.Body)
+	var editedTasks []EditTaskApiReq
+	decoder.Decode(&editedTasks)
+
+	for _, task := range editedTasks {
+		var taskInDb model.Task
+		model.DB.Where("project_id = ? AND id = ?", projectId, task.Id).Find(&taskInDb)
+		// check if task exists
+		if taskInDb.Id < 1 {
+			continue
+		}
+		// snooze if date is in the future
+		if task.Snooze != nil && task.Snooze.After(time.Now()) {
+			taskInDb.SnoozeTo = task.Snooze
+			model.DB.Save(&taskInDb)
+		}
+		// soft delete task
+		if task.Delete {
+			model.DB.Delete(&taskInDb)
+		}
+	}
+
+}

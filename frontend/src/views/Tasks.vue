@@ -1,10 +1,78 @@
 <template>
     <v-container fluid>
-        <v-dialog
-                v-model="dialog"
-                max-width="700"
-                :fullscreen="$vuetify.breakpoint.xsOnly"
-        >
+        <v-dialog v-model="deleteTaskDialog" max-width="700" :fullscreen="$vuetify.breakpoint.xsOnly">
+            <v-card>
+                <v-card-title>
+                    Delete task
+                </v-card-title>
+                <v-card-subtitle>
+                    Are you sure that you don't need these tasks?
+                </v-card-subtitle>
+                <v-card-text>
+                </v-card-text>
+                <v-card-actions>
+                    <v-spacer></v-spacer>
+                    <v-btn
+                            color="green darken-1"
+                            text
+                            @click="deleteTaskDialog = false"
+                    >
+                        Cancel
+                    </v-btn>
+                    <v-btn
+                            color="red darken-1"
+                            dark
+                            :disabled="tasksDeleting"
+                            @click="deleteTasks"
+                    >
+                        <v-icon>mdi-delete</v-icon>
+                        Delete
+                    </v-btn>
+                </v-card-actions>
+            </v-card>
+        </v-dialog>
+        <v-dialog v-model="snoozeTaskDialog" max-width="700" :fullscreen="$vuetify.breakpoint.xsOnly">
+            <v-card>
+                <v-card-title>
+                    Snooze task
+                </v-card-title>
+                <v-card-subtitle>
+                    Select date after I should nag you again
+                </v-card-subtitle>
+                <v-card-text>
+                    <v-row>
+                        <v-col>
+                            <v-date-picker
+                                    v-model="taskSnoozeDateInDialog"
+                                    class="mt-4"
+                                    :min="taskSnoozeDateInDialogMin"
+                            ></v-date-picker>
+                        </v-col>
+                        <v-col>
+                            <v-time-picker v-model="taskSnoozeTimeInDialog" format="24hr"></v-time-picker>
+                        </v-col>
+                    </v-row>
+                </v-card-text>
+                <v-card-actions>
+                    <v-spacer></v-spacer>
+                    <v-btn
+                            color="red darken-1"
+                            text
+                            @click="snoozeTaskDialog = false"
+                    >
+                        Cancel
+                    </v-btn>
+                    <v-btn
+                            color="green darken-1"
+                            dark
+                            @click="snoozeTasks"
+                    >
+                        Snooze
+                    </v-btn>
+                </v-card-actions>
+            </v-card>
+        </v-dialog>
+        <v-dialog v-model="editTaskDialog" max-width="700" :fullscreen="$vuetify.breakpoint.xsOnly">
             <v-card>
                 <v-card-title class="headline">{{taskTitleInDialog}}</v-card-title>
 
@@ -47,7 +115,7 @@
                     <v-btn
                             color="red darken-1"
                             text
-                            @click="dialog = false"
+                            @click="editTaskDialog = false"
                     >
                         Cancel
                     </v-btn>
@@ -108,10 +176,10 @@
                         <v-btn icon>
                             <v-icon>mdi-check-bold</v-icon>
                         </v-btn>
-                        <v-btn icon>
+                        <v-btn icon @click="showSnoozeDialog">
                             <v-icon>mdi-alarm-snooze</v-icon>
                         </v-btn>
-                        <v-btn icon @click="deleteTasks">
+                        <v-btn :disabled="tasksDeleting" icon @click="confirmDeleteTasks">
                             <v-icon>mdi-delete</v-icon>
                         </v-btn>
                     </v-toolbar>
@@ -157,6 +225,9 @@
         name: 'tasks',
         data() {
             return {
+                editTaskDialog: false,
+                snoozeTaskDialog: false,
+                deleteTaskDialog: false,
                 projectLoading: true,
                 projectList: [{}],
                 projectIdSelected: 0,
@@ -169,11 +240,14 @@
                         info: '',
                     }
                 ],
-                dialog: false,
                 taskTitleInDialog: '',
                 taskInfoInDialog: '',
                 taskIdInDialog: 0,
+                taskSnoozeDateInDialog: '',
+                taskSnoozeDateInDialogMin: '',
+                taskSnoozeTimeInDialog: '',
                 tasksLoading: true,
+                tasksDeleting: false,
             }
         },
         mounted() {
@@ -204,17 +278,100 @@
                     }))
                 this.newTaskTitle = ''
             },
-            deleteTasks() {
-                this.tasks = this.tasks.filter(function (task) {
-                    return !task.selected
-                })
-            },
             showDialog(task) {
                 this.taskIdInDialog = task.id
                 this.taskTitleInDialog = task.title
                 this.taskInfoInDialog = task.info
                 this.tasks.selected = false
-                this.dialog = true
+                this.editTaskDialog = true
+            },
+            showSnoozeDialog(task) {
+                let now = new Date()
+                let year = now.getFullYear()
+                let month = now.getMonth()
+                month++
+                if (month < 10) {
+                    month = "0" + month
+                }
+                let day = now.getDate()
+                let today = year + "-" + month + "-" + day
+
+                this.taskSnoozeDateInDialogMin = today
+                this.taskSnoozeDateInDialog = today
+                this.snoozeTaskDialog = true
+            },
+            confirmDeleteTasks() {
+                this.deleteTaskDialog = true
+            },
+            deleteTasks() {
+                this.tasksDeleting = true
+                // get selected tasks
+                let tasksForDelete = []
+                this.tasks.forEach((task) => {
+                    if (task.selected) {
+                        tasksForDelete.push({"id": task.id, "delete": true})
+                    }
+                })
+                // send task IDs to server
+                let url = this.apiUrl + '/api/v1/project/' + this.projectIdSelected + '/task'
+                axios.put(url, tasksForDelete, this.authConfig())
+                    .then((res) => {
+                        this.tasksDeleting = false
+                        this.deleteTaskDialog = false
+                        this.getTasks(this.projectIdSelected)
+                    })
+                    .catch(((err) => {
+                        if (err.response.status === 401) {
+                            console.log('logged out')
+                            this.$root.$emit('sessionExpired')
+                        } else if (err.response.status === 400) {
+                            console.log('empty result / wrong request')
+                        } else {
+                            console.log('something wrong')
+                        }
+                    }))
+                // hide dialog
+                this.snoozeTaskDialog = false
+                // refresh task list
+                this.getTasks(this.projectIdSelected)
+                // TODO add snackbar with info for user
+            },
+            snoozeTasks() {
+                // get selected tasks
+                let tasksForSnooze = []
+                this.tasks.forEach((task) => {
+                    if (task.selected) {
+                        // 2020-02-23T17:47:36Z
+                        let offset = new Date().getTimezoneOffset() / -60
+                        if (offset < 10) {
+                            offset = "0" + offset
+                        }
+                        // format this in Go way
+                        let timeStr = this.taskSnoozeDateInDialog + "T" + this.taskSnoozeTimeInDialog + ":00+" + offset + ":00"
+                        tasksForSnooze.push({"id": task.id, "snoozeTo": timeStr})
+                    }
+                })
+                // send task IDs to server
+                let url = this.apiUrl + '/api/v1/project/' + this.projectIdSelected + '/task'
+                axios.put(url, tasksForSnooze, this.authConfig())
+                    .then((res) => {
+                        this.getTasks(this.projectIdSelected)
+                    })
+                    .catch(((err) => {
+                        if (err.response.status === 401) {
+                            console.log('logged out')
+                            this.$root.$emit('sessionExpired')
+                        } else if (err.response.status === 400) {
+                            console.log('empty result / wrong request')
+                        } else {
+                            console.log('something wrong')
+                        }
+                    }))
+                // hide dialog
+                this.snoozeTaskDialog = false
+                // refresh task list
+                this.getTasks(this.projectIdSelected)
+                // TODO add snackbar with info for user
             },
             saveTask() {
                 let i
@@ -224,7 +381,7 @@
                         this.tasks[i].info = this.taskInfoInDialog
                     }
                 }
-                this.dialog = false
+                this.editTaskDialog = false
             },
             authConfig() {
                 return {headers: {Authorization: 'Bearer ' + localStorage.getItem(this.lsToken)}}
