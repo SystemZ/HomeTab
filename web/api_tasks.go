@@ -152,6 +152,11 @@ func ApiTaskEdit(w http.ResponseWriter, r *http.Request) {
 		if task.Delete {
 			model.DB.Delete(&taskInDb)
 		}
+		// edit title
+		if len(task.Title) > 0 {
+			taskInDb.Subject = task.Title
+			model.DB.Save(&taskInDb)
+		}
 	}
 
 }

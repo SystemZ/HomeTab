@@ -86,6 +86,7 @@
                                 >
                                 </v-text-field>
                             </v-col>
+                            <!--
                             <v-col cols="12">
                                 <v-text-field
                                         label="Additional info"
@@ -105,13 +106,12 @@
                                         multiple
                                 ></v-autocomplete>
                             </v-col>
+                            -->
                         </v-row>
                     </v-container>
                 </v-card-text>
-
                 <v-card-actions>
                     <v-spacer></v-spacer>
-
                     <v-btn
                             color="red darken-1"
                             text
@@ -119,10 +119,10 @@
                     >
                         Cancel
                     </v-btn>
-
                     <v-btn
                             color="green darken-1"
                             dark
+                            :disabled="taskSaving"
                             @click="saveTask"
                     >
                         Submit
@@ -248,6 +248,7 @@
                 taskSnoozeTimeInDialog: '',
                 tasksLoading: true,
                 tasksDeleting: false,
+                taskSaving: false,
             }
         },
         mounted() {
@@ -374,14 +375,30 @@
                 // TODO add snackbar with info for user
             },
             saveTask() {
-                let i
-                for (i = 0; i < this.tasks.length; i++) {
-                    if (this.taskIdInDialog === this.tasks[i].id) {
-                        this.tasks[i].title = this.taskTitleInDialog
-                        this.tasks[i].info = this.taskInfoInDialog
-                    }
-                }
-                this.editTaskDialog = false
+                this.taskSaving = true
+                // get selected tasks
+                let data = [{"id": this.taskIdInDialog, "title": this.taskTitleInDialog}]
+                // send task IDs to server
+                let url = this.apiUrl + '/api/v1/project/' + this.projectIdSelected + '/task'
+                axios.put(url, data, this.authConfig())
+                    .then((res) => {
+                        this.taskSaving = false
+                        // hide dialog
+                        this.editTaskDialog = false
+                        // refresh task list
+                        this.getTasks(this.projectIdSelected)
+                        //TODO add snackbar with info for user
+                    })
+                    .catch(((err) => {
+                        if (err.response.status === 401) {
+                            console.log('logged out')
+                            this.$root.$emit('sessionExpired')
+                        } else if (err.response.status === 400) {
+                            console.log('empty result / wrong request')
+                        } else {
+                            console.log('something wrong')
+                        }
+                    }))
             },
             authConfig() {
                 return {headers: {Authorization: 'Bearer ' + localStorage.getItem(this.lsToken)}}
