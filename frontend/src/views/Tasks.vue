@@ -62,22 +62,6 @@
             </v-card>
         </v-dialog>
         <v-row>
-            <v-col>
-                <v-card
-                        class="mx-auto"
-                >
-                    <v-toolbar
-                            class="mb-2"
-                            color="green"
-                            dark
-                            flat
-                    >
-                        <v-toolbar-title>TODO</v-toolbar-title>
-                    </v-toolbar>
-                </v-card>
-            </v-col>
-        </v-row>
-        <v-row>
             <v-col md="3"></v-col>
             <v-col cols="12" xs="12" md="6">
                 <v-text-field
