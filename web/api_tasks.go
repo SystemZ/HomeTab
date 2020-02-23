@@ -61,3 +61,48 @@ func ApiTaskList(w http.ResponseWriter, r *http.Request) {
 	w.Write(noteList)
 
 }
+
+type NewTaskApiReq struct {
+	Title string `json:"title"`
+}
+
+func ApiTaskCreate(w http.ResponseWriter, r *http.Request) {
+	// check auth
+	ok, _ := CheckApiAuth(w, r)
+	if !ok {
+		w.WriteHeader(http.StatusUnauthorized)
+		return
+	}
+
+	// check ID in URL
+	vars := mux.Vars(r)
+	projectId, err := strconv.Atoi(vars["id"])
+	if err != nil {
+		log.Printf("Wrong project ID requested")
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
+	// FIXME validate
+	decoder := json.NewDecoder(r.Body)
+	var newTask NewTaskApiReq
+	decoder.Decode(&newTask)
+
+	// add to DB
+	task := model.Task{
+		Subject:          newTask.Title,
+		ProjectId:        uint(projectId),
+		AssignedUserId:   0,
+		Repeating:        0,
+		NeverEnding:      0,
+		RepeatUnit:       "",
+		RepeatMin:        0,
+		RepeatBest:       0,
+		RepeatMax:        0,
+		EstimateS:        0,
+		MasterTaskId:     0,
+		SeparateChildren: 0,
+	}
+	model.CreateTask(task)
+
+}

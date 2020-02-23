@@ -181,14 +181,28 @@
         },
         methods: {
             addTask() {
-                if (this.newTaskTitle !== '') {
-                    this.tasks.push({
-                        'id': new Date().getUTCMilliseconds(),
-                        'title': this.newTaskTitle,
-                        'selected': false,
-                    })
-                    this.newTaskTitle = ''
+                if (this.newTaskTitle.length < 1) {
+                    // TODO show snackbar
+                    return
                 }
+                this.tasksLoading = true
+                let url = this.apiUrl + '/api/v1/project/' + this.projectIdSelected + '/task'
+                let data = {"title": this.newTaskTitle}
+                axios.post(url, data, this.authConfig())
+                    .then((res) => {
+                        this.getTasks(this.projectIdSelected)
+                    })
+                    .catch(((err) => {
+                        if (err.response.status === 401) {
+                            console.log('logged out')
+                            this.$root.$emit('sessionExpired')
+                        } else if (err.response.status === 400) {
+                            console.log('empty result / wrong request')
+                        } else {
+                            console.log('something wrong')
+                        }
+                    }))
+                this.newTaskTitle = ''
             },
             deleteTasks() {
                 this.tasks = this.tasks.filter(function (task) {
