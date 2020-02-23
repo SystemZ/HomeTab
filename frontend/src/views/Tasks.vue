@@ -18,7 +18,10 @@
                                 </v-text-field>
                             </v-col>
                             <v-col cols="12">
-                                <v-text-field label="Additional info"></v-text-field>
+                                <v-text-field
+                                        label="Additional info"
+                                        v-model="taskInfoInDialog"
+                                ></v-text-field>
                             </v-col>
                             <v-col cols="12" sm="6">
                                 <v-select
@@ -51,7 +54,7 @@
                     <v-btn
                             color="green darken-1"
                             dark
-                            @click="dialog = false"
+                            @click="saveTask"
                     >
                         Submit
                     </v-btn>
@@ -159,12 +162,16 @@
                 newTaskTitle: "",
                 tasks: [
                     {
+                        id: 1,
                         title: "Buy cat food",
                         selected: false,
+                        info: "Felix only",
                     }
                 ],
                 dialog: false,
                 taskTitleInDialog: "",
+                taskInfoInDialog: "",
+                taskIdInDialog: 0,
             }
         },
         mounted() {
@@ -172,7 +179,11 @@
         methods: {
             addTask() {
                 if (this.newTaskTitle !== "") {
-                    this.tasks.push({"title": this.newTaskTitle, "selected": false,});
+                    this.tasks.push({
+                        "id": new Date().getUTCMilliseconds(),
+                        "title": this.newTaskTitle,
+                        "selected": false,
+                    });
                     this.newTaskTitle = ""
                 }
             },
@@ -182,9 +193,21 @@
                 })
             },
             showDialog(task) {
+                this.taskIdInDialog = task.id
                 this.taskTitleInDialog = task.title
+                this.taskInfoInDialog = task.info
                 this.tasks.selected = false
                 this.dialog = true
+            },
+            saveTask() {
+                let i;
+                for (i = 0; i < this.tasks.length; i++) {
+                    if (this.taskIdInDialog === this.tasks[i].id) {
+                        this.tasks[i].title = this.taskTitleInDialog
+                        this.tasks[i].info = this.taskInfoInDialog
+                    }
+                }
+                this.dialog = false
             },
         },
     }
