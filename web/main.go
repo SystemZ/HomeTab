@@ -75,12 +75,14 @@ func StartWebInterface() {
 	r.HandleFunc("/api/v1/login", ApiLogin)
 	r.HandleFunc("/api/v1/mq/access", ApiMqCredential)
 	r.HandleFunc("/api/v1/event", ApiEvent)
-	r.HandleFunc("/api/v1/counter-page", ApiCounterListPagination).Methods("POST") //JS frontend
 	// for frontend
+	r.HandleFunc("/api/v1/project", ApiProjectList).Methods("GET")
+	r.HandleFunc("/api/v1/project/{id}/task", ApiTaskList).Methods("GET")
 	r.HandleFunc("/api/v1/note", ApiNoteList).Methods("GET")
 	r.HandleFunc("/api/v1/note/{id}", ApiNote).Methods("GET")
 	r.HandleFunc("/api/v1/note/{id}", ApiNoteEdit).Methods("PUT")
 	r.HandleFunc("/api/v1/counter", ApiCounterAdd).Methods("POST")
+	r.HandleFunc("/api/v1/counter-page", ApiCounterListPagination).Methods("POST")
 	r.HandleFunc("/api/v1/counter/{id}/info", ApiCounterFrontend).Methods("GET")
 	r.HandleFunc("/api/v1/counter/{id}/start", ApiCounterStartFrontend).Methods("PUT")
 	r.HandleFunc("/api/v1/counter/{id}/stop", ApiCounterStopFrontend).Methods("PUT")

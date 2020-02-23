@@ -16,11 +16,11 @@ type Project struct {
 	// Username
 	//
 	// required: true
-	Name      string     `gorm:"column:name" json:"username"`
-	GroupId   uint       `gorm:"column:group_id" json:"group_id"`
-	CreatedAt *time.Time `gorm:"column:created_at" json:"created_at"`
-	UpdatedAt *time.Time `gorm:"column:updated_at" json:"updated_at"`
-	DeletedAt *time.Time `gorm:"column:deleted_at" json:"deleted_at"`
+	Name      string     `gorm:"column:name" json:"name"`
+	GroupId   uint       `gorm:"column:group_id" json:"groupId"`
+	CreatedAt *time.Time `gorm:"column:created_at" json:"createdAt"`
+	UpdatedAt *time.Time `gorm:"column:updated_at" json:"updatedAt"`
+	DeletedAt *time.Time `gorm:"column:deleted_at" json:"deletedAt"`
 }
 
 func CreateProject(name string, groupId uint) uint {

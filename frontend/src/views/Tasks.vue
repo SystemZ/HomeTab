@@ -93,7 +93,17 @@
                             color="green"
                             dark
                     >
-                        <v-toolbar-title>{{projectTitle}}</v-toolbar-title>
+                        <v-select
+                                class="pt-8"
+                                :items="projectList"
+                                v-model="projectIdSelected"
+                                label="Project"
+                                item-text="name"
+                                item-value="id"
+                                outlined
+                                @change="getTasks(projectIdSelected)"
+                        ></v-select>
+
                         <v-spacer></v-spacer>
                         <v-btn icon>
                             <v-icon>mdi-check-bold</v-icon>
@@ -105,6 +115,7 @@
                             <v-icon>mdi-delete</v-icon>
                         </v-btn>
                     </v-toolbar>
+                    <v-progress-linear v-if="tasksLoading || projectLoading" indeterminate/>
                     <v-list
                             subheader
                     >
@@ -140,37 +151,43 @@
 </template>
 
 <script>
+    import axios from "axios";
+
     export default {
         name: 'tasks',
         data() {
             return {
-                projectTitle: "Cool project name placeholder",
-                newTaskTitle: "",
+                projectLoading: true,
+                projectList: [{}],
+                projectIdSelected: 0,
+                newTaskTitle: '',
                 tasks: [
                     {
-                        id: 1,
-                        title: "Buy cat food",
+                        id: 0,
+                        title: '',
                         selected: false,
-                        info: "Felix only",
+                        info: '',
                     }
                 ],
                 dialog: false,
-                taskTitleInDialog: "",
-                taskInfoInDialog: "",
+                taskTitleInDialog: '',
+                taskInfoInDialog: '',
                 taskIdInDialog: 0,
+                tasksLoading: true,
             }
         },
         mounted() {
+            this.getProjects()
         },
         methods: {
             addTask() {
-                if (this.newTaskTitle !== "") {
+                if (this.newTaskTitle !== '') {
                     this.tasks.push({
-                        "id": new Date().getUTCMilliseconds(),
-                        "title": this.newTaskTitle,
-                        "selected": false,
-                    });
-                    this.newTaskTitle = ""
+                        'id': new Date().getUTCMilliseconds(),
+                        'title': this.newTaskTitle,
+                        'selected': false,
+                    })
+                    this.newTaskTitle = ''
                 }
             },
             deleteTasks() {
@@ -186,7 +203,7 @@
                 this.dialog = true
             },
             saveTask() {
-                let i;
+                let i
                 for (i = 0; i < this.tasks.length; i++) {
                     if (this.taskIdInDialog === this.tasks[i].id) {
                         this.tasks[i].title = this.taskTitleInDialog
@@ -195,6 +212,48 @@
                 }
                 this.dialog = false
             },
+            authConfig() {
+                return {headers: {Authorization: 'Bearer ' + localStorage.getItem(this.lsToken)}}
+            },
+            getProjects() {
+                this.projectLoading = true
+                axios.get(this.apiUrl + '/api/v1/project', this.authConfig())
+                    .then((res) => {
+                        this.projectList = res.data
+                        this.getTasks(res.data[0].id)
+                        this.projectIdSelected = res.data[0].id
+                        this.projectLoading = false
+                    })
+                    .catch(function (err) {
+                        if (err.response.status === 401) {
+                            console.log('logged out')
+                            vm.$root.$emit('sessionExpired')
+                        } else if (err.response.status === 400) {
+                            console.log('empty result / wrong request')
+                        } else {
+                            console.log('something wrong')
+                        }
+                    })
+            },
+            getTasks(projectId) {
+                this.tasksLoading = true
+                let url = this.apiUrl + '/api/v1/project/' + projectId + '/task'
+                axios.get(url, this.authConfig())
+                    .then((res) => {
+                        this.tasks = res.data
+                        this.tasksLoading = false
+                    })
+                    .catch(function (err) {
+                        if (err.response.status === 401) {
+                            console.log('logged out')
+                            vm.$root.$emit('sessionExpired')
+                        } else if (err.response.status === 400) {
+                            console.log('empty result / wrong request')
+                        } else {
+                            console.log('something wrong')
+                        }
+                    })
+            }
         },
     }
 </script>
