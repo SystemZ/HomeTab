@@ -14,11 +14,24 @@ func ApiProjectList(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// get info from DB
 	var projects []model.Project
 	model.DB.Find(&projects)
 
+	// add special case
+	// project with ID 0
+	// all one user tasks from all projects
+	var finalProjectList []model.Project
+	finalProjectList = append(finalProjectList, model.Project{
+		Id:   0,
+		Name: "My tasks",
+	})
+	for _, project := range projects {
+		finalProjectList = append(finalProjectList, project)
+	}
+
 	// prepare JSON
-	noteList, err := json.MarshalIndent(projects, "", "  ")
+	res, err := json.MarshalIndent(finalProjectList, "", "  ")
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		return
@@ -26,6 +39,6 @@ func ApiProjectList(w http.ResponseWriter, r *http.Request) {
 
 	// all ok, return list
 	w.WriteHeader(http.StatusOK)
-	w.Write(noteList)
+	w.Write(res)
 
 }

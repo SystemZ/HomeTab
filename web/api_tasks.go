@@ -19,7 +19,7 @@ type TaskApiResponse struct {
 
 func ApiTaskList(w http.ResponseWriter, r *http.Request) {
 	// check auth
-	ok, _ := CheckApiAuth(w, r)
+	ok, userInfo := CheckApiAuth(w, r)
 	if !ok {
 		w.WriteHeader(http.StatusUnauthorized)
 		return
@@ -35,12 +35,24 @@ func ApiTaskList(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var rawResponse []TaskApiResponse
+	// prevent null response
+	rawResponse = []TaskApiResponse{}
 	// get data from DB, prepare other format
 	var tasks []model.Task
-	model.DB.Order("updated_at desc").Where("project_id = ? AND (snooze_to <= ? OR snooze_to IS NULL) AND done_at IS NULL", projectId, time.Now()).Find(&tasks)
-	//model.DB.Order("updated_at desc").Where(&model.Task{ProjectId: user.DefaultProjectId}).Find(&tasks)
+
 	var project model.Project
-	model.DB.Where(&model.Project{Id: uint(projectId)}).First(&project)
+	// special case, all tasks assigned to user
+	// from all projects
+	if projectId == 0 {
+		model.DB.Order("updated_at desc").Where("(snooze_to <= ? OR snooze_to IS NULL) AND done_at IS NULL AND assigned_user_id = ?", time.Now(), userInfo.Id).Find(&tasks)
+	} else {
+		model.DB.Order("updated_at desc").Where("project_id = ? AND (snooze_to <= ? OR snooze_to IS NULL) AND done_at IS NULL", projectId, time.Now()).Find(&tasks)
+		model.DB.Where(&model.Project{Id: uint(projectId)}).First(&project)
+		if project.Id < 1 {
+			// no such project, cancel rest of work
+			return
+		}
+	}
 
 	for _, task := range tasks {
 		rawResponse = append(rawResponse, TaskApiResponse{
@@ -52,7 +64,7 @@ func ApiTaskList(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// prepare JSON
-	noteList, err := json.MarshalIndent(rawResponse, "", "  ")
+	res, err := json.MarshalIndent(rawResponse, "", "  ")
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		return
@@ -60,7 +72,7 @@ func ApiTaskList(w http.ResponseWriter, r *http.Request) {
 
 	// all ok, return list
 	w.WriteHeader(http.StatusOK)
-	w.Write(noteList)
+	w.Write(res)
 
 }
 
@@ -187,7 +199,6 @@ func ApiTaskEdit(w http.ResponseWriter, r *http.Request) {
 			model.DB.Save(&taskInDb)
 		}
 		// assign to users
-		log.Printf("%v", task.AssignTo)
 		if task.AssignTo >= 0 {
 			taskInDb.AssignedUserId = uint(task.AssignTo)
 			model.DB.Save(&taskInDb)
