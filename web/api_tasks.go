@@ -149,6 +149,25 @@ func ApiTaskEdit(w http.ResponseWriter, r *http.Request) {
 			taskInDb.SnoozeTo = task.Snooze
 			model.DB.Save(&taskInDb)
 		}
+
+		// alternative snooze by seconds
+		/*
+			if taskAction == "snooze" {
+				now := time.Now()
+				taskSnoozeSecondsRaw := r.FormValue("taskSnoozeSeconds")
+				taskSnoozeSeconds, err := strconv.Atoi(taskSnoozeSecondsRaw)
+				if err != nil {
+					return
+				}
+				snoozeTime := now.Add(time.Second * time.Duration(taskSnoozeSeconds))
+				taskIdInt, err := strconv.Atoi(taskId)
+				if err != nil {
+					// skip this task if something is wrong
+					continue
+				}
+			}
+		*/
+
 		// soft delete task
 		if task.Delete {
 			model.DB.Delete(&taskInDb)

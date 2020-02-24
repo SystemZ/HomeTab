@@ -55,7 +55,6 @@ func StartWebInterface() {
 	// main course
 	r.PathPrefix(STATIC_DIR).Handler(http.StripPrefix(STATIC_DIR, http.FileServer(http.Dir("."+STATIC_DIR))))
 	r.HandleFunc("/", Index)
-	r.HandleFunc("/count", Count)
 	r.HandleFunc("/count/log", CountLog)
 	r.HandleFunc("/device", Device)
 	r.HandleFunc("/notes", Notes)
