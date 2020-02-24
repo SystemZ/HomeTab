@@ -86,18 +86,21 @@
                                 >
                                 </v-text-field>
                             </v-col>
+                            <v-col cols="12" sm="6">
+                                <v-select
+                                        v-model="taskAssignedInDialog"
+                                        item-text="username"
+                                        item-value="id"
+                                        :items="userList"
+                                        label="Assigned to"
+                                ></v-select>
+                            </v-col>
                             <!--
                             <v-col cols="12">
                                 <v-text-field
                                         label="Additional info"
                                         v-model="taskInfoInDialog"
                                 ></v-text-field>
-                            </v-col>
-                            <v-col cols="12" sm="6">
-                                <v-select
-                                        :items="['S', 'P', 'Others']"
-                                        label="Assigned to"
-                                ></v-select>
                             </v-col>
                             <v-col cols="12" sm="6">
                                 <v-autocomplete
@@ -208,7 +211,10 @@
                                     </v-checkbox>
                                 </v-list-item-action>
                                 <v-spacer></v-spacer>
-                                <v-icon @click.stop="showDialog(task)">mdi-information-outline</v-icon>
+                                <div class="mr-2">
+                                    {{task.username}}
+                                </div>
+                                <v-icon @click.stop="showDialog(task)">mdi-pencil</v-icon>
                             </v-list-item>
                         </template>
                     </v-list>
@@ -243,6 +249,7 @@
                 taskTitleInDialog: '',
                 taskInfoInDialog: '',
                 taskIdInDialog: 0,
+                taskAssignedInDialog: 0,
                 taskSnoozeDateInDialog: '',
                 taskSnoozeDateInDialogMin: '',
                 taskSnoozeTimeInDialog: '',
@@ -250,10 +257,11 @@
                 tasksDeleting: false,
                 taskSaving: false,
                 tasksDoneInProgress: false,
+                userList: [],
             }
         },
         mounted() {
-            this.getProjects()
+            this.getUsers()
         },
         methods: {
             addTask() {
@@ -284,6 +292,7 @@
                 this.taskIdInDialog = task.id
                 this.taskTitleInDialog = task.title
                 this.taskInfoInDialog = task.info
+                this.taskAssignedInDialog = task.assignedTo
                 this.tasks.selected = false
                 this.editTaskDialog = true
             },
@@ -407,7 +416,11 @@
             saveTask() {
                 this.taskSaving = true
                 // get selected tasks
-                let data = [{"id": this.taskIdInDialog, "title": this.taskTitleInDialog}]
+                let data = [{
+                    "id": this.taskIdInDialog,
+                    "title": this.taskTitleInDialog,
+                    "assignTo": this.taskAssignedInDialog
+                }]
                 // send task IDs to server
                 let url = this.apiUrl + '/api/v1/project/' + this.projectIdSelected + '/task'
                 axios.put(url, data, this.authConfig())
@@ -442,10 +455,10 @@
                         this.projectIdSelected = res.data[0].id
                         this.projectLoading = false
                     })
-                    .catch(function (err) {
+                    .catch((err) => {
                         if (err.response.status === 401) {
                             console.log('logged out')
-                            vm.$root.$emit('sessionExpired')
+                            this.$root.$emit('sessionExpired')
                         } else if (err.response.status === 400) {
                             console.log('empty result / wrong request')
                         } else {
@@ -458,13 +471,50 @@
                 let url = this.apiUrl + '/api/v1/project/' + projectId + '/task'
                 axios.get(url, this.authConfig())
                     .then((res) => {
+                        // save before editing
                         this.tasks = res.data
+                        // assign usernames to tasks
+                        for (let i = 0; i < this.tasks.length; i++) {
+                            console.log(this.tasks[i])
+                            for (let j = 0; j < this.userList.length; j++) {
+                                if (this.userList[j].id === this.tasks[i].assignedTo) {
+                                    this.tasks[i].username = this.userList[j].username
+                                }
+                            }
+                        }
+                        this.tasks.forEach((task) => {
+                            let username = "-"
+                            this.userList.forEach((user) => {
+                                if (user.id === task.assignedTo) {
+                                    username = user.username
+                                }
+                            })
+                            task
+                        })
                         this.tasksLoading = false
                     })
-                    .catch(function (err) {
+                    .catch((err) => {
                         if (err.response.status === 401) {
                             console.log('logged out')
-                            vm.$root.$emit('sessionExpired')
+                            this.$root.$emit('sessionExpired')
+                        } else if (err.response.status === 400) {
+                            console.log('empty result / wrong request')
+                        } else {
+                            console.log('something wrong')
+                        }
+                    })
+            },
+            getUsers() {
+                axios.get(this.apiUrl + '/api/v1/user', this.authConfig())
+                    .then((res) => {
+                        this.userList = res.data
+                        this.userList.unshift({"id": 0, "username": "-"})
+                        this.getProjects()
+                    })
+                    .catch((err) => {
+                        if (err.response.status === 401) {
+                            console.log('logged out')
+                            this.$root.$emit('sessionExpired')
                         } else if (err.response.status === 400) {
                             console.log('empty result / wrong request')
                         } else {

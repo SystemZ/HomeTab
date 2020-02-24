@@ -75,6 +75,7 @@ func StartWebInterface() {
 	r.HandleFunc("/api/v1/mq/access", ApiMqCredential)
 	r.HandleFunc("/api/v1/event", ApiEvent)
 	// for frontend
+	r.HandleFunc("/api/v1/user", ApiUserList).Methods("GET")
 	r.HandleFunc("/api/v1/project", ApiProjectList).Methods("GET")
 	r.HandleFunc("/api/v1/project/{id}/task", ApiTaskList).Methods("GET")
 	r.HandleFunc("/api/v1/project/{id}/task", ApiTaskCreate).Methods("POST")

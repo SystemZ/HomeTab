@@ -11,9 +11,10 @@ import (
 )
 
 type TaskApiResponse struct {
-	Id        int        `json:"id"`
-	Title     string     `json:"title"`
-	CreatedAt *time.Time `json:"createdAt"`
+	Id         int        `json:"id"`
+	Title      string     `json:"title"`
+	AssignedTo int        `json:"assignedTo"`
+	CreatedAt  *time.Time `json:"createdAt"`
 }
 
 func ApiTaskList(w http.ResponseWriter, r *http.Request) {
@@ -43,9 +44,10 @@ func ApiTaskList(w http.ResponseWriter, r *http.Request) {
 
 	for _, task := range tasks {
 		rawResponse = append(rawResponse, TaskApiResponse{
-			Id:        int(task.Id),
-			Title:     task.Subject,
-			CreatedAt: task.CreatedAt,
+			Id:         int(task.Id),
+			Title:      task.Subject,
+			AssignedTo: int(task.AssignedUserId),
+			CreatedAt:  task.CreatedAt,
 		})
 	}
 
@@ -108,11 +110,12 @@ func ApiTaskCreate(w http.ResponseWriter, r *http.Request) {
 }
 
 type EditTaskApiReq struct {
-	Id     int        `json:"id"`
-	Title  string     `json:"title"`
-	Snooze *time.Time `json:"snoozeTo"`
-	Delete bool       `json:"delete"`
-	Done   bool       `json:"done"`
+	Id       int        `json:"id"`
+	Title    string     `json:"title"`
+	Snooze   *time.Time `json:"snoozeTo"`
+	Delete   bool       `json:"delete"`
+	Done     bool       `json:"done"`
+	AssignTo int        `json:"assignTo"`
 }
 
 func ApiTaskEdit(w http.ResponseWriter, r *http.Request) {
@@ -181,6 +184,12 @@ func ApiTaskEdit(w http.ResponseWriter, r *http.Request) {
 		if task.Done {
 			timeNow := time.Now()
 			taskInDb.DoneAt = &timeNow
+			model.DB.Save(&taskInDb)
+		}
+		// assign to users
+		log.Printf("%v", task.AssignTo)
+		if task.AssignTo >= 0 {
+			taskInDb.AssignedUserId = uint(task.AssignTo)
 			model.DB.Save(&taskInDb)
 		}
 	}
