@@ -145,13 +145,28 @@
                         @keydown.enter.native="addTask"
                 >
                 </v-text-field>
-                <v-btn
-                        block
-                        color="success"
-                        @click.native="addTask"
-                >
-                    Add
-                </v-btn>
+                <v-row>
+                    <v-col cols="12" md="6" xs="12">
+                        <v-btn
+                                block
+                                color="success"
+                                @click.native="addTask"
+                        >
+                            <v-icon>mdi-plus</v-icon>
+                            Add
+                        </v-btn>
+                    </v-col>
+                    <v-col cols="12" md="6" xs="12">
+                        <v-btn
+                                block
+                                color="primary"
+                                @click="refreshTasks"
+                        >
+                            <v-icon>mdi-refresh</v-icon>
+                            Refresh
+                        </v-btn>
+                    </v-col>
+                </v-row>
             </v-col>
         </v-row>
         <v-row>
@@ -465,6 +480,9 @@
                             console.log('something wrong')
                         }
                     })
+            },
+            refreshTasks() {
+                this.getTasks(this.projectIdSelected)
             },
             getTasks(projectId) {
                 this.tasksLoading = true
