@@ -21,6 +21,14 @@
                         <v-list-item-title>Tags</v-list-item-title>
                     </v-list-item-content>
                 </v-list-item>
+                <v-list-item v-if="$store.state.loggedIn" to="/scan">
+                    <v-list-item-action>
+                        <v-icon>mdi-file-search-outline</v-icon>
+                    </v-list-item-action>
+                    <v-list-item-content>
+                        <v-list-item-title>Scan</v-list-item-title>
+                    </v-list-item-content>
+                </v-list-item>
 
                 <v-list-item v-if="!$store.state.loggedIn" to="/login">
                     <v-list-item-action>

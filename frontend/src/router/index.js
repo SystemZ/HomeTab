@@ -3,6 +3,7 @@ import VueRouter from 'vue-router'
 import Home from '../views/Home.vue'
 import Files from '../views/Files.vue'
 import Tags from '../views/Tags.vue'
+import Scan from '../views/Scan.vue'
 import Login from '../views/Login.vue'
 
 Vue.use(VueRouter)
@@ -22,6 +23,11 @@ const routes = [
     path: '/tags',
     name: 'tags',
     component: Tags
+  },
+  {
+    path: '/scan',
+    name: 'scan',
+    component: Scan
   },
   {
     path: '/login',
