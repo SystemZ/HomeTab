@@ -139,7 +139,7 @@ type EditTaskApiReq struct {
 
 func ApiTaskEdit(w http.ResponseWriter, r *http.Request) {
 	// check auth
-	ok, _ := CheckApiAuth(w, r)
+	ok, userInDb := CheckApiAuth(w, r)
 	if !ok {
 		w.WriteHeader(http.StatusUnauthorized)
 		return
@@ -202,6 +202,9 @@ func ApiTaskEdit(w http.ResponseWriter, r *http.Request) {
 		}
 		// set as done
 		if task.Done {
+			// add event in event stream
+			model.TaskDoneEvent(userInDb.Id, int(taskInDb.Id))
+			// set as done
 			timeNow := time.Now()
 			taskInDb.DoneAt = &timeNow
 			model.DB.Save(&taskInDb)
