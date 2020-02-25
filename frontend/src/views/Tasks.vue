@@ -86,6 +86,23 @@
                                 >
                                 </v-text-field>
                             </v-col>
+                        </v-row>
+                        <v-row>
+                            <v-col cols="12" sm="6">
+                                <v-autocomplete
+                                        :items="repeatUnits"
+                                        v-model="taskRepeatUnitInDialog"
+                                        label="Repeat unit"
+                                ></v-autocomplete>
+                            </v-col>
+                            <v-col v-if="taskRepeatUnitInDialog !== ''" cols="12" sm="6">
+                                <v-text-field
+                                        v-model="taskRepeatEveryInDialog"
+                                        label="Repeat every..."
+                                ></v-text-field>
+                            </v-col>
+                        </v-row>
+                        <v-row>
                             <v-col cols="12" sm="6">
                                 <v-select
                                         v-model="taskAssignedInDialog"
@@ -268,11 +285,22 @@
                 taskSnoozeDateInDialog: '',
                 taskSnoozeDateInDialogMin: '',
                 taskSnoozeTimeInDialog: '',
+                taskRepeatUnitInDialog: '',
+                taskRepeatEveryInDialog: 0,
                 tasksLoading: true,
                 tasksDeleting: false,
                 taskSaving: false,
                 tasksDoneInProgress: false,
                 userList: [],
+                repeatUnits: [
+                    {'text': 'No repeat', 'value': ''},
+                    {'text': 'Minute', 'value': 'i'},
+                    {'text': 'Hour', 'value': 'h'},
+                    {'text': 'Day', 'value': 'd'},
+                    {'text': 'Week', 'value': 'w'},
+                    {'text': 'Month', 'value': 'm'},
+                    {'text': 'Year', 'value': 'y'}
+                ]
             }
         },
         mounted() {
@@ -308,6 +336,8 @@
                 this.taskTitleInDialog = task.title
                 this.taskInfoInDialog = task.info
                 this.taskAssignedInDialog = task.assignedTo
+                this.taskRepeatUnitInDialog = task.repeatUnit
+                this.taskRepeatEveryInDialog = task.repeatEvery
                 this.tasks.selected = false
                 this.editTaskDialog = true
             },
@@ -434,7 +464,9 @@
                 let data = [{
                     "id": this.taskIdInDialog,
                     "title": this.taskTitleInDialog,
-                    "assignTo": this.taskAssignedInDialog
+                    "assignTo": this.taskAssignedInDialog,
+                    "repeatUnit": this.taskRepeatUnitInDialog,
+                    "repeatEvery": Number(this.taskRepeatEveryInDialog),
                 }]
                 // send task IDs to server
                 let url = this.apiUrl + '/api/v1/project/' + this.projectIdSelected + '/task'

@@ -24,6 +24,7 @@ const (
 	DeviceMusicTrack
 	DeviceMusicArtist
 	DeviceScreenOff
+	TaskDone
 	//DeviceUnlock
 	//DeviceBoot
 	//DeviceShutdown

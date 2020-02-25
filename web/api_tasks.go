@@ -11,10 +11,12 @@ import (
 )
 
 type TaskApiResponse struct {
-	Id         int        `json:"id"`
-	Title      string     `json:"title"`
-	AssignedTo int        `json:"assignedTo"`
-	CreatedAt  *time.Time `json:"createdAt"`
+	Id          int        `json:"id"`
+	Title       string     `json:"title"`
+	AssignedTo  int        `json:"assignedTo"`
+	RepeatUnit  string     `json:"repeatUnit"`
+	RepeatEvery int        `json:"repeatEvery"`
+	CreatedAt   *time.Time `json:"createdAt"`
 }
 
 func ApiTaskList(w http.ResponseWriter, r *http.Request) {
@@ -59,7 +61,10 @@ func ApiTaskList(w http.ResponseWriter, r *http.Request) {
 			Id:         int(task.Id),
 			Title:      task.Subject,
 			AssignedTo: int(task.AssignedUserId),
-			CreatedAt:  task.CreatedAt,
+			RepeatUnit: task.RepeatUnit,
+			// FIXME for random intervals
+			RepeatEvery: int(task.RepeatBest),
+			CreatedAt:   task.CreatedAt,
 		})
 	}
 
@@ -122,12 +127,14 @@ func ApiTaskCreate(w http.ResponseWriter, r *http.Request) {
 }
 
 type EditTaskApiReq struct {
-	Id       int        `json:"id"`
-	Title    string     `json:"title"`
-	Snooze   *time.Time `json:"snoozeTo"`
-	Delete   bool       `json:"delete"`
-	Done     bool       `json:"done"`
-	AssignTo int        `json:"assignTo"`
+	Id          int        `json:"id"`
+	Title       string     `json:"title"`
+	Snooze      *time.Time `json:"snoozeTo"`
+	Delete      bool       `json:"delete"`
+	Done        bool       `json:"done"`
+	AssignTo    int        `json:"assignTo"`
+	RepeatUnit  string     `json:"repeatUnit"`
+	RepeatEvery int        `json:"repeatEvery"`
 }
 
 func ApiTaskEdit(w http.ResponseWriter, r *http.Request) {
@@ -140,7 +147,7 @@ func ApiTaskEdit(w http.ResponseWriter, r *http.Request) {
 
 	// check ID in URL
 	vars := mux.Vars(r)
-	projectId, err := strconv.Atoi(vars["id"])
+	_, err := strconv.Atoi(vars["id"])
 	if err != nil {
 		log.Printf("Wrong project ID requested")
 		w.WriteHeader(http.StatusBadRequest)
@@ -154,7 +161,8 @@ func ApiTaskEdit(w http.ResponseWriter, r *http.Request) {
 
 	for _, task := range editedTasks {
 		var taskInDb model.Task
-		model.DB.Where("project_id = ? AND id = ?", projectId, task.Id).Find(&taskInDb)
+		// FIXME validate project ID
+		model.DB.Where("id = ?", task.Id).Find(&taskInDb)
 		// check if task exists
 		if taskInDb.Id < 1 {
 			continue
@@ -203,6 +211,23 @@ func ApiTaskEdit(w http.ResponseWriter, r *http.Request) {
 			taskInDb.AssignedUserId = uint(task.AssignTo)
 			model.DB.Save(&taskInDb)
 		}
+		// set repeat
+		if len(task.RepeatUnit) == 1 && task.RepeatEvery > 1 {
+			// FIXME validate char
+			taskInDb.RepeatUnit = task.RepeatUnit
+			// FIXME use better uint/int
+			taskInDb.RepeatMin = uint(task.RepeatEvery)
+			taskInDb.RepeatBest = uint(task.RepeatEvery)
+			taskInDb.RepeatMax = uint(task.RepeatEvery)
+			model.DB.Save(&taskInDb)
+		} else {
+			taskInDb.RepeatUnit = ""
+			taskInDb.RepeatMin = 0
+			taskInDb.RepeatBest = 0
+			taskInDb.RepeatMax = 0
+			model.DB.Save(&taskInDb)
+		}
+
 	}
 
 }
