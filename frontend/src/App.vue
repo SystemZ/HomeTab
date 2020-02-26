@@ -31,7 +31,7 @@
                 </v-list-item>
                 <v-list-item v-if="$store.state.loggedIn" to="/events">
                     <v-list-item-action>
-                        <v-icon>mdi-note</v-icon>
+                        <v-icon>mdi-calendar-clock</v-icon>
                     </v-list-item-action>
                     <v-list-item-content>
                         <v-list-item-title>Events</v-list-item-title>
