@@ -118,7 +118,9 @@ FROM events
 JOIN users ON events.user_id = users.id
 JOIN tasks ON events.val_int = tasks.id
 WHERE events.code = ?
-AND (events.created_at >= DATE_SUB(CURDATE(), INTERVAL 7 DAY))`
+AND (events.created_at >= DATE_SUB(CURDATE(), INTERVAL 7 DAY))
+ORDER BY events.created_at DESC
+`
 
 	stmt, err := DB.DB().Prepare(query)
 	if err != nil {
