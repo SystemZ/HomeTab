@@ -8,8 +8,8 @@
                     <v-btn
                             class="mt-3"
                             x-large
-                            dark
-                            color="red"
+                            :dark="btnDark"
+                            :color="btnSecondary"
                             @click="toggleCounter(false)"
                             v-if="counter.running"
                     >
@@ -18,8 +18,8 @@
                     <v-btn
                             class="mt-3"
                             x-large
-                            dark
-                            color="green"
+                            :dark="btnDark"
+                            :color="btnPrimary"
                             @click="toggleCounter(true)"
                             v-else
                     >

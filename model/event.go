@@ -7,11 +7,11 @@ import (
 
 type Event struct {
 	Id        uint           `json:"id" gorm:"primary_key;type:uint(10)" json:"id"`
-	UserId    uint           `gorm:"column:userId"`
-	DeviceId  uint           `gorm:"column:deviceId"`
+	UserId    uint           `gorm:"column:user_id"`
+	DeviceId  uint           `gorm:"column:device_id"`
 	Code      EventCode      `gorm:"column:code" json:"code"`
 	ValueStr  sql.NullString `gorm:"column:val_str" json:"valStr"`
-	ValueInt  sql.NullInt64  `gorm:"column:valInt"`
+	ValueInt  sql.NullInt64  `gorm:"column:val_int"`
 	CreatedAt *time.Time     `gorm:"column:created_at" json:"createdAt"`
 }
 
