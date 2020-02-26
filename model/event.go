@@ -7,12 +7,12 @@ import (
 
 type Event struct {
 	Id        uint           `json:"id" gorm:"primary_key;type:uint(10)" json:"id"`
-	UserId    uint           `gorm:"column:user_id"`
-	DeviceId  uint           `gorm:"column:device_id"`
+	UserId    uint           `gorm:"column:userId"`
+	DeviceId  uint           `gorm:"column:deviceId"`
 	Code      EventCode      `gorm:"column:code" json:"code"`
-	ValueStr  sql.NullString `gorm:"column:val_str" json:"val_str"`
-	ValueInt  sql.NullInt64  `gorm:"column:val_int"`
-	CreatedAt *time.Time     `gorm:"column:created_at" json:"created_at"`
+	ValueStr  sql.NullString `gorm:"column:val_str" json:"valStr"`
+	ValueInt  sql.NullInt64  `gorm:"column:valInt"`
+	CreatedAt *time.Time     `gorm:"column:created_at" json:"createdAt"`
 }
 
 type EventCode uint
@@ -100,4 +100,44 @@ func TaskDoneEvent(userId uint, taskId int) {
 		},
 	}
 	DB.Create(&event)
+}
+
+type TaskDoneT struct {
+	Subject   string     `json:"subject"`
+	Username  string     `json:"username"`
+	CreatedAt *time.Time `json:"createdAt"`
+}
+
+func TaskDoneEvents7days() (result []TaskDoneT) {
+	query := `
+SELECT 
+  tasks.subject,
+  users.username,
+  events.created_at
+FROM events
+JOIN users ON events.user_id = users.id
+JOIN tasks ON events.val_int = tasks.id
+WHERE events.code = ?
+AND (events.created_at >= DATE_SUB(CURDATE(), INTERVAL 7 DAY))`
+
+	stmt, err := DB.DB().Prepare(query)
+	if err != nil {
+		return
+	}
+	defer stmt.Close()
+	rows, err := stmt.Query(TaskDone)
+	if err != nil {
+		return
+	}
+
+	defer rows.Close()
+	for rows.Next() {
+		var list TaskDoneT
+		err := rows.Scan(&list.Subject, &list.Username, &list.CreatedAt)
+		if err != nil {
+			return
+		}
+		result = append(result, list)
+	}
+	return result
 }

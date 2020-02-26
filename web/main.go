@@ -68,8 +68,7 @@ func StartWebInterface() {
 	r.HandleFunc("/refresh", Refresh) // FIXME
 	// API
 	r.HandleFunc("/api/v1/login", ApiLogin)
-	r.HandleFunc("/api/v1/mq/access", ApiMqCredential)
-	r.HandleFunc("/api/v1/event", ApiEvent)
+
 	// for frontend
 	r.HandleFunc("/api/v1/user", ApiUserList).Methods("GET")
 	r.HandleFunc("/api/v1/project", ApiProjectList).Methods("GET")
@@ -85,7 +84,11 @@ func StartWebInterface() {
 	r.HandleFunc("/api/v1/counter/{id}/info", ApiCounterFrontend).Methods("GET")
 	r.HandleFunc("/api/v1/counter/{id}/start", ApiCounterStartFrontend).Methods("PUT")
 	r.HandleFunc("/api/v1/counter/{id}/stop", ApiCounterStopFrontend).Methods("PUT")
+	r.HandleFunc("/api/v1/event", ApiEventList).Methods("GET")
+
 	// for Android
+	r.HandleFunc("/api/v1/mq/access", ApiMqCredential)
+	r.HandleFunc("/api/v1/event", ApiEvent).Methods("POST")
 	r.HandleFunc("/api/v1/counter", ApiCounterList).Methods("GET")
 	r.HandleFunc("/api/v1/counter/{id}", ApiCounter)
 	r.HandleFunc("/api/v1/counter/{id}/start", ApiCounterStart).Methods("POST")

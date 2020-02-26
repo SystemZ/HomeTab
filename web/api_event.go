@@ -8,6 +8,7 @@ import (
 	"net/http"
 )
 
+// Android
 type IncomingEvent struct {
 	Status struct {
 		Screen  string `json:"scr"`
@@ -21,6 +22,7 @@ type IncomingEvent struct {
 	Token   string `json:"tok"`
 }
 
+// Android
 func ApiEvent(w http.ResponseWriter, r *http.Request) {
 	// FIXME use DeviceApiCheckAuth()
 	//enforce POST only
@@ -79,4 +81,28 @@ func ApiEvent(w http.ResponseWriter, r *http.Request) {
 	if event.Music.Artist != "%mt_artist" {
 		model.DeviceEventAddStr(model.DeviceMusicArtist, device.UserId, device.Id, event.Music.Artist)
 	}
+}
+
+func ApiEventList(w http.ResponseWriter, r *http.Request) {
+	// check auth
+	ok, _ := CheckApiAuth(w, r)
+	if !ok {
+		w.WriteHeader(http.StatusUnauthorized)
+		return
+	}
+
+	// get info from DB
+	events := model.TaskDoneEvents7days()
+
+	// prepare JSON
+	res, err := json.MarshalIndent(events, "", "  ")
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	// all ok, return list
+	w.WriteHeader(http.StatusOK)
+	w.Write(res)
+
 }
