@@ -18,7 +18,7 @@
                     >
                         <v-list-item-content>
                             <v-list-item-title v-text="event.subject"></v-list-item-title>
-                            <v-list-item-subtitle>{{event.username}} @{{event.createdAt | prettyTimeDate}}</v-list-item-subtitle>
+                            <v-list-item-subtitle>{{event.username}} @ {{event.createdAt | prettyTimeDate}}</v-list-item-subtitle>
                         </v-list-item-content>
                     </v-list-item>
                     <v-divider
