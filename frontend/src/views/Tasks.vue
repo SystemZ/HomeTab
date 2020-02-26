@@ -165,6 +165,7 @@
                 <v-row>
                     <v-col cols="12" md="6" xs="12">
                         <v-btn
+                                :disabled="projectIdSelected === 0"
                                 block
                                 color="success"
                                 @click.native="addTask"
@@ -307,6 +308,10 @@
         },
         methods: {
             addTask() {
+                if (this.projectIdSelected === 0) {
+                    // TODO show snackbar
+                    return
+                }
                 if (this.newTaskTitle.length < 1) {
                     // TODO show snackbar
                     return
