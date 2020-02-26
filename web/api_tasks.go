@@ -1,6 +1,7 @@
 package web
 
 import (
+	"database/sql"
 	"encoding/json"
 	"github.com/gorilla/mux"
 	"gitlab.com/systemz/tasktab/model"
@@ -11,10 +12,12 @@ import (
 )
 
 type TaskApiResponse struct {
-	Id         int        `json:"id"`
-	Title      string     `json:"title"`
-	AssignedTo int        `json:"assignedTo"`
-	CreatedAt  *time.Time `json:"createdAt"`
+	Id          int        `json:"id"`
+	Title       string     `json:"title"`
+	AssignedTo  int        `json:"assignedTo"`
+	RepeatUnit  string     `json:"repeatUnit"`
+	RepeatEvery int        `json:"repeatEvery"`
+	CreatedAt   *time.Time `json:"createdAt"`
 }
 
 func ApiTaskList(w http.ResponseWriter, r *http.Request) {
@@ -59,7 +62,10 @@ func ApiTaskList(w http.ResponseWriter, r *http.Request) {
 			Id:         int(task.Id),
 			Title:      task.Subject,
 			AssignedTo: int(task.AssignedUserId),
-			CreatedAt:  task.CreatedAt,
+			RepeatUnit: task.RepeatUnit,
+			// FIXME for random intervals
+			RepeatEvery: int(task.RepeatBest),
+			CreatedAt:   task.CreatedAt,
 		})
 	}
 
@@ -122,17 +128,19 @@ func ApiTaskCreate(w http.ResponseWriter, r *http.Request) {
 }
 
 type EditTaskApiReq struct {
-	Id       int        `json:"id"`
-	Title    string     `json:"title"`
-	Snooze   *time.Time `json:"snoozeTo"`
-	Delete   bool       `json:"delete"`
-	Done     bool       `json:"done"`
-	AssignTo int        `json:"assignTo"`
+	Id          int        `json:"id"`
+	Title       string     `json:"title"`
+	Snooze      *time.Time `json:"snoozeTo"`
+	Delete      bool       `json:"delete"`
+	Done        bool       `json:"done"`
+	AssignTo    int        `json:"assignTo"`
+	RepeatUnit  string     `json:"repeatUnit"`
+	RepeatEvery int        `json:"repeatEvery"`
 }
 
 func ApiTaskEdit(w http.ResponseWriter, r *http.Request) {
 	// check auth
-	ok, _ := CheckApiAuth(w, r)
+	ok, userInDb := CheckApiAuth(w, r)
 	if !ok {
 		w.WriteHeader(http.StatusUnauthorized)
 		return
@@ -140,7 +148,7 @@ func ApiTaskEdit(w http.ResponseWriter, r *http.Request) {
 
 	// check ID in URL
 	vars := mux.Vars(r)
-	projectId, err := strconv.Atoi(vars["id"])
+	_, err := strconv.Atoi(vars["id"])
 	if err != nil {
 		log.Printf("Wrong project ID requested")
 		w.WriteHeader(http.StatusBadRequest)
@@ -154,7 +162,8 @@ func ApiTaskEdit(w http.ResponseWriter, r *http.Request) {
 
 	for _, task := range editedTasks {
 		var taskInDb model.Task
-		model.DB.Where("project_id = ? AND id = ?", projectId, task.Id).Find(&taskInDb)
+		// FIXME validate project ID
+		model.DB.Where("id = ?", task.Id).Find(&taskInDb)
 		// check if task exists
 		if taskInDb.Id < 1 {
 			continue
@@ -183,6 +192,24 @@ func ApiTaskEdit(w http.ResponseWriter, r *http.Request) {
 			}
 		*/
 
+		// set as done and finish
+		// this is separate from edit form
+		if task.Done {
+			// add event in event stream
+			model.TaskDoneEvent(userInDb.Id, int(taskInDb.Id))
+			// set as done in main table
+			timeNow := time.Now()
+			done := sql.NullTime{
+				Time:  timeNow,
+				Valid: true,
+			}
+			taskInDb.DoneAt = &done
+			taskInDb.DoneAt.Valid = true
+			taskInDb.DoneAt.Time = timeNow
+			model.DB.Save(&taskInDb)
+			continue
+		}
+
 		// soft delete task
 		if task.Delete {
 			model.DB.Delete(&taskInDb)
@@ -192,17 +219,30 @@ func ApiTaskEdit(w http.ResponseWriter, r *http.Request) {
 			taskInDb.Subject = task.Title
 			model.DB.Save(&taskInDb)
 		}
-		// set as done
-		if task.Done {
-			timeNow := time.Now()
-			taskInDb.DoneAt = &timeNow
-			model.DB.Save(&taskInDb)
-		}
 		// assign to users
 		if task.AssignTo >= 0 {
 			taskInDb.AssignedUserId = uint(task.AssignTo)
 			model.DB.Save(&taskInDb)
 		}
+		// set repeat
+		if len(task.RepeatUnit) == 1 && task.RepeatEvery > 0 {
+			taskInDb.Repeating = 1
+			// FIXME validate char
+			taskInDb.RepeatUnit = task.RepeatUnit
+			// FIXME use better uint/int
+			taskInDb.RepeatMin = uint(task.RepeatEvery)
+			taskInDb.RepeatBest = uint(task.RepeatEvery)
+			taskInDb.RepeatMax = uint(task.RepeatEvery)
+			model.DB.Save(&taskInDb)
+		} else {
+			taskInDb.Repeating = 0
+			taskInDb.RepeatUnit = ""
+			taskInDb.RepeatMin = 0
+			taskInDb.RepeatBest = 0
+			taskInDb.RepeatMax = 0
+			model.DB.Save(&taskInDb)
+		}
+
 	}
 
 }

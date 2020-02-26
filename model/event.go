@@ -24,6 +24,7 @@ const (
 	DeviceMusicTrack
 	DeviceMusicArtist
 	DeviceScreenOff
+	TaskDone
 	//DeviceUnlock
 	//DeviceBoot
 	//DeviceShutdown
@@ -85,6 +86,18 @@ func DeviceEventAddStr(code EventCode, userId uint, deviceId uint, str string) {
 			String string
 			Valid  bool
 		}{String: str, Valid: true},
+	}
+	DB.Create(&event)
+}
+
+func TaskDoneEvent(userId uint, taskId int) {
+	event := Event{
+		UserId: userId,
+		Code:   TaskDone,
+		ValueInt: sql.NullInt64{
+			Int64: int64(taskId),
+			Valid: true,
+		},
 	}
 	DB.Create(&event)
 }
