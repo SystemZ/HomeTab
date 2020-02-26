@@ -57,10 +57,6 @@ func StartWebInterface() {
 	r.HandleFunc("/", Index)
 	r.HandleFunc("/count/log", CountLog)
 	r.HandleFunc("/device", Device)
-	r.HandleFunc("/notes", Notes)
-	r.HandleFunc("/note/new", NewNote)
-	r.HandleFunc("/note/{id}", Note)
-	r.HandleFunc("/note/{id}/edit", NoteEdit)
 	// settings
 	r.HandleFunc("/account", Account)
 	// auth
@@ -81,6 +77,7 @@ func StartWebInterface() {
 	r.HandleFunc("/api/v1/project/{id}/task", ApiTaskCreate).Methods("POST")
 	r.HandleFunc("/api/v1/project/{id}/task", ApiTaskEdit).Methods("PUT")
 	r.HandleFunc("/api/v1/note", ApiNoteList).Methods("GET")
+	r.HandleFunc("/api/v1/note", ApiNoteNew).Methods("POST")
 	r.HandleFunc("/api/v1/note/{id}", ApiNote).Methods("GET")
 	r.HandleFunc("/api/v1/note/{id}", ApiNoteEdit).Methods("PUT")
 	r.HandleFunc("/api/v1/counter", ApiCounterAdd).Methods("POST")

@@ -1,5 +1,23 @@
 <template>
     <v-container fluid>
+
+        <v-container fluid>
+            <v-row>
+                <v-col cols="12" lg="2" md="4" sm="6" xs="12">
+                    <v-text-field
+                            label="Title"
+                            v-model="newNoteTitle"
+                            @keydown.enter.native="addNote"
+                    ></v-text-field>
+                </v-col>
+                <v-col cols="12" md="2">
+                    <v-btn class="mt-3" color="primary" @click.native="addNote">
+                        Add new
+                    </v-btn>
+                </v-col>
+            </v-row>
+        </v-container>
+
         <v-card class="ma-5">
             <v-card-title>
                 Notes
@@ -57,6 +75,7 @@
                     {text: 'Created at', value: 'createdAt'},
                 ],
                 notes: [],
+                newNoteTitle: "",
             }
         },
         mounted() {
@@ -70,16 +89,28 @@
                 this.$router.push({name: 'note', params: {id: item.id}})
             },
             getNotes() {
-                let vm = this
-                vm.notesLoading = true
-                axios.get(vm.apiUrl + "/api/v1/note", vm.authConfig())
+                this.notesLoading = true
+                axios.get(this.apiUrl + "/api/v1/note", this.authConfig())
                     .then((res) => {
-                        vm.notesLoading = false
-                        vm.notes = res.data
+                        this.notesLoading = false
+                        this.notes = res.data
                     })
-                    .catch(function (err) {
+                    .catch((err) => {
                         if (err.response.status === 401) {
-                            vm.$root.$emit("sessionExpired")
+                            this.$root.$emit("sessionExpired")
+                        } else {
+                            console.log("something wrong")
+                        }
+                    })
+            },
+            addNote() {
+                axios.post(this.apiUrl + "/api/v1/note", {"title": this.newNoteTitle}, this.authConfig())
+                    .then((res) => {
+                        this.$router.push("/note/" + res.data.id)
+                    })
+                    .catch((err) => {
+                        if (err.response.status === 401) {
+                            this.$root.$emit("sessionExpired")
                         } else {
                             console.log("something wrong")
                         }

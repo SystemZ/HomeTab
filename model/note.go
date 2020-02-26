@@ -15,11 +15,11 @@ type Note struct {
 	Body      string        `gorm:"column:body" json:"body"`
 	BodyShort string        `gorm:"-"`
 	BodyMd    template.HTML `gorm:"-"`
-	ProjectId uint          `gorm:"column:project_id" json:"project_id"`
+	ProjectId uint          `gorm:"column:project_id" json:"projectId"`
 	Tags      string        `gorm:"-"`
-	CreatedAt *time.Time    `gorm:"column:created_at" json:"created_at"`
-	UpdatedAt *time.Time    `gorm:"column:updated_at" json:"updated_at"`
-	DeletedAt *time.Time    `gorm:"column:deleted_at" json:"deleted_at"`
+	CreatedAt *time.Time    `gorm:"column:created_at" json:"createdAt"`
+	UpdatedAt *time.Time    `gorm:"column:updated_at" json:"updatedAt"`
+	DeletedAt *time.Time    `gorm:"column:deleted_at" json:"deletedAt"`
 }
 
 type NoteTag struct {
@@ -47,7 +47,7 @@ func (note *Note) BeforeSave(scope *gorm.Scope) (err error) {
 	return nil
 }
 
-func CreateNote(title string, body string, tags string, projectId uint) uint {
+func CreateNote(title string, body string, tags string, projectId uint) Note {
 	// prepare data
 	var note Note
 	note.Title = title
@@ -71,7 +71,7 @@ func CreateNote(title string, body string, tags string, projectId uint) uint {
 		DB.Save(&newTag)
 	}
 	// all done, return note ID created
-	return note.Id
+	return note
 }
 
 func NoteLongList() (result []Note) {

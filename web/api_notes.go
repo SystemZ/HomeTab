@@ -145,3 +145,37 @@ func ApiNoteEdit(w http.ResponseWriter, r *http.Request) {
 	// all ok, return list
 	w.WriteHeader(http.StatusOK)
 }
+
+func ApiNoteNew(w http.ResponseWriter, r *http.Request) {
+	// check auth
+	ok, userInfo := CheckApiAuth(w, r)
+	if !ok {
+		w.WriteHeader(http.StatusUnauthorized)
+		return
+	}
+
+	// FIXME validate
+	decoder := json.NewDecoder(r.Body)
+	var newNote OneNoteApi
+	decoder.Decode(&newNote)
+
+	// reject if title empty
+	if len(newNote.Title) < 1 {
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
+	// create basic task with title only
+	noteInDb := model.CreateNote(newNote.Title, "", "tagme", userInfo.DefaultProjectId)
+
+	// prepare JSON with note ID for easier body edit
+	response, err := json.MarshalIndent(noteInDb, "", "  ")
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	// all ok, return one note
+	w.WriteHeader(http.StatusOK)
+	w.Write(response)
+}
