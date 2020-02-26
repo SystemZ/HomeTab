@@ -151,9 +151,8 @@
             </v-card>
         </v-dialog>
         <v-row>
-            <v-col md="3"></v-col>
-            <v-col cols="12" xs="12" md="6">
-                <h1 class="headline mt-5 mb-5">New task</h1>
+            <v-col cols="12" xs="12" md="6" offset-md="3">
+                <h1 class="headline mb-5">New task</h1>
                 <v-text-field
                         placeholder="Buy a yacht"
                         solo
