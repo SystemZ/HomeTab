@@ -13,15 +13,15 @@
                 <v-card-actions>
                     <v-spacer></v-spacer>
                     <v-btn
-                            color="green darken-1"
+                            :color="btnPrimary"
                             text
                             @click="deleteTaskDialog = false"
                     >
                         Cancel
                     </v-btn>
                     <v-btn
-                            color="red darken-1"
-                            dark
+                            :dark="btnDark"
+                            :color="btnSecondary"
                             :disabled="tasksDeleting"
                             @click="deleteTasks"
                     >
@@ -46,25 +46,30 @@
                                     v-model="taskSnoozeDateInDialog"
                                     class="mt-4"
                                     :min="taskSnoozeDateInDialogMin"
+                                    color="green"
                             ></v-date-picker>
                         </v-col>
                         <v-col>
-                            <v-time-picker v-model="taskSnoozeTimeInDialog" format="24hr"></v-time-picker>
+                            <v-time-picker
+                                    v-model="taskSnoozeTimeInDialog"
+                                    format="24hr"
+                                    color="green"
+                            ></v-time-picker>
                         </v-col>
                     </v-row>
                 </v-card-text>
                 <v-card-actions>
                     <v-spacer></v-spacer>
                     <v-btn
-                            color="red darken-1"
+                            :color="btnSecondary"
                             text
                             @click="snoozeTaskDialog = false"
                     >
                         Cancel
                     </v-btn>
                     <v-btn
-                            color="green darken-1"
-                            dark
+                            :dark="btnDark"
+                            :color="btnPrimary"
                             @click="snoozeTasks"
                     >
                         Snooze
@@ -133,15 +138,15 @@
                 <v-card-actions>
                     <v-spacer></v-spacer>
                     <v-btn
-                            color="red darken-1"
+                            :color="btnSecondary"
                             text
                             @click="editTaskDialog = false"
                     >
                         Cancel
                     </v-btn>
                     <v-btn
-                            color="green darken-1"
-                            dark
+                            :dark="btnDark"
+                            :color="btnPrimary"
                             :disabled="taskSaving"
                             @click="saveTask"
                     >
@@ -163,10 +168,12 @@
                 </v-text-field>
                 <v-row>
                     <v-col cols="12" md="6" xs="12">
+                        <!-- dark property has a conflict with disabled property, it's taken out for now
+                        :disabled="projectIdSelected === 0" -->
                         <v-btn
-                                :disabled="projectIdSelected === 0"
                                 block
-                                color="success"
+                                :dark="btnDark"
+                                :color="btnPrimary"
                                 @click.native="addTask"
                         >
                             <v-icon>mdi-plus</v-icon>
@@ -176,7 +183,8 @@
                     <v-col cols="12" md="6" xs="12">
                         <v-btn
                                 block
-                                color="primary"
+                                :dark="btnDark"
+                                :color="btnPrimary"
                                 @click="refreshTasks"
                         >
                             <v-icon>mdi-refresh</v-icon>

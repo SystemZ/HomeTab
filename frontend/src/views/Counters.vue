@@ -33,16 +33,16 @@
                 </v-card-text>
                 <v-card-actions>
                     <v-spacer></v-spacer>
-                    <v-btn color="blue darken-1" text @click="newCounterDialogShow = false">Close</v-btn>
+                    <v-btn :color="btnSecondary" text @click="newCounterDialogShow = false">Close</v-btn>
 
                     <v-progress-circular v-if="newCounterInProgress" indeterminate color="green"
                                          class="ml-5 ml-5"></v-progress-circular>
-                    <v-btn v-else dark color="green" @click="addCounter">Add</v-btn>
+                    <v-btn v-else :dark="btnDark" :color="btnPrimary" @click="addCounter">Add</v-btn>
                 </v-card-actions>
             </v-card>
         </v-dialog>
 
-        <v-btn class="ma-5" color="primary" @click="newCounterDialogShow = true">
+        <v-btn class="ma-5" :dark="btnDark" :color="btnPrimary" @click="newCounterDialogShow = true">
             Add new counter
         </v-btn>
 
@@ -51,7 +51,7 @@
                 All counters
                 <v-spacer></v-spacer>
                 <v-row>
-                    <v-switch v-model="searchPro" label="Pro" color="green" class="mr-5"></v-switch>
+                    <v-switch v-model="searchPro" label="Pro" :color="btnPrimary" class="mr-5"></v-switch>
                     <v-text-field
                             v-model="search"
                             append-icon="mdi-magnify"

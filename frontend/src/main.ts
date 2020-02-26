@@ -39,6 +39,18 @@ const mixin = {
     lsToken(): string {
       return 'authToken';
     },
+    btnPrimary(): string {
+      return '#5C9DA0';
+    },
+    btnSecondary(): string {
+      return '#DE6461';
+    },
+    btnAccent(): string {
+      return '#DE9B61';
+    },
+    btnDark(): boolean {
+      return true
+    },
   }
 }
 Vue.mixin(mixin);

@@ -11,7 +11,7 @@
                     ></v-text-field>
                 </v-col>
                 <v-col cols="12" md="2">
-                    <v-btn class="mt-3" color="primary" @click.native="addNote">
+                    <v-btn class="mt-3" :dark="btnDark" :color="btnPrimary" @click.native="addNote">
                         Add new
                     </v-btn>
                 </v-col>

@@ -3,7 +3,7 @@
         <v-snackbar top v-model="noteSaved" :timeout="1500">
             Note saved!
             <v-btn
-                    color="green"
+                    :color="btnAccent"
                     text
                     @click="noteSaved = false"
             >
@@ -13,7 +13,7 @@
         <v-snackbar top v-model="noteSaveError" :timeout="0">
             Note save error!
             <v-btn
-                    color="red"
+                    :color="btnSecondary"
                     @click="noteSaveError = false"
             >
                 Close
@@ -31,12 +31,12 @@
             <span v-else>{{note.tags}}</span>
         </div>
         <div class="caption">Created: {{note.createdAt | prettyTimeDate }}</div>
-        <v-btn dark color="primary" class="mt-3 mb-5 mr-4" :disabled="noteLoading"
+        <v-btn :dark="btnDark" :color="btnPrimary" class="mt-3 mb-5 mr-4" :disabled="noteLoading"
                @click="noteEditing ? noteEditing = false : noteEditing = true">
             <v-icon>mdi-pencil</v-icon>
             Edit
         </v-btn>
-        <v-btn dark color="green" class="mt-3 mb-5" :disabled="noteLoading" @click.native="saveNote">
+        <v-btn :dark="btnDark" :color="btnPrimary" class="mt-3 mb-5" :disabled="noteLoading" @click.native="saveNote">
             <v-icon>mdi-content-save-outline</v-icon>
             Save
         </v-btn>

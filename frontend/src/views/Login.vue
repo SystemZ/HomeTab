@@ -47,7 +47,7 @@
                     </v-card-text>
                     <v-card-actions>
                         <v-spacer/>
-                        <v-btn color="primary" @click.native="login">
+                        <v-btn :dark="btnDark" :color="btnPrimary" @click.native="login">
                             <span>Log in</span>
                         </v-btn>
                     </v-card-actions>
