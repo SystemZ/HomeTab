@@ -1,6 +1,7 @@
 package web
 
 import (
+	"database/sql"
 	"encoding/json"
 	"github.com/gorilla/mux"
 	"gitlab.com/systemz/tasktab/model"
@@ -191,6 +192,24 @@ func ApiTaskEdit(w http.ResponseWriter, r *http.Request) {
 			}
 		*/
 
+		// set as done and finish
+		// this is separate from edit form
+		if task.Done {
+			// add event in event stream
+			model.TaskDoneEvent(userInDb.Id, int(taskInDb.Id))
+			// set as done in main table
+			timeNow := time.Now()
+			done := sql.NullTime{
+				Time:  timeNow,
+				Valid: true,
+			}
+			taskInDb.DoneAt = &done
+			taskInDb.DoneAt.Valid = true
+			taskInDb.DoneAt.Time = timeNow
+			model.DB.Save(&taskInDb)
+			continue
+		}
+
 		// soft delete task
 		if task.Delete {
 			model.DB.Delete(&taskInDb)
@@ -200,22 +219,14 @@ func ApiTaskEdit(w http.ResponseWriter, r *http.Request) {
 			taskInDb.Subject = task.Title
 			model.DB.Save(&taskInDb)
 		}
-		// set as done
-		if task.Done {
-			// add event in event stream
-			model.TaskDoneEvent(userInDb.Id, int(taskInDb.Id))
-			// set as done
-			timeNow := time.Now()
-			taskInDb.DoneAt = &timeNow
-			model.DB.Save(&taskInDb)
-		}
 		// assign to users
 		if task.AssignTo >= 0 {
 			taskInDb.AssignedUserId = uint(task.AssignTo)
 			model.DB.Save(&taskInDb)
 		}
 		// set repeat
-		if len(task.RepeatUnit) == 1 && task.RepeatEvery > 1 {
+		if len(task.RepeatUnit) == 1 && task.RepeatEvery > 0 {
+			taskInDb.Repeating = 1
 			// FIXME validate char
 			taskInDb.RepeatUnit = task.RepeatUnit
 			// FIXME use better uint/int
@@ -224,6 +235,7 @@ func ApiTaskEdit(w http.ResponseWriter, r *http.Request) {
 			taskInDb.RepeatMax = uint(task.RepeatEvery)
 			model.DB.Save(&taskInDb)
 		} else {
+			taskInDb.Repeating = 0
 			taskInDb.RepeatUnit = ""
 			taskInDb.RepeatMin = 0
 			taskInDb.RepeatBest = 0

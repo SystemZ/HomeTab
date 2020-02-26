@@ -88,17 +88,17 @@
                             </v-col>
                         </v-row>
                         <v-row>
-                            <v-col cols="12" sm="6">
+                            <v-col cols="12" md="3" sm="6">
                                 <v-autocomplete
                                         :items="repeatUnits"
                                         v-model="taskRepeatUnitInDialog"
                                         label="Repeat unit"
                                 ></v-autocomplete>
                             </v-col>
-                            <v-col v-if="taskRepeatUnitInDialog !== ''" cols="12" sm="6">
+                            <v-col v-if="taskRepeatUnitInDialog !== ''" cols="12" md="4" sm="6">
                                 <v-text-field
                                         v-model="taskRepeatEveryInDialog"
-                                        label="Repeat every..."
+                                        label="Repeat every X after done"
                                 ></v-text-field>
                             </v-col>
                         </v-row>
@@ -297,7 +297,6 @@
                     {'text': 'Minute', 'value': 'i'},
                     {'text': 'Hour', 'value': 'h'},
                     {'text': 'Day', 'value': 'd'},
-                    {'text': 'Week', 'value': 'w'},
                     {'text': 'Month', 'value': 'm'},
                     {'text': 'Year', 'value': 'y'}
                 ]
