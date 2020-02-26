@@ -1,13 +1,33 @@
 <template>
     <v-container fluid>
+        <v-card
+                max-width="600"
+                class="mx-auto"
+        >
+            <v-toolbar
+                    color="green"
+                    dark
+            >
+                <v-toolbar-title>Last 7 days</v-toolbar-title>
+            </v-toolbar>
 
-        Task done stream from last 7 days
-        <div v-for="event in events" :key="event.id">
-            {{event.createdAt | prettyTimeDate}}
-            {{event.subject}}
-            {{event.username}}
-        </div>
-
+            <v-list two-line dense>
+                <template v-for="(event, key) in events">
+                    <v-list-item
+                            :key="event.id"
+                    >
+                        <v-list-item-content>
+                            <v-list-item-title v-text="event.subject"></v-list-item-title>
+                            <v-list-item-subtitle>{{event.username}} @{{event.createdAt | prettyTimeDate}}</v-list-item-subtitle>
+                        </v-list-item-content>
+                    </v-list-item>
+                    <v-divider
+                            :key="event.id"
+                            v-if="events.length !== key+1"
+                    ></v-divider>
+                </template>
+            </v-list>
+        </v-card>
     </v-container>
 </template>
 
