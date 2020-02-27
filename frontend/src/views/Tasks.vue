@@ -79,7 +79,7 @@
         </v-dialog>
         <v-dialog v-model="editTaskDialog" max-width="700" :fullscreen="$vuetify.breakpoint.xsOnly">
             <v-card>
-                <v-card-title class="headline">{{taskTitleInDialog}}</v-card-title>
+                <v-card-title class="headline">#{{taskIdInDialog}} - {{taskTitleInDialog}}</v-card-title>
 
                 <v-card-text>
                     <v-container>
