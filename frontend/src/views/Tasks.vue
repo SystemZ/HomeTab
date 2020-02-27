@@ -79,7 +79,7 @@
         </v-dialog>
         <v-dialog v-model="editTaskDialog" max-width="700" :fullscreen="$vuetify.breakpoint.xsOnly">
             <v-card>
-                <v-card-title class="headline">{{taskTitleInDialog}}</v-card-title>
+                <v-card-title class="headline">#{{taskIdInDialog}} - {{taskTitleInDialog}}</v-card-title>
 
                 <v-card-text>
                     <v-container>
@@ -233,7 +233,7 @@
                         <v-subheader>Tasks</v-subheader>
                         <template v-for="(task, i) in tasks">
                             <v-list-item
-                                    :key="`${i}-${task.title}`"
+                                    :key="i"
                             >
                                 <v-list-item-action>
                                     <v-checkbox
@@ -536,7 +536,6 @@
                         this.tasks = res.data
                         // assign usernames to tasks
                         for (let i = 0; i < this.tasks.length; i++) {
-                            console.log(this.tasks[i])
                             for (let j = 0; j < this.userList.length; j++) {
                                 if (this.userList[j].id === this.tasks[i].assignedTo) {
                                     this.tasks[i].username = this.userList[j].username
