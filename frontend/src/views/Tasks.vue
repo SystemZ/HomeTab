@@ -42,10 +42,10 @@
                 <v-card-text>
                     <v-row>
                         <v-col>
+                            <!-- :min="taskSnoozeDateInDialogMin" -->
                             <v-date-picker
                                     v-model="taskSnoozeDateInDialog"
                                     class="mt-4"
-                                    :min="taskSnoozeDateInDialogMin"
                                     color="green"
                             ></v-date-picker>
                         </v-col>
@@ -361,6 +361,7 @@
                     month = "0" + month
                 }
                 let day = now.getDate()
+                // FIXME this doesn't work
                 let today = year + "-" + month + "-" + day
 
                 this.taskSnoozeDateInDialogMin = today
