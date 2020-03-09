@@ -57,9 +57,9 @@ AND done_at IS NOT NULL
 		} else if task.RepeatUnit == "d" {
 			timeToUnDone = repeatDoneAt.Time.AddDate(0, 0, int(task.RepeatBest))
 		} else if task.RepeatUnit == "h" {
-			timeToUnDone = repeatDoneAt.Time.Add(time.Hour)
+			timeToUnDone = repeatDoneAt.Time.Add(time.Hour * time.Duration(int(task.RepeatBest)))
 		} else if task.RepeatUnit == "i" {
-			timeToUnDone = repeatDoneAt.Time.Add(time.Minute)
+			timeToUnDone = repeatDoneAt.Time.Add(time.Minute * time.Duration(int(task.RepeatBest)))
 		}
 
 		if time.Now().After(timeToUnDone) {
