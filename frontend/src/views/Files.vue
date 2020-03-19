@@ -60,7 +60,17 @@
                 >
                 </v-img>
 
-                <v-row>
+                <v-row no-gutters>
+                    <v-col cols="12" xs="12" offset-md="5" md="1">
+                        <v-text-field
+                                v-model="itemsPerPage"
+                                label="Per page"
+                                required
+                        >
+                        </v-text-field>
+                    </v-col>
+                </v-row>
+                <v-row no-gutters class="mb-5">
                     <v-col cols="11" xs="12">
                         <v-pagination
                                 :disabled="filesLoading"
@@ -70,15 +80,6 @@
                                 @input="getFiles"
                         >
                         </v-pagination>
-                    </v-col>
-                    <v-col cols="1" xs="12">
-                        <v-text-field
-                                v-model="itemsPerPage"
-                                label="Per page"
-                                required
-                        >
-                        </v-text-field>
-
                     </v-col>
                 </v-row>
 
