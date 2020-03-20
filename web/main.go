@@ -19,6 +19,7 @@ func StartWebInterface() {
 	r.HandleFunc("/api/v1/login", Login).Methods("POST")
 	r.HandleFunc("/api/v1/scan", Scan).Methods("POST")
 	r.HandleFunc("/api/v1/files", FilePaginate).Methods("POST")
+	r.HandleFunc("/api/v1/file/{id}", OneFile).Methods("GET")
 	r.HandleFunc("/api/v1/file/{sha256}/similar", FileSimilar).Methods("GET")
 	r.HandleFunc("/api/v1/file/{sha256}/tag/delete", TagDelete).Methods("POST")
 	r.HandleFunc("/api/v1/file/{sha256}/tag/add", TagAdd).Methods("POST")

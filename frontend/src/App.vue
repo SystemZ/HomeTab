@@ -1,7 +1,7 @@
 <template>
     <v-app>
         <v-navigation-drawer
-                v-model="drawer"
+                v-model="leftDrawer"
                 app
         >
             <v-list dense>
@@ -55,24 +55,37 @@
                 color="indigo lighten-1"
                 dark
         >
-            <v-app-bar-nav-icon @click.stop="drawer = !drawer"/>
+            <v-app-bar-nav-icon @click.stop="leftDrawer = !leftDrawer"/>
             <v-toolbar-title>GoTag</v-toolbar-title>
+            <v-spacer/>
+            <v-app-bar-nav-icon @click.stop="rightDrawer = !rightDrawer"/>
         </v-app-bar>
 
         <v-content>
             <router-view/>
         </v-content>
+
+        <v-navigation-drawer
+                app
+                v-model="rightDrawer"
+                right
+                fixed
+        >
+            <tag-list/>
+        </v-navigation-drawer>
     </v-app>
 </template>
 
 <script lang="ts">
     import Vue from 'vue';
+    import TagList from "./components/TagList.vue";
 
     export default Vue.extend({
         name: 'App',
-
+        components: {TagList},
         data: () => ({
-            drawer: null,
+            leftDrawer: true,
+            rightDrawer: true,
         }),
         created() {
             this.$root.$on('sessionExpired', this.logout)

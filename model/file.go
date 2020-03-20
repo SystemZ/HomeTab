@@ -29,6 +29,35 @@ type File struct {
 	Distance int    `gorm:"-" json:"distance"`
 }
 
+func GetFileByIdForUser(fileId int, userId int) (res File) {
+	query := `
+     SELECT
+      files.id,
+      files.sha256,
+      files.file_name,
+      files.file_path,
+      files.size_b,
+      files.created_at,
+      files.updated_at,
+      mimes.mime
+    FROM files
+    INNER JOIN mimes ON files.mime_id = mimes.id
+    INNER JOIN file_users ON file_users.file_id = files.id
+    WHERE file_users.user_id = ?
+    AND files.id = ?
+    GROUP BY files.id
+    LIMIT 1`
+
+	err := DB.DB().
+		QueryRow(query, userId, fileId).
+		Scan(&res.Id, &res.Sha256, &res.Filename, &res.FilePath, &res.SizeB, &res.CreatedAt, &res.UpdatedAt, &res.Mime)
+	if err != nil {
+		log.Printf("sql scan error: %v", err)
+		return
+	}
+	return
+}
+
 func FileListPaginate(userId int, limit int, nextId int, prevId int, qTerm string) (result []File, allRecords int) {
 	var tagSearch bool
 	if len(qTerm) < 1 {

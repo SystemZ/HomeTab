@@ -40,6 +40,32 @@ func FileSimilar(w http.ResponseWriter, r *http.Request) {
 	w.Write(fileList)
 }
 
+func OneFile(w http.ResponseWriter, r *http.Request) {
+	authUserOk, userInfo := CheckApiAuth(w, r)
+	if !authUserOk {
+		w.WriteHeader(http.StatusUnauthorized)
+		return
+	}
+	vars := mux.Vars(r)
+	fileId, err := strconv.Atoi(vars["id"])
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+	rawRes := model.GetFileByIdForUser(fileId, int(userInfo.Id))
+
+	// prepare JSON result
+	file, err := json.MarshalIndent(rawRes, "", "  ")
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	// all ok, return file
+	w.WriteHeader(http.StatusOK)
+	w.Write(file)
+}
+
 func FilePaginate(w http.ResponseWriter, r *http.Request) {
 	authUserOk, userInfo := CheckApiAuth(w, r)
 	if !authUserOk {

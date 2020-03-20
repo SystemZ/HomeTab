@@ -1,60 +1,7 @@
 <template>
     <v-container fluid>
         <v-row>
-            <v-col cols="2">
-                <v-card
-                        class="mx-auto"
-                        max-width="300"
-                        tile
-                >
-                    <v-list dense>
-                        <v-subheader>All tags</v-subheader>
-                        <v-list-item-group color="primary">
-                            <v-list-item
-                                    @click="selectTag('all')"
-                            >
-                                <v-list-item-icon>
-                                    <v-icon>mdi-earth</v-icon>
-                                </v-list-item-icon>
-                                <v-list-item-content>
-                                    <v-list-item-title>
-                                        All
-                                        <span class="grey--text">?</span>
-                                    </v-list-item-title>
-                                </v-list-item-content>
-                            </v-list-item>
-                            <v-list-item
-                                    @click="selectTag('none')"
-                            >
-                                <v-list-item-icon>
-                                    <v-icon>mdi-label-off</v-icon>
-                                </v-list-item-icon>
-                                <v-list-item-content>
-                                    <v-list-item-title>
-                                        Without
-                                        <span class="grey--text">?</span>
-                                    </v-list-item-title>
-                                </v-list-item-content>
-                            </v-list-item>
-                            <v-list-item
-                                    v-for="(item, i) in tagsRaw" :key="i"
-                                    @click="selectTag(item.tag)"
-                            >
-                                <v-list-item-icon>
-                                    <v-icon>mdi-label-outline</v-icon>
-                                </v-list-item-icon>
-                                <v-list-item-content>
-                                    <v-list-item-title>
-                                        {{item.tag}}
-                                        <span class="grey--text">{{item.counter}}</span>
-                                    </v-list-item-title>
-                                </v-list-item-content>
-                            </v-list-item>
-                        </v-list-item-group>
-                    </v-list>
-                </v-card>
-            </v-col>
-            <v-col cols="10">
+            <v-col cols="12">
                 <v-img
                         class="text-right pa-2"
                 >
@@ -97,97 +44,7 @@
                     </v-col>
                 </v-row>
 
-                <v-dialog v-model="bigPic" dark max-width="90%">
-                    <v-card>
-                        <v-card class="text-center" elevation="0">
-                            <span class="mr-3">
-                                 ID <kbd>{{bigPicInfo.id}}</kbd>
-                            </span>
-                            <v-btn :href="apiUrl+'/img/full/'+bigPicInfo.sha256" target="_blank" class="mb-2 mt-2 mr-5">
-                                Original
-                            </v-btn>
-                            <v-btn @click="(showFilePath) ? showFilePath = false : showFilePath = true">
-                                Path
-                            </v-btn>
-                            <div v-if="showFilePath">
-                                <kbd class="mt-1 mb-2">{{bigPicInfo.filePath}}</kbd>
-                            </div>
-                            <div v-if="isVideo(bigPicInfo.mime) && bigPic">
-                                <video height="600" controls loop autoplay>
-                                    <source :src="apiUrl+'/img/full/'+bigPicInfo.sha256" :type="bigPicInfo.mime">
-                                    Your browser does not support the video tag.
-                                </video>
-                            </div>
-                            <div v-else>
-                                <img @click="bigPic = false" :src="urlToThumb(bigPicInfo,700)"/>
-                            </div>
-                            <br>
-                            <v-form>
-                                <v-container>
-                                    <v-row>
-                                        <v-col
-                                                cols="12"
-                                                lg="6"
-                                                offset-lg="3"
-                                        >
-                                            <v-combobox
-                                                    :search-input.sync="tagTyped"
-                                                    :disabled="tagsLoading"
-                                                    v-model="bigPicInfo.tagz"
-                                                    @change="addTag"
-                                                    :items="tags"
-                                                    chips
-                                                    label="File tags"
-                                                    multiple
-                                                    prepend-icon="mdi-label"
-                                                    :return-object="false"
-                                            >
-
-                                                <!-- clearable -->
-                                                <template v-slot:selection="{ attrs, item, select, selected }">
-                                                    <v-chip
-                                                            v-bind="attrs"
-                                                            color="indigo"
-                                                            dark
-                                                            class="ma-2"
-                                                            large
-                                                            label
-                                                            :input-value="selected"
-                                                            close
-                                                            @click="select"
-                                                            @click:close="deleteTag(bigPicInfo,item)"
-                                                    >
-                                                        <strong>{{ item }}</strong>&nbsp;
-                                                        <!--<span>(interest)</span>-->
-                                                    </v-chip>
-                                                </template>
-                                            </v-combobox>
-                                        </v-col>
-                                    </v-row>
-                                    <v-row>
-                                        <v-flex cols="1" v-for="similar in similarFiles" :key="similar.sha256">
-                                            <a target="_blank" :href="apiUrl+'/img/full/'+similar.sha256">
-                                                {{similar.distance}}
-                                            </a>
-                                            <v-img @click="zoom(similar,true)"
-                                                   width="150"
-                                                   height="150"
-                                                   :src="apiUrl+'/img/thumbs/150/150/'+similar.sha256">
-                                            </v-img>
-                                            <span v-if="similar.tags"
-                                                  class="d-inline-block text-truncate"
-                                                  style="max-width: 150px;">{{similar.tags}}</span>
-                                            <span v-else-if="similarLoading">...</span>
-                                            <span v-else>-</span>
-                                        </v-flex>
-                                    </v-row>
-                                </v-container>
-                            </v-form>
-                        </v-card>
-
-                    </v-card>
-
-                </v-dialog>
+                <zoom/>
 
                 <v-item-group>
                     <v-container class="pa-0">
@@ -207,7 +64,7 @@
                                                 <!--<v-icon>mdi-movie-open-outline</v-icon>-->
                                                 <video
                                                         v-if="isVideo(item.mime)"
-                                                        @click="zoom(item,false)"
+                                                        @click="$root.$emit('zoomId',item.id)"
                                                         height="200px" width="200px" loop muted autoplay
                                                 >
                                                     <source :src="apiUrl+'/img/full/'+item.sha256" :type="item.mime">
@@ -217,7 +74,7 @@
                                                         :src="urlToThumb(item,200)"
                                                         height="200"
                                                         width="200"
-                                                        @click="zoom(item,false)"
+                                                        @click="$root.$emit('zoomId',item.id)"
                                                 />
                                                 <span
                                                         v-if="item.tags"
@@ -273,39 +130,37 @@
 </template>
 <script>
   import axios from 'axios'
+  import Zoom from '../components/Files/Zoom'
 
   export default {
     name: 'files',
+    components: {Zoom},
     data () {
       return {
-        search: '',
+        // loaders
         filesLoading: true,
-        similarLoading: true,
+        fileListTagsLoading: true,
+        // view specific
+        tagSelected: '',
+        search: '',
         files: [],
+        // pagination
         page: 1,
         pages: 1,
         itemsPerPage: 56,
         afterId: 0,
         prevItemsPerPage: 0,
         prevPage: 0,
-        bigPic: false,
-        bigPicInfo: {},
-        tagsLoading: false,
-        fileListTagsLoading: true,
-        tags: [],
-        tagsRaw: [],
-        tagSelected: '',
-        similarFiles: [],
-        // change me
-        active: false,
-        // tag typed by user in zoomed image
-        tagTyped: '',
-        showFilePath: false
       }
     },
     mounted () {
       this.getFiles()
-      this.getTags()
+    },
+    created () {
+      this.$root.$on('tagSelected', this.selectTag)
+    },
+    destroyed () {
+      this.$root.$off('tagSelected', this.selectTag)
     },
     methods: {
       authConfig () {
@@ -313,12 +168,6 @@
       },
       toFile (item) {
         this.$router.push({name: 'file', params: {id: item.id}})
-      },
-      isVideo (mime) {
-        if (mime === 'video/webm' || mime === 'video/mp4') {
-          return true
-        }
-        return false
       },
       isThumbPossible (mime) {
         if (
@@ -331,112 +180,9 @@
           return true
         }
       },
-      urlToThumb (file, width) {
-        if (file.mime === 'image/gif') {
-          return this.apiUrl + '/img/full/' + file.sha256
-        }
-        return this.apiUrl + '/img/thumbs/' + width + '/' + width + '/' + file.sha256
-      },
-      tagz (str) {
-        // no tags
-        if (!str.includes(',') && str.length < 1) {
-          return []
-        }
-        // two or more
-        if (str.includes(',') && str.length > 0) {
-          return str.split(',')
-        }
-        // one tag
-        return [str]
-      },
-      zoom (item, similar) {
-        if (similar && this.similarLoading) {
-          // TODO notify user about loading
-          // this prevents skipping tag loading for similar images
-          return
-        } else if (!similar && this.fileListTagsLoading) {
-          // TODO notify user about loading
-          // this prevents skipping tag loading for file list
-          return
-        }
-
-        this.getSimilar(item.sha256)
-        this.bigPic = true
-        this.bigPicInfo = item
-        this.bigPicInfo.tagz = this.tagz(item.tags)
-        this.bigPicInfo.tagzServer = this.tagz(item.tags)
-      },
       selectTag (tagName) {
         this.tagSelected = tagName
         this.getFiles()
-      },
-      addTag (currentTags) {
-        this.tagsLoading = true
-        let diff = currentTags
-          .filter(x => !this.bigPicInfo.tagzServer.includes(x))
-          .concat(this.bigPicInfo.tagzServer.filter(x => !currentTags.includes(x)))
-
-        let tagToAdd = ''
-
-        if (diff.length < 1) {
-          console.log('detected to try an empty tag, cancelling...')
-          return
-        }
-
-        // this requires combobox :return-object="false"
-        // it makes tag selecting work properly without objects visible for user
-        // https://github.com/vuetifyjs/vuetify/issues/5358#issuecomment-431312918
-        tagToAdd = diff[0]
-        console.log('Adding tag ' + tagToAdd)
-
-        // this removes manually typed tag if user clicks on tag suggestion
-        this.tagTyped = ''
-
-        let vm = this
-        let rawUrl = vm.apiUrl + '/api/v1/file/' + this.bigPicInfo.sha256 + '/tag/add'
-        axios.post(rawUrl, {'tag': tagToAdd}, vm.authConfig())
-          .then(() => {
-            vm.bigPicInfo.tagzServer = currentTags
-            // get global tag list
-            vm.getTags()
-            // ask server about tags for this one file on main list
-            this.getTagsForFiles([{'fileId': this.bigPicInfo.id}], false)
-          })
-          .catch(function (err) {
-            if (err.response.status === 401) {
-              vm.$root.$emit('sessionExpired')
-            } else {
-              console.log(err)
-              console.log('something wrong')
-            }
-          })
-
-      },
-      deleteTag (bigPicInfo, tag) {
-        console.log('Deleting tag ' + tag)
-        this.tagsLoading = true
-        let vm = this
-        let rawUrl = vm.apiUrl + '/api/v1/file/' + bigPicInfo.sha256 + '/tag/delete'
-        axios.post(rawUrl, {'tag': tag}, vm.authConfig())
-          .then(() => {
-            for (let i = vm.bigPicInfo.tagz.length - 1; i >= 0; i--) {
-              if (vm.bigPicInfo.tagz[i] === tag) {
-                vm.bigPicInfo.tagz.splice(i, 1)
-              }
-            }
-            // get global tag list
-            vm.getTags()
-            // ask server about tags for this one file on main list
-            this.getTagsForFiles([{'fileId': this.bigPicInfo.id}], false)
-          })
-          .catch(function (err) {
-            console.log(err)
-            if (err.response.status === 401) {
-              vm.$root.$emit('sessionExpired')
-            } else {
-              console.log('something wrong')
-            }
-          })
       },
       getFiles () {
         let vm = this
@@ -492,7 +238,7 @@
               fileList.push({'fileId': file.id})
             })
             // ask server about tags
-            this.getTagsForFiles(fileList, false)
+            this.getTagsForFiles(fileList)
             // add page to pagination
             if (vm.files.length === vm.itemsPerPage) {
               vm.pages++
@@ -508,63 +254,10 @@
             }
           })
       },
-      getTags () {
-        this.tagsLoading = true
-        let vm = this
-        let rawUrl = vm.apiUrl + '/api/v1/tags'
-        axios.get(rawUrl, vm.authConfig())
-          .then((res) => {
-            // for tags widget
-            vm.tagsRaw = res.data
-            // for tags under zoomed file
-            res.data.forEach((entry) => {
-              vm.tags.push({'text': entry.tag + ' (' + entry.counter + ')', 'value': entry.tag})
-            })
-            this.tagsLoading = false
-          })
-          .catch(function (err) {
-            if (err.response.status === 401) {
-              vm.$root.$emit('sessionExpired')
-            } else {
-              console.log('something wrong')
-            }
-          })
-      },
-      getSimilar (sha256) {
-        axios.get(this.apiUrl + '/api/v1/file/' + sha256 + '/similar', this.authConfig())
-          .then((res) => {
-            // prevent strange user clicks
-            this.similarLoading = true
-            // show user suggested files
-            this.similarFiles = res.data
-            // meanwhile...
-            // prepare list of files to get tags from
-            let fileList = []
-            res.data.forEach((file) => {
-              fileList.push({'fileId': file.id})
-            })
-            // ask server about tags
-            this.getTagsForFiles(fileList, true)
-          })
-          .catch((err) => {
-            if (err.response.status === 401) {
-              this.$root.$emit('sessionExpired')
-            } else {
-              console.log('something wrong')
-            }
-          })
-      },
-      getTagsForFiles (files, similar) {
+      getTagsForFiles (files) {
         axios.post(this.apiUrl + '/api/v1/file/tags', files, this.authConfig())
           .then((tagsRes) => {
-            let filesToCheck = []
-            if (similar) {
-              filesToCheck = this.similarFiles
-            } else {
-              filesToCheck = this.files
-            }
-
-            filesToCheck.forEach((file) => {
+            this.files.forEach((file) => {
               // we need to go deeper...
               // check through all files
               tagsRes.data.forEach((tagEntry) => {
@@ -575,11 +268,7 @@
               })
             })
 
-            if (similar) {
-              this.similarLoading = false
-            } else {
-              this.fileListTagsLoading = false
-            }
+            this.fileListTagsLoading = false
           })
           .catch((err) => {
             if (err.response.status === 401) {

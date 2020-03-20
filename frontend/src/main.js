@@ -40,6 +40,20 @@ const mixin = {
     lsToken () {
       return 'authToken'
     },
+  },
+  methods: {
+    urlToThumb (file, width) {
+      if (file.mime === 'image/gif') {
+        return this.apiUrl + '/img/full/' + file.sha256
+      }
+      return this.apiUrl + '/img/thumbs/' + width + '/' + width + '/' + file.sha256
+    },
+    isVideo (mime) {
+      if (mime === 'video/webm' || mime === 'video/mp4') {
+        return true
+      }
+      return false
+    },
   }
 }
 Vue.mixin(mixin)
