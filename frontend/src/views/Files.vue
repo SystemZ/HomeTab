@@ -100,6 +100,9 @@
                 <v-dialog v-model="bigPic" dark max-width="90%">
                     <v-card>
                         <v-card class="text-center" elevation="0">
+                            <span class="mr-3">
+                                 ID <kbd>{{bigPicInfo.id}}</kbd>
+                            </span>
                             <v-btn :href="apiUrl+'/img/full/'+bigPicInfo.sha256" target="_blank" class="mb-2 mt-2 mr-5">
                                 Original
                             </v-btn>
