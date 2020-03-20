@@ -61,13 +61,27 @@
                 </v-img>
 
                 <v-row no-gutters>
-                    <v-col cols="12" xs="12" offset-md="5" md="1">
+                    <v-col cols="12" xs="6" offset-md="4" md="1">
                         <v-text-field
                                 v-model="itemsPerPage"
                                 label="Per page"
                                 required
                         >
                         </v-text-field>
+                    </v-col>
+                    <v-col cols="12" xs="6" md="1" offset-md="1">
+                        <v-text-field
+                                v-model="afterId"
+                                label="ID >"
+                        >
+                        </v-text-field>
+                    </v-col>
+                </v-row>
+                <v-row>
+                    <v-col cols="11" xs="12" md="1" offset-md="5">
+                        <p v-if="files.length > 0">
+                            ID {{files[0].id}} - {{files[files.length - 1].id}}
+                        </p>
                     </v-col>
                 </v-row>
                 <v-row no-gutters class="mb-5">
@@ -246,15 +260,6 @@
                         >
                         </v-pagination>
                     </v-col>
-                    <v-col cols="1" xs="12">
-                        <v-text-field
-                                v-model="itemsPerPage"
-                                label="Per page"
-                                required
-                        >
-                        </v-text-field>
-
-                    </v-col>
                 </v-row>
 
             </v-col>
@@ -277,6 +282,7 @@
         page: 1,
         pages: 1,
         itemsPerPage: 56,
+        afterId: 0,
         prevItemsPerPage: 0,
         prevPage: 0,
         bigPic: false,
@@ -458,6 +464,13 @@
         }
         // save page number for next query
         vm.prevPage = vm.page
+
+        //overwrite for fast forwarding through files
+        if (this.afterId > 0) {
+          lastId = this.afterId
+          queryType = 'next'
+          this.afterId = 0
+        }
 
         let rawUrl = vm.apiUrl + '/api/v1/files?limit=' + vm.itemsPerPage + '&' + queryType + 'Id=' + lastId
         let data = {}
