@@ -32,18 +32,18 @@ func CreateDevice(name string, userId uint) uint {
 }
 
 type DeviceList struct {
-	Id                 uint
-	UserId             uint
-	Name               string
-	CreatedAt          time.Time
-	DisplayState       string
-	DisplayOnLastTime  time.Time
-	DisplayOffLastTime time.Time
-	BatteryLeft        uint
-	Username           string
-	MusicTrack         string
-	MusicArtist        string
-	MusicLastPlayed    time.Time
+	Id                 uint      `json:"id"`
+	UserId             uint      `json:"userId"`
+	Name               string    `json:"name"`
+	CreatedAt          time.Time `json:"createdAt"`
+	DisplayState       string    `json:"displayState"`
+	DisplayOnLastTime  time.Time `json:"displayLastOn"`
+	DisplayOffLastTime time.Time `json:"displayLastOff"`
+	BatteryLeft        uint      `json:"battery"`
+	Username           string    `json:"username"`
+	MusicTrack         string    `json:"musicTrack"`
+	MusicArtist        string    `json:"musicArtist"`
+	MusicLastPlayed    time.Time `json:"musicLastPlayed"`
 }
 
 func GetListOfDevices() (result []DeviceList) {

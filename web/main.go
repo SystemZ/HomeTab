@@ -85,6 +85,7 @@ func StartWebInterface() {
 	r.HandleFunc("/api/v1/counter/{id}/start", ApiCounterStartFrontend).Methods("PUT")
 	r.HandleFunc("/api/v1/counter/{id}/stop", ApiCounterStopFrontend).Methods("PUT")
 	r.HandleFunc("/api/v1/event", ApiEventList).Methods("GET")
+	r.HandleFunc("/api/v1/device", ApiDeviceList).Methods("GET")
 
 	// for Android
 	r.HandleFunc("/api/v1/mq/access", ApiMqCredential)
