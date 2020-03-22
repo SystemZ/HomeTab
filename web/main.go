@@ -56,7 +56,6 @@ func StartWebInterface() {
 	r.PathPrefix(STATIC_DIR).Handler(http.StripPrefix(STATIC_DIR, http.FileServer(http.Dir("."+STATIC_DIR))))
 	r.HandleFunc("/", Index)
 	r.HandleFunc("/count/log", CountLog)
-	r.HandleFunc("/device", Device)
 	// settings
 	r.HandleFunc("/account", Account)
 	// auth
