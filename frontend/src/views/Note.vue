@@ -19,6 +19,37 @@
                 Close
             </v-btn>
         </v-snackbar>
+        <v-dialog v-model="deleteNoteDialog" max-width="700" :fullscreen="$vuetify.breakpoint.xsOnly">
+            <v-card>
+                <v-card-title>
+                    Delete note
+                </v-card-title>
+                <v-card-subtitle>
+                    Are you sure that you don't need this note?
+                </v-card-subtitle>
+                <v-card-text>
+                </v-card-text>
+                <v-card-actions>
+                    <v-spacer></v-spacer>
+                    <v-btn
+                            :color="btnPrimary"
+                            text
+                            @click="deleteNoteDialog = false"
+                    >
+                        Cancel
+                    </v-btn>
+                    <v-btn
+                            :dark="btnDark"
+                            :color="btnSecondary"
+                            :disabled="noteLoading"
+                            @click="deleteNote"
+                    >
+                        <v-icon>mdi-delete</v-icon>
+                        Delete
+                    </v-btn>
+                </v-card-actions>
+            </v-card>
+        </v-dialog>
 
         <h1 class="display-1">
             #{{id}}
@@ -36,9 +67,15 @@
             <v-icon>mdi-pencil</v-icon>
             Edit
         </v-btn>
-        <v-btn :dark="btnDark" :color="btnPrimary" class="mt-3 mb-5" :disabled="noteLoading" @click.native="saveNote">
+        <v-btn :dark="btnDark" :color="btnPrimary" class="mt-3 mb-5 mr-4" :disabled="noteLoading"
+               @click.native="saveNote">
             <v-icon>mdi-content-save-outline</v-icon>
             Save
+        </v-btn>
+        <v-btn :dark="btnDark" color="red darken-2" class="mt-3 mb-5" :disabled="noteLoading"
+               @click.native="deleteNoteDialog = true">
+            <v-icon>mdi-delete</v-icon>
+            Delete
         </v-btn>
         <vue-simplemde
                 v-model="note.body"
@@ -66,6 +103,7 @@
                 noteSaved: false,
                 noteSaveError: false,
                 noteEditing: false,
+                deleteNoteDialog: false,
                 note: {
                     id: 0,
                     title: "",
@@ -103,7 +141,6 @@
             },
             getNote() {
                 let vm = this
-                vm.notesLoading = true
                 axios.get(vm.apiUrl + "/api/v1/note/" + vm.id, vm.authConfig())
                     .then((res) => {
                         vm.noteLoading = false
@@ -123,7 +160,6 @@
             },
             saveNote() {
                 let vm = this
-                vm.notesLoading = true
                 let dataToSend = {
                     'body': vm.note.body,
                     'title': vm.note.title,
@@ -140,6 +176,22 @@
                         if (err.response.status === 401) {
                             console.log("logged out")
                             vm.$root.$emit("sessionExpired")
+                        } else {
+                            console.log("something wrong")
+                        }
+                    })
+            },
+            deleteNote() {
+                this.noteLoading = true
+                axios.delete(this.apiUrl + "/api/v1/note/" + this.id, this.authConfig())
+                    .then((res) => {
+                        this.$router.push({name: 'notes'})
+                    })
+                    .catch((err) => {
+                        this.noteLoading = false
+                        if (err.response.status === 401) {
+                            console.log("logged out")
+                            this.$root.$emit("sessionExpired")
                         } else {
                             console.log("something wrong")
                         }

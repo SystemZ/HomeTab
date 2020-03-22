@@ -179,3 +179,36 @@ func ApiNoteNew(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 	w.Write(response)
 }
+
+func ApiNoteDelete(w http.ResponseWriter, r *http.Request) {
+	// check auth
+	ok, _ := CheckApiAuth(w, r)
+	if !ok {
+		w.WriteHeader(http.StatusUnauthorized)
+		return
+	}
+
+	// check ID in URL
+	vars := mux.Vars(r)
+	noteId, err := strconv.Atoi(vars["id"])
+	if err != nil {
+		log.Printf("Wrong note ID requested")
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
+	// get note from DB
+	notesInDb := model.OneNote(uint(noteId))
+	// no such note
+	if len(notesInDb) < 1 {
+		log.Printf("No note with ID %v found", noteId)
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
+	// soft delete note from DB
+	model.DB.Delete(&notesInDb[0])
+
+	// all ok
+	w.WriteHeader(http.StatusOK)
+}
