@@ -6,6 +6,7 @@ import Note from '../views/Note.vue'
 import Counters from '../views/Counters.vue'
 import Counter from '../views/Counter.vue'
 import Events from '../views/Events.vue'
+import Devices from '../views/Devices.vue'
 import Login from '../views/Login.vue'
 
 Vue.use(VueRouter)
@@ -45,6 +46,11 @@ const routes = [
         path: '/events',
         name: 'events',
         component: Events
+    },
+    {
+        path: '/devices',
+        name: 'devices',
+        component: Devices
     },
     {
         path: '/login',
