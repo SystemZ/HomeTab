@@ -37,6 +37,14 @@
                         <v-list-item-title>Events</v-list-item-title>
                     </v-list-item-content>
                 </v-list-item>
+                <v-list-item v-if="$store.state.loggedIn" to="/devices">
+                    <v-list-item-action>
+                        <v-icon>mdi-cellphone</v-icon>
+                    </v-list-item-action>
+                    <v-list-item-content>
+                        <v-list-item-title>Devices</v-list-item-title>
+                    </v-list-item-content>
+                </v-list-item>
 
                 <v-list-item v-if="!$store.state.loggedIn" to="/login">
                     <v-list-item-action>
