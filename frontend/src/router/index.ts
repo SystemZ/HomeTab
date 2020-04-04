@@ -8,6 +8,7 @@ import Counter from '../views/Counter.vue'
 import Events from '../views/Events.vue'
 import Devices from '../views/Devices.vue'
 import Login from '../views/Login.vue'
+import Settings from '../views/Settings.vue'
 
 Vue.use(VueRouter)
 
@@ -51,6 +52,11 @@ const routes = [
         path: '/devices',
         name: 'devices',
         component: Devices
+    },
+    {
+        path: '/settings',
+        name: 'settings',
+        component: Settings
     },
     {
         path: '/login',
