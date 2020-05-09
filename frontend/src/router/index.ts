@@ -5,6 +5,7 @@ import Notes from '../views/Notes.vue'
 import Note from '../views/Note.vue'
 import Counters from '../views/Counters.vue'
 import Counter from '../views/Counter.vue'
+import Log from '../views/Log.vue'
 import Events from '../views/Events.vue'
 import Devices from '../views/Devices.vue'
 import Login from '../views/Login.vue'
@@ -41,6 +42,11 @@ const routes = [
         path: '/counter/:id',
         name: 'counter',
         component: Counter
+    },
+    {
+        path: '/log',
+        name: 'log',
+        component: Log
     },
     {
         path: '/events',
