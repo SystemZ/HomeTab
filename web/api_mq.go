@@ -74,7 +74,7 @@ func ApiPushRegister(w http.ResponseWriter, r *http.Request) {
 	// update push token if necessary
 	var deviceInDb model.Device
 	if device.TokenPush != newRegistration.PushToken {
-		model.DB.Model(&deviceInDb).UpdateColumn("token_push", newRegistration.PushToken)
+		model.DB.Model(&deviceInDb).Where("id = ?", device.Id).UpdateColumn("token_push", newRegistration.PushToken)
 	}
 
 	// all ok, return list
