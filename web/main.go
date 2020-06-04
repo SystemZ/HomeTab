@@ -88,6 +88,7 @@ func StartWebInterface() {
 	r.HandleFunc("/api/v1/device", ApiDeviceList).Methods("GET")
 
 	// for Android
+	r.HandleFunc("/api/v1/push/register", ApiPushRegister)
 	r.HandleFunc("/api/v1/mq/access", ApiMqCredential)
 	r.HandleFunc("/api/v1/event", ApiEvent).Methods("POST")
 	r.HandleFunc("/api/v1/counter", ApiCounterList).Methods("GET")

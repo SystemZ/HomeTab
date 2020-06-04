@@ -3,6 +3,7 @@ package web
 import (
 	"encoding/json"
 	"gitlab.com/systemz/tasktab/config"
+	"gitlab.com/systemz/tasktab/model"
 	"log"
 	"net/http"
 	"strconv"
@@ -47,4 +48,35 @@ func ApiMqCredential(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 	w.Write(res)
 
+}
+
+type PushRegisterRequest struct {
+	PushToken string `json:"pushToken"`
+}
+
+func ApiPushRegister(w http.ResponseWriter, r *http.Request) {
+	authOk, device := DeviceApiCheckAuth(w, r)
+	if !authOk {
+		w.Write([]byte{})
+		return
+	}
+
+	decoder := json.NewDecoder(r.Body)
+	var newRegistration PushRegisterRequest
+	decoder.Decode(&newRegistration)
+
+	// reject if title empty
+	if len(newRegistration.PushToken) < 1 {
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
+	// update push token if necessary
+	var deviceInDb model.Device
+	if device.TokenPush != newRegistration.PushToken {
+		model.DB.Model(&deviceInDb).UpdateColumn("token_push", newRegistration.PushToken)
+	}
+
+	// all ok, return list
+	w.WriteHeader(http.StatusOK)
 }

@@ -32,6 +32,8 @@ var (
 	RABBITMQ_USERNAME string
 	RABBITMQ_PASSWORD string
 	RABBITMQ_VHOST    string
+	//
+	PUSHY_ME_SECRET string
 )
 
 func init() {
@@ -86,4 +88,7 @@ func init() {
 	RABBITMQ_PASSWORD = viper.GetString("RABBITMQ_PASSWORD")
 	viper.SetDefault("RABBITMQ_VHOST", "/")
 	RABBITMQ_VHOST = viper.GetString("RABBITMQ_VHOST")
+	// pushy.me
+	viper.SetDefault("PUSHY_ME_SECRET", "changeme")
+	PUSHY_ME_SECRET = viper.GetString("PUSHY_ME_SECRET")
 }

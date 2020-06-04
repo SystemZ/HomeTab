@@ -130,7 +130,7 @@ func ApiCounterStart(w http.ResponseWriter, r *http.Request) {
 	// notify mobile app
 	var user model.User
 	model.DB.Where(model.User{Id: device.UserId}).First(&user)
-	service.SendCounterNotification(true, user, uint(counterId), sessionId)
+	go service.SendCounterNotification(true, user, uint(counterId), sessionId)
 
 	w.WriteHeader(http.StatusOK)
 	w.Write([]byte{})
@@ -158,7 +158,7 @@ func ApiCounterStop(w http.ResponseWriter, r *http.Request) {
 	// notify mobile app
 	var user model.User
 	model.DB.Where(model.User{Id: device.UserId}).First(&user)
-	service.SendCounterNotification(false, user, uint(counterId), sessionId)
+	go service.SendCounterNotification(false, user, uint(counterId), sessionId)
 
 	w.WriteHeader(http.StatusOK)
 	w.Write([]byte{})
