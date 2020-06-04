@@ -50,4 +50,5 @@ dependencies {
     implementation 'com.squareup.retrofit2:converter-gson:2.5.0'
     implementation 'org.fusesource.mqtt-client:mqtt-client:1.12'
     implementation 'com.google.code.gson:gson:2.8.6'
+    implementation 'me.pushy:sdk:1.0.55'
 }

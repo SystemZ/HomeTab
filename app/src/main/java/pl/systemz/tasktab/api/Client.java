@@ -14,14 +14,16 @@ import okhttp3.Response;
 import retrofit2.Call;
 import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
+import retrofit2.http.Body;
 import retrofit2.http.GET;
 import retrofit2.http.POST;
 import retrofit2.http.Path;
 
 public class Client {
     Context context;
-    public static final String API_URL = "https://tasktab.lvlup.pro/api/v1/";
-    //    public static final String API_URL = "http://192.168.2.88:3000/api/v1/";
+    //    public static final String API_URL = "https://tasktab.lvlup.pro/api/v1/";
+    public static final String API_URL = "http://192.168.2.88:3000/api/v1/";
+
     private static Client instance = null;
     private GitHub github;
 
@@ -67,6 +69,22 @@ public class Client {
         }
     }
 
+    public static class DeviceToken {
+        public final String token;
+
+        public DeviceToken(String token) {
+            this.token = token;
+        }
+    }
+
+    public static class PushRegisterRequest {
+        final String pushToken;
+
+        public PushRegisterRequest(String pushToken) {
+            this.pushToken = pushToken;
+        }
+    }
+
     public interface GitHub {
         @GET("/repos/{owner}/{repo}/contributors")
         Call<List<Contributor>> contributors(
@@ -91,8 +109,15 @@ public class Client {
                 @Path("id") int id
         );
 
+        // TODO delete this
         @GET("mq/access")
         Call<MqCredentials> mqCredentialsGet();
+
+        @POST("push/register")
+        Call<Void> deviceRegister(
+                @Body PushRegisterRequest body
+        );
+
     }
 
     private Client(Context context) {
