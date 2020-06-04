@@ -21,8 +21,8 @@ import retrofit2.http.Path;
 
 public class Client {
     Context context;
-    //    public static final String API_URL = "https://tasktab.lvlup.pro/api/v1/";
-    public static final String API_URL = "http://192.168.2.88:3000/api/v1/";
+    public static final String API_URL = "https://tasktab.lvlup.pro/api/v1/";
+    //public static final String API_URL = "http://192.168.2.88:3000/api/v1/";
 
     private static Client instance = null;
     private GitHub github;
