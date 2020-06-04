@@ -4,24 +4,26 @@
             <v-col cols="12">
                 <span class="display-1 mr-1">{{counter.title}}</span>
                 <span class="overline">{{counter.tags}}</span>
-                <div v-if="!counterLoading">
+                <div>
                     <v-btn
+                            v-if="counter.running"
                             class="mt-3"
                             x-large
                             :dark="btnDark"
                             :color="btnSecondary"
                             @click="toggleCounter(false)"
-                            v-if="counter.running"
+                            :loading="counterLoading"
                     >
                         Stop
                     </v-btn>
                     <v-btn
+                            v-else
                             class="mt-3"
                             x-large
                             :dark="btnDark"
                             :color="btnPrimary"
                             @click="toggleCounter(true)"
-                            v-else
+                            :loading="counterLoading"
                     >
                         Start
                     </v-btn>
@@ -166,20 +168,19 @@
                 return {headers: {Authorization: "Bearer " + localStorage.getItem(this.lsToken)}}
             },
             toggleCounter(start) {
-                let vm = this
+                this.counterLoading = true
                 let verb = "stop"
                 if (start) {
                     verb = "start"
                 }
-                //vm.notesLoading = true
-                axios.put(vm.apiUrl + "/api/v1/counter/" + vm.counter.id + "/" + verb, {}, vm.authConfig())
+                axios.put(this.apiUrl + "/api/v1/counter/" + this.counter.id + "/" + verb, {}, this.authConfig())
                     .then((res) => {
-                        vm.getCounter()
+                      this.getCounter()
                     })
                     .catch(function (err) {
                         if (err.response.status === 401) {
                             console.log("logged out")
-                            vm.$root.$emit("sessionExpired")
+                            this.$root.$emit("sessionExpired")
                         } else {
                             console.log("something wrong")
                         }
