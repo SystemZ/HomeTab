@@ -14,7 +14,7 @@ function deploy-when-master {
 }
 
 function dump-schema {
-    docker-compose exec db /bin/sh -c "/usr/bin/mysqldump -udev -pdev --no-data dev" | grep -v "Using a password on the command line interface can be insecure" | sed 's/ AUTO_INCREMENT=[0-9]*//g' > migrations/0.sql
+    docker-compose exec -T db /bin/sh -c "/usr/bin/mysqldump -udev -pdev --no-data dev" | grep -v "Using a password on the command line interface can be insecure" | sed 's/ AUTO_INCREMENT=[0-9]*//g' > migrations/0.sql
 }
 function build {
     docker build -t tasktab .
