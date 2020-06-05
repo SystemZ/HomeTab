@@ -70,18 +70,25 @@ func StartCounterSession(counterId uint, userId uint) uint {
 	return session.Id
 }
 
-func StopCounterSession(counterId uint, userId uint) uint {
+func StopCounterSession(counterId uint, userId uint) (sessionId uint, sessionTaken string) {
 	var session CounterSession
 	res := DB.Order("ended_at asc").Where("user_id = ? AND counter_id = ? AND ended_at IS NULL", userId, counterId).First(&session)
 	if res.RowsAffected < 1 {
-		return 0
+		return 0, ""
 	}
 	//FIXME timezones
 	now := time.Now()
 	session.EndedAt = &now
 	session.UpdatedAt = &now
 	DB.Save(&session)
-	return session.Id
+
+	sessionId = session.Id
+
+	started := time.Unix(session.StartedAt.Unix(), 0)
+	ended := time.Unix(session.EndedAt.Unix(), 0)
+	sessionTaken = PrettyTime(uint(ended.Sub(started).Seconds()))
+
+	return
 }
 
 type CounterList struct {

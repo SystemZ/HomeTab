@@ -23,16 +23,6 @@ var (
 	REGISTER_WHITELIST bool
 	REGISTER_TOKEN     string
 	//
-	MQTT_VHOST                string
-	MQTT_EXTERNAL_SERVER_HOST string
-	MQTT_EXTERNAL_SERVER_PORT int
-	//
-	RABBITMQ_HOST     string
-	RABBITMQ_PORT     string
-	RABBITMQ_USERNAME string
-	RABBITMQ_PASSWORD string
-	RABBITMQ_VHOST    string
-	//
 	PUSHY_ME_SECRET string
 )
 
@@ -70,24 +60,6 @@ func init() {
 	REGISTER_ON = viper.GetBool("REGISTER_ON")
 	viper.SetDefault("REGISTER_TOKEN", "unknown")
 	REGISTER_TOKEN = viper.GetString("REGISTER_TOKEN")
-	// MQTT
-	viper.SetDefault("MQTT_VHOST", "tasktab")
-	MQTT_VHOST = viper.GetString("MQTT_VHOST")
-	viper.SetDefault("MQTT_EXTERNAL_SERVER_HOST", "127.0.0.1")
-	MQTT_EXTERNAL_SERVER_HOST = viper.GetString("MQTT_EXTERNAL_SERVER_HOST")
-	viper.SetDefault("MQTT_EXTERNAL_SERVER_PORT", 1883)
-	MQTT_EXTERNAL_SERVER_PORT = viper.GetInt("MQTT_EXTERNAL_SERVER_PORT")
-	// RabbitMQ
-	viper.SetDefault("RABBITMQ_HOST", "localhost")
-	RABBITMQ_HOST = viper.GetString("RABBITMQ_HOST")
-	viper.SetDefault("RABBITMQ_PORT", "5672")
-	RABBITMQ_PORT = viper.GetString("RABBITMQ_PORT")
-	viper.SetDefault("RABBITMQ_USERNAME", "guest")
-	RABBITMQ_USERNAME = viper.GetString("RABBITMQ_USERNAME")
-	viper.SetDefault("RABBITMQ_PASSWORD", "guest")
-	RABBITMQ_PASSWORD = viper.GetString("RABBITMQ_PASSWORD")
-	viper.SetDefault("RABBITMQ_VHOST", "/")
-	RABBITMQ_VHOST = viper.GetString("RABBITMQ_VHOST")
 	// pushy.me
 	viper.SetDefault("PUSHY_ME_SECRET", "changeme")
 	PUSHY_ME_SECRET = viper.GetString("PUSHY_ME_SECRET")

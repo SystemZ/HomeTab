@@ -130,7 +130,7 @@ func ApiCounterStart(w http.ResponseWriter, r *http.Request) {
 	// notify mobile app
 	var user model.User
 	model.DB.Where(model.User{Id: device.UserId}).First(&user)
-	go service.SendCounterNotification(true, user, uint(counterId), sessionId)
+	go service.SendCounterNotification(true, user, uint(counterId), sessionId, "")
 
 	w.WriteHeader(http.StatusOK)
 	w.Write([]byte{})
@@ -153,12 +153,12 @@ func ApiCounterStop(w http.ResponseWriter, r *http.Request) {
 	}
 
 	//FIXME validation for user permissions
-	sessionId := model.StopCounterSession(uint(counterId), device.UserId)
+	sessionId, sessionTaken := model.StopCounterSession(uint(counterId), device.UserId)
 
 	// notify mobile app
 	var user model.User
 	model.DB.Where(model.User{Id: device.UserId}).First(&user)
-	go service.SendCounterNotification(false, user, uint(counterId), sessionId)
+	go service.SendCounterNotification(false, user, uint(counterId), sessionId, sessionTaken)
 
 	w.WriteHeader(http.StatusOK)
 	w.Write([]byte{})
@@ -186,7 +186,7 @@ func ApiCounterStartFrontend(w http.ResponseWriter, r *http.Request) {
 	// notify mobile app
 	var user model.User
 	model.DB.Where(model.User{Id: userInfo.Id}).First(&user)
-	service.SendCounterNotification(true, user, uint(counterId), sessionId)
+	go service.SendCounterNotification(true, user, uint(counterId), sessionId, "")
 
 	w.WriteHeader(http.StatusOK)
 	w.Write([]byte{})
@@ -209,12 +209,11 @@ func ApiCounterStopFrontend(w http.ResponseWriter, r *http.Request) {
 	}
 
 	//FIXME validation for user permissions
-	sessionId := model.StopCounterSession(uint(counterId), userInfo.Id)
-
+	sessionId, sessionTaken := model.StopCounterSession(uint(counterId), userInfo.Id)
 	// notify mobile app
 	var user model.User
 	model.DB.Where(model.User{Id: userInfo.Id}).First(&user)
-	service.SendCounterNotification(false, user, uint(counterId), sessionId)
+	go service.SendCounterNotification(false, user, uint(counterId), sessionId, sessionTaken)
 
 	w.WriteHeader(http.StatusOK)
 	w.Write([]byte{})

@@ -24,7 +24,6 @@ require (
 	github.com/sirupsen/logrus v1.2.0
 	github.com/spf13/cobra v0.0.5
 	github.com/spf13/viper v1.4.0
-	github.com/streadway/amqp v0.0.0-20190827072141-edfb9018d271
 	github.com/unrolled/render v1.0.1
 	gitlab.com/golang-commonmark/html v0.0.0-20180917080848-cfaf75183c4a // indirect
 	gitlab.com/golang-commonmark/linkify v0.0.0-20180917065525-c22b7bdb1179 // indirect

@@ -3,15 +3,34 @@ package service
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
 	"gitlab.com/systemz/tasktab/config"
 	"gitlab.com/systemz/tasktab/model"
-	"gitlab.com/systemz/tasktab/queue"
 	"log"
 	"net/http"
-	"strconv"
 )
 
-func SendCounterNotification(start bool, sourceUser model.User, counterId uint, sessionId uint) {
+type Notification struct {
+	Id        uint   `json:"id"`
+	SessionId uint   `json:"sessionId"`
+	Type      string `json:"type"`
+	Title     string `json:"title"`
+	Msg       string `json:"msg"`
+}
+
+func SendGenericNotification(title string, body string, device model.Device) {
+	// summary of session
+	msg := Notification{
+		Id:        0,
+		SessionId: 0,
+		Type:      "showNotification",
+		Title:     title,
+		Msg:       body,
+	}
+	SendPushyMe(msg, device)
+}
+
+func SendCounterNotification(start bool, sourceUser model.User, counterId uint, sessionId uint, sessionTaken string) {
 	// get DB info
 	var counter model.Counter
 	model.DB.Where(model.Counter{Id: counterId}).First(&counter)
@@ -20,53 +39,59 @@ func SendCounterNotification(start bool, sourceUser model.User, counterId uint, 
 
 	// send message to each device
 	for _, device := range devices {
-		msgKey := "device" + strconv.Itoa(int(device.Id))
 		msgTitle := sourceUser.Username + " @ " + counter.Name
 		msgBody := "Counting..."
 		// add or remove notification from device
 		msgType := "startNotification"
 		if !start {
+			// sum up this session as separate notification
+			SendGenericNotification(msgTitle, "Session: "+sessionTaken, device)
+
+			// send empty notification to remove ongoing notification
 			msgType = "stopNotification"
 			msgTitle = ""
 			msgBody = ""
 		}
 
 		// finally craft queue message
-		msg := queue.Notification{
+		msg := Notification{
 			Id:        counterId,
 			SessionId: sessionId,
 			Type:      msgType,
 			Title:     msgTitle,
 			Msg:       msgBody,
 		}
-		log.Printf("Sending AMQP/MQTT push msg to %v", device.Name)
-		queue.SendNotification(msg, msgKey)
-
-		pushReqRaw := PushyMeReq{
-			To:           device.TokenPush,
-			Notification: msg,
-		}
-		pushReq, err := json.Marshal(&pushReqRaw)
-		if err != nil {
-			log.Printf("failed preparing msg for push notification: %v", err)
-			return
-		}
-		log.Printf("Sending pushy.me msg to %v", device.Name)
-		SendPushyMe(pushReq)
+		SendPushyMe(msg, device)
 	}
 }
 
 type PushyMeReq struct {
-	To           string             `json:"to"`
-	Notification queue.Notification `json:"data"`
+	To           string       `json:"to"`
+	Notification Notification `json:"data"`
 }
 
-func SendPushyMe(body []byte) error {
+// send push notification to device via pushy.me service
+func SendPushyMe(msg Notification, device model.Device) (err error) {
+	if len(device.TokenPush) < 1 {
+		return errors.New("wrong push token for pushy.me")
+	}
+	log.Printf("Sending pushy.me msg to %v", device.Name)
+	pushReqRaw := PushyMeReq{
+		To:           device.TokenPush,
+		Notification: msg,
+	}
+	pushReq, err := json.Marshal(&pushReqRaw)
+	if err != nil {
+		log.Printf("failed preparing msg for push notification: %v", err)
+		return err
+	}
+
 	c := &http.Client{}
 	reqUrl := "https://api.pushy.me/push?api_key=" + config.PUSHY_ME_SECRET
-	r, err := http.NewRequest("POST", reqUrl, bytes.NewBuffer(body))
+	r, err := http.NewRequest("POST", reqUrl, bytes.NewBuffer(pushReq))
 	if err != nil {
 		log.Printf("fail when creating request for api.pushy.me: %v", err)
+		return err
 	}
 	r.Header.Set("Content-Type", "application/json")
 	res, err := c.Do(r)
