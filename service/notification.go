@@ -26,17 +26,16 @@ func SendGenericNotificationToAllDevices(title string, body string, ignoreUsers 
 	// send message to each device
 	for _, device := range devices {
 		send := true
-		for userId := range ignoreUsers {
+		// ignore specified users
+		for _, userId := range ignoreUsers {
 			if uint(userId) == device.UserId {
 				send = false
 				break
 			}
 		}
-		// ignore specified users
-		if !send {
-			continue
+		if send {
+			SendGenericNotification(title, body, device)
 		}
-		SendGenericNotification(title, body, device)
 	}
 }
 
