@@ -70,11 +70,35 @@ type PushyMeReq struct {
 	Notification Notification `json:"data"`
 }
 
+/*
+func EncryptAES(key []byte, plaintext string) string {
+	// create cipher
+	c, err := aes.NewCipher(key)
+	if err != nil {
+		log.Printf("encrypting msg err: %v", err)
+		return ""
+	}
+
+	// allocate space for ciphered data
+	out := make([]byte, len(plaintext))
+
+	// encrypt
+	c.Encrypt(out, []byte(plaintext))
+	// return hex string
+	return hex.EncodeToString(out)
+}
+*/
+
 // send push notification to device via pushy.me service
 func SendPushyMe(msg Notification, device model.Device) (err error) {
 	if len(device.TokenPush) < 1 {
 		return errors.New("wrong push token for pushy.me")
 	}
+	// https://stackoverflow.com/questions/40123319/easy-way-to-encrypt-decrypt-string-in-android
+	// use first 32 characters from device token as basic encryption measure in transit
+	//encryptKey := []byte(device.Token[0:32])
+	//msg.Title = EncryptAES(encryptKey, msg.Title)
+
 	log.Printf("Sending pushy.me msg to %v", device.Name)
 	pushReqRaw := PushyMeReq{
 		To:           device.TokenPush,
