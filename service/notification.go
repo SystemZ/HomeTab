@@ -18,6 +18,28 @@ type Notification struct {
 	Msg       string `json:"msg"`
 }
 
+func SendGenericNotificationToAllDevices(title string, body string, ignoreUsers []int) {
+	// get DB info
+	var devices []model.Device
+	model.DB.Find(&devices)
+
+	// send message to each device
+	for _, device := range devices {
+		send := true
+		for userId := range ignoreUsers {
+			if uint(userId) == device.UserId {
+				send = false
+				break
+			}
+		}
+		// ignore specified users
+		if !send {
+			continue
+		}
+		SendGenericNotification(title, body, device)
+	}
+}
+
 func SendGenericNotification(title string, body string, device model.Device) {
 	// summary of session
 	msg := Notification{

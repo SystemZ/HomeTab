@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"github.com/gorilla/mux"
 	"gitlab.com/systemz/tasktab/model"
+	"gitlab.com/systemz/tasktab/service"
 	"log"
 	"net/http"
 	"strconv"
@@ -172,6 +173,8 @@ func ApiTaskEdit(w http.ResponseWriter, r *http.Request) {
 		if task.Snooze != nil && task.Snooze.After(time.Now()) {
 			taskInDb.SnoozeTo = task.Snooze
 			model.DB.Save(&taskInDb)
+
+			go service.SendGenericNotificationToAllDevices("Task snoozed", taskInDb.Subject, []int{int(userInDb.Id)})
 		}
 
 		// alternative snooze by seconds
@@ -207,6 +210,8 @@ func ApiTaskEdit(w http.ResponseWriter, r *http.Request) {
 			taskInDb.DoneAt.Valid = true
 			taskInDb.DoneAt.Time = timeNow
 			model.DB.Save(&taskInDb)
+
+			go service.SendGenericNotificationToAllDevices("Task done", taskInDb.Subject, []int{int(userInDb.Id)})
 			continue
 		}
 
