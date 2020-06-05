@@ -59,21 +59,24 @@ public class PushReceiver extends BroadcastReceiver {
         // action based on msg
         if (intent.getStringExtra("type").equals("startNotification")) {
             Log.d(TAG, "Creating new notification...");
-            startNotification(intent, context);
+            startOngoingNotification(intent, context);
         } else if (intent.getStringExtra("type").equals("stopNotification")) {
             Log.d(TAG, "Removing notification...");
-            stopNotification(intent, context);
+            stopOngoingNotification(intent, context);
+        } else if (intent.getStringExtra("type").equals("showNotification")) {
+            Log.d(TAG, "Showing ad-hoc notification...");
+            showNotification(intent, context);
         } else {
             Log.d(TAG, "Task in message not recognized...");
         }
     }
 
-    private void stopNotification(Intent intent, Context context) {
+    private void stopOngoingNotification(Intent intent, Context context) {
         NotificationManagerCompat notificationManager = NotificationManagerCompat.from(context);
         notificationManager.cancel(intent.getIntExtra("sessionId", 0));
     }
 
-    private void startNotification(Intent intent, Context context) {
+    private void startOngoingNotification(Intent intent, Context context) {
         // prepare handler for clicking notification
         Intent taskView = new Intent(context, Task.class);
         taskView.putExtra("TASK_ID", intent.getIntExtra("id", 0));
@@ -103,6 +106,26 @@ public class PushReceiver extends BroadcastReceiver {
                 .setPriority(NotificationCompat.PRIORITY_DEFAULT);
         NotificationManagerCompat notificationManager = NotificationManagerCompat.from(context);
         notificationManager.notify(intent.getIntExtra("sessionId", 0), builder.build());
+    }
+
+    private void showNotification(Intent intent, Context context) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            NotificationChannel channel = new NotificationChannel("tasktab-generic-notifications",
+                    "Generic notify",
+                    NotificationManager.IMPORTANCE_DEFAULT);
+            NotificationManagerCompat notificationManager = NotificationManagerCompat.from(context);
+            notificationManager.createNotificationChannel(channel);
+        }
+        NotificationCompat.Builder builder = new NotificationCompat.Builder(context, "tasktab-counters")
+                .setSmallIcon(R.drawable.ic_info_black_24dp)
+                .setContentTitle(intent.getStringExtra("title"))
+                .setContentText(intent.getStringExtra("msg"))
+                .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
+                .setSound(Settings.System.DEFAULT_NOTIFICATION_URI)
+                .setPriority(NotificationCompat.PRIORITY_DEFAULT);
+        NotificationManagerCompat notificationManager = NotificationManagerCompat.from(context);
+        // use System.currentTimeMillis() to have a unique ID for notification
+        notificationManager.notify((int) System.currentTimeMillis(), builder.build());
     }
 
 }
