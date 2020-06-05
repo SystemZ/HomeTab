@@ -51,7 +51,7 @@ public class TaskList extends AppCompatActivity {
 
         // calling backend API
         Client client = Client.getInstance(getApplicationContext());
-        Call<List<Client.Timer>> call = client.getGithub().timers();
+        Call<List<Client.Timer>> call = client.getTtClient().timers();
         call.enqueue(new Callback<List<Client.Timer>>() {
             @Override
             public void onResponse(Call<List<Client.Timer>> call, Response<List<Client.Timer>> response) {

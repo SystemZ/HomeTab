@@ -71,7 +71,7 @@ public class StalkService extends Service {
 
                 // report token to backend
                 Client client = Client.getInstance(getApplicationContext());
-                Call<Void> call = client.getGithub().deviceRegister(new Client.PushRegisterRequest(pushToken));
+                Call<Void> call = client.getTtClient().deviceRegister(new Client.PushRegisterRequest(pushToken));
                 call.enqueue(new Callback<Void>() {
                     @Override
                     public void onResponse(Call<Void> call, Response<Void> response) {

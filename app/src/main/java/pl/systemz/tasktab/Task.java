@@ -32,7 +32,7 @@ public class Task extends AppCompatActivity {
         final Button stopButton = findViewById(R.id.taskCounterStop);
 
         Client client = Client.getInstance(getApplicationContext());
-        Call<Client.Timer> call = client.getGithub().timerInfo(taskIdz);
+        Call<Client.Timer> call = client.getTtClient().timerInfo(taskIdz);
         call.enqueue(new Callback<Client.Timer>() {
             @Override
             public void onResponse(Call<Client.Timer> call, Response<Client.Timer> response) {
@@ -99,7 +99,7 @@ public class Task extends AppCompatActivity {
 //        builder.setSound(alarmSound);
 
         Client client = Client.getInstance(getApplicationContext());
-        Call<Client.Timer> call = client.getGithub().timerStart(taskId);
+        Call<Client.Timer> call = client.getTtClient().timerStart(taskId);
         call.enqueue(new Callback<Client.Timer>() {
             @Override
             public void onResponse(Call<Client.Timer> call, Response<Client.Timer> response) {
@@ -120,7 +120,7 @@ public class Task extends AppCompatActivity {
 
     protected void counterStop(final Integer taskId) {
         Client client = Client.getInstance(getApplicationContext());
-        Call<Client.Timer> call = client.getGithub().timerStop(taskId);
+        Call<Client.Timer> call = client.getTtClient().timerStop(taskId);
         call.enqueue(new Callback<Client.Timer>() {
             @Override
             public void onResponse(Call<Client.Timer> call, Response<Client.Timer> response) {
