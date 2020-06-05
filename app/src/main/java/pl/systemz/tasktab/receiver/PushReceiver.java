@@ -117,7 +117,7 @@ public class PushReceiver extends BroadcastReceiver {
             notificationManager.createNotificationChannel(channel);
         }
         NotificationCompat.Builder builder = new NotificationCompat.Builder(context, "tasktab-counters")
-                .setSmallIcon(R.drawable.ic_info_black_24dp)
+                .setSmallIcon(R.drawable.ic_assignment_black_24dp)
                 .setContentTitle(intent.getStringExtra("title"))
                 .setContentText(intent.getStringExtra("msg"))
                 .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
