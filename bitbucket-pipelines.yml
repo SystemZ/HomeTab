@@ -1,6 +1,7 @@
 definitions:
   caches:
     golang: $HOME/.cache/go-build
+    frontend: frontend/node_modules
 pipelines:
   default:
     - parallel:
@@ -21,16 +22,18 @@ pipelines:
             - tasktab
       - step:
           name: Build frontend
+          image: node:10-alpine
+          caches:
+            - node
+            - frontend
           script:
             - cd frontend
             - apk add yarn
             - yarn install --frozen-lockfile
             - yarn build
             - ls -alh dist
-            - mv dist $CI_PROJECT_DIR/new
+            - mv dist new
+
     - step:
         script: 
-          - echo "test" # Modify the commands below to build your repository.
-          
-          
-         
+          - echo "test"
