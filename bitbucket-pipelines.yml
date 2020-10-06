@@ -33,7 +33,8 @@ pipelines:
             - yarn build
             - ls -alh dist
             - mv dist new
-
+          artifacts:
+            - new
     - step:
         script: 
           - echo "test"
