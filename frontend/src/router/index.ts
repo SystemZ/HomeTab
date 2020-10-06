@@ -5,10 +5,12 @@ import Notes from '../views/Notes.vue'
 import Note from '../views/Note.vue'
 import Counters from '../views/Counters.vue'
 import Counter from '../views/Counter.vue'
+import Log from '../views/Log.vue'
 import Events from '../views/Events.vue'
 import Devices from '../views/Devices.vue'
 import Pantry from '../views/Pantry.vue'
 import Login from '../views/Login.vue'
+import Settings from '../views/Settings.vue'
 
 Vue.use(VueRouter)
 
@@ -44,6 +46,11 @@ const routes = [
         component: Counter
     },
     {
+        path: '/log',
+        name: 'log',
+        component: Log
+    },
+    {
         path: '/events',
         name: 'events',
         component: Events
@@ -57,6 +64,11 @@ const routes = [
         path: '/pantry',
         name: 'pantry',
         component: Pantry
+    },
+    {
+        path: '/settings',
+        name: 'settings',
+        component: Settings
     },
     {
         path: '/login',
