@@ -33,13 +33,20 @@ pipelines:
             - yarn build
             - ls -alh dist
             - mv dist new
+            - ls -alh new
+            - tar czvf new.tar.gz new
           artifacts:
             - new/**
+            - dist
+            - new.tar.gz
     - step:
         name: Build image
         services:
           - docker
         script:
+          - ls -alh new.tar.gz || false
+          - ls -alh dist || false
+          - ls -alh new || false
           - docker login -u "${REGISTRY_USERNAME}" -p "${REGISTRY_PASSWORD}" "$REGISTRY_URL"
           - docker build --tag $REGISTRY_IMAGE:$BITBUCKET_COMMIT .
           - docker push $REGISTRY_IMAGE:$BITBUCKET_COMMIT
