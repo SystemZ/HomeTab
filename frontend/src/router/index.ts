@@ -8,6 +8,7 @@ import Counter from '../views/Counter.vue'
 import Log from '../views/Log.vue'
 import Events from '../views/Events.vue'
 import Devices from '../views/Devices.vue'
+import Pantry from '../views/Pantry.vue'
 import Login from '../views/Login.vue'
 import Settings from '../views/Settings.vue'
 
@@ -58,6 +59,11 @@ const routes = [
         path: '/devices',
         name: 'devices',
         component: Devices
+    },
+    {
+        path: '/pantry',
+        name: 'pantry',
+        component: Pantry
     },
     {
         path: '/settings',

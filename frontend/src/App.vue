@@ -53,6 +53,12 @@
                         <v-list-item-title>Devices</v-list-item-title>
                     </v-list-item-content>
                 </v-list-item>
+                <v-list-item v-if="$store.state.loggedIn" to="/pantry">
+                    <v-list-item-action>
+                        <v-icon>mdi-silverware-fork-knife</v-icon>
+                    </v-list-item-action>
+                    <v-list-item-content>
+                        <v-list-item-title>Pantry</v-list-item-title>
                 <v-list-item v-if="$store.state.loggedIn" to="/settings">
                     <v-list-item-action>
                         <v-icon>mdi-tune</v-icon>
@@ -61,7 +67,6 @@
                         <v-list-item-title>Settings</v-list-item-title>
                     </v-list-item-content>
                 </v-list-item>
-
                 <v-list-item v-if="!$store.state.loggedIn" to="/login">
                     <v-list-item-action>
                         <v-icon>mdi-login</v-icon>
