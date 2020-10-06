@@ -1,0 +1,26 @@
+pipelines:
+  default:
+    - parallel:
+      - step:
+          name: Build backend
+          image: golang:latest
+          script:
+            - echo "Running test group 1"
+            - PACKAGE_PATH="${GOPATH}/src/bitbucket.org/${BITBUCKET_REPO_FULL_NAME}"
+            - mkdir -pv "${PACKAGE_PATH}"
+            - tar -cO --exclude-vcs --exclude=bitbucket-pipelines.yml . | tar -xv -C "${PACKAGE_PATH}"
+            - cd "${PACKAGE_PATH}"
+            - go get -v
+            #- go build -v
+            - CGO_ENABLED=0 go build -o $BITBUCKET_CLONE_DIR/tasktab
+            #- go test -v
+            - go test -race $(go list ./... | grep -v /vendor/ | grep -v "/tasktab/agent")
+          artifacts:
+            - tasktab
+      - step:
+          name: Build frontend
+          script:
+            - echo "Running test 2"
+    - step:
+        script: 
+          - echo "test" # Modify the commands below to build your repository.
