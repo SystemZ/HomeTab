@@ -36,6 +36,7 @@ pipelines:
               - ls -alh new/
             artifacts:
               - new/**
+              - templates/**
     - step:
         name: Build image
         services:
