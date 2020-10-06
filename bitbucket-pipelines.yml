@@ -34,7 +34,7 @@ pipelines:
             - ls -alh dist
             - mv dist new
           artifacts:
-            - new
+            - new/**
     - step:
         name: Build image
         services:
