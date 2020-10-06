@@ -41,6 +41,7 @@ pipelines:
         services:
           - docker
         script:
-          - docker login -u "${REGISTRY_USERNAME}" -p "${REGISTRY_PASSWORD}" "$REGISTRY_URL"
-          - docker build --tag $REGISTRY_IMAGE:$BITBUCKET_COMMIT .
-          - docker push $REGISTRY_IMAGE:$BITBUCKET_COMMIT
+          - VERSION="$(date +"%Y%m%d%H%M%S")-$BITBUCKET_COMMIT"
+          - docker login -u ${REGISTRY_USERNAME -p $REGISTRY_PASSWORD $REGISTRY_URL
+          - docker build --tag $REGISTRY_URL/$REGISTRY_IMAGE:$VERSION .
+          - docker push $REGISTRY_URL/$REGISTRY_IMAGE:$VERSION
