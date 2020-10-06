@@ -37,6 +37,7 @@ pipelines:
             artifacts:
               - new/**
               - templates/**
+              - Dockerfile
     - step:
         name: Build image
         services:
