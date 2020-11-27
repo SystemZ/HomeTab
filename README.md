@@ -3,13 +3,13 @@
 Privacy focused, browser based file manager for tagging and searching local files on disk.
 
 You may safely test it even with important files because it don't make any changes to files it handles.
-Only changes are made in app's folder to sqlite DB and thumbnails cache
+Only changes are made in MySQL DB and thumbnails cache dir
 
 ## How to use
 
-### Linux/Windows
+### Linux
 
-- run binary to scan dir add add files to gotag.sqlite3 DB located in same directory as app
+- run cmd to scan dir and add files to DB:
 ```
 ./gotag scan <your dir with files>
 ```
@@ -18,9 +18,19 @@ Only changes are made in app's folder to sqlite DB and thumbnails cache
 ./gotag serve
 ```
 
+You can also use built-in scan from WebGUI but it's in raw state, without progress bar.  
+If you use it, please observe stdout logs for progress info
+
+### Windows
+
+This app is primary for Linux powered NAS devices.  
+It may run on Windows but it's not supported by author
+
 ### Platform differences
 
 Currently webm/mp4/gif thumbnails are supported only on Linux amd64 build as a limitation of [lilliput](https://github.com/discordapp/lilliput) library
+
+## Notes
 
 ### Deploy notes
 
