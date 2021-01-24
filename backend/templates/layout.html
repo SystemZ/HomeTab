@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>TaskTab</title>
+    <meta name='viewport' content='width=device-width, initial-scale=1.0'/>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/kognise/water.css@latest/dist/dark.min.css">
+    {{if .AuthOk}}
+        <style>
+            .task .title {
+                cursor: pointer;
+                user-select: none;
+            }
+
+            .task .details {
+
+            }
+
+            #newTask input:not([type="checkbox"]):not([type="radio"]) {
+                display: inline !important;
+            }
+
+            #snoozeTask {
+                display: inline !important;
+            }
+
+            /* easy clicking on tasks */
+            summary {
+                display: block;
+            }
+
+            summary input {
+                margin-right: 15px;
+            }
+
+            /* pretty big checkbox https://stackoverflow.com/a/54804563 */
+            input[type=checkbox] {
+                width: 10mm;
+                -webkit-appearance: none;
+                -moz-appearance: none;
+                height: 10mm;
+                border: 0.1mm solid black;
+            }
+
+            input[type=checkbox]:checked {
+                background-color: lightblue;
+            }
+
+            input[type=checkbox]:checked:after {
+                margin-left: 3.0mm;
+                margin-top: -0.4mm;
+                width: 2mm;
+                height: 7mm;
+                border: solid white;
+                border-width: 0 2mm 2mm 0;
+                -webkit-transform: rotate(45deg);
+                -moz-transform: rotate(45deg);
+                -ms-transform: rotate(45deg);
+                transform: rotate(45deg);
+                content: "";
+                display: inline-block;
+            }
+
+            /* tags for counter list */
+            summary code {
+                margin-left: 5px
+            }
+        </style>
+    {{end}}
+</head>
+<body>
+{{if .AuthOk}}
+    <small>Keep tab on your tasks, {{.User.Username}}</small>
+    <h2>
+        <a href="/new/">Home</a>
+        / <a href="/count/log">Log</a>
+        / <a href="/account">Settings</a>
+    </h2>
+    <br>
+{{end}}
+{{ yield }}
+</body>
+</html>

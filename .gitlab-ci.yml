@@ -1,0 +1,38 @@
+stages:
+  - compile
+  - docker
+
+backend:
+  stage: compile
+  image: golang:latest
+  script:
+    - apt-get update
+    - apt-get install bash
+    - bash Taskfile.sh ci-build-backend
+  artifacts:
+    paths:
+      - $CI_PROJECT_DIR/tasktab
+
+frontend:
+  stage: compile
+  image: node:10-alpine
+  script:
+    - apk add bash
+    - bash Taskfile.sh ci-build-frontend
+  cache:
+    key: "$CI_JOB_NAME"
+    paths:
+      - frontend/node_modules
+  artifacts:
+    paths:
+      - new
+    expire_in: 1 month
+
+build-img:
+  stage: docker
+  image: docker:stable
+  services:
+    - docker:stable-dind
+  script:
+    - apk add bash
+    - bash Taskfile.sh ci-build-img

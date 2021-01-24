@@ -1,0 +1,24 @@
+<h2>Create new account</h2>
+<form method="POST">
+    <label for="username">Username</label>
+    <input type="text" name="username" placeholder="joe"/>
+
+    <label for="username">Email</label>
+    <input type="email" name="email" placeholder="john.doe@example.com"/>
+
+    <label for="password">Password</label>
+    <input type="password" name="password" placeholder="password"/>
+
+    {{if .RegisterTokenNeeded}}
+        <label for="token">Token</label>
+        <input type="text" name="token" placeholder="50M3TH1NG53C5T"/>
+    {{end}}
+
+    <input type="submit" value="Register"/>
+    {{if .RegisterFailed}}
+        <br><br>
+        Something is wrong. Try again!
+    {{end}}
+</form>
+<br>
+or <a href="/login">login</a>

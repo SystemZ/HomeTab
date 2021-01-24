@@ -1,0 +1,52 @@
+definitions:
+  caches:
+    golang: $HOME/.cache/go-build
+    frontend: frontend/node_modules
+pipelines:
+  default:
+    - parallel:
+        - step:
+            name: Build backend
+            image: golang:latest
+            caches:
+              - golang
+            script:
+              - PACKAGE_PATH="${GOPATH}/src/bitbucket.org/${BITBUCKET_REPO_FULL_NAME}"
+              - mkdir -pv "${PACKAGE_PATH}"
+              - tar -cO --exclude-vcs --exclude=bitbucket-pipelines.yml . | tar -xv -C "${PACKAGE_PATH}"
+              - cd "${PACKAGE_PATH}"
+              - go get -v
+              - CGO_ENABLED=0 go build -v -o $BITBUCKET_CLONE_DIR/tasktab
+              - go test -v -race $(go list ./... | grep -v /vendor/ | grep -v "/tasktab/agent")
+            artifacts:
+              - tasktab
+        - step:
+            name: Build frontend
+            image: node:10-alpine
+            caches:
+              - node
+              - frontend
+            script:
+              - cd frontend
+              - apk add yarn
+              - yarn install --frozen-lockfile
+              - yarn build
+              - mv dist ../new
+              - cd ../
+              - ls -alh new/
+            artifacts:
+              - new/**
+              - templates/**
+              - Dockerfile
+    - step:
+        name: Build image
+        services:
+          - docker
+        clone:
+          enabled: false
+        script:
+          #- VERSION="$(date +"%Y%m%d%H%M%S")-$BITBUCKET_COMMIT"
+          - VERSION="$BITBUCKET_COMMIT"
+          - docker login -u $REGISTRY_USERNAME -p $REGISTRY_PASSWORD $REGISTRY_URL
+          - docker build --tag $REGISTRY_URL/$REGISTRY_IMAGE:$VERSION .
+          - docker push $REGISTRY_URL/$REGISTRY_IMAGE:$VERSION
