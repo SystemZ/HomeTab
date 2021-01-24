@@ -4,4 +4,3 @@ ADD tasktab /
 ADD new /new
 ADD templates /templates
 ENTRYPOINT ["/tasktab"]
-EXPOSE 3000

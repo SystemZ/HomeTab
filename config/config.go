@@ -7,7 +7,8 @@ import (
 )
 
 var (
-	DEV_MODE bool
+	HTTP_PORT string
+	DEV_MODE  bool
 	//
 	DB_HOST     string
 	DB_PORT     string

@@ -106,14 +106,14 @@ func StartWebInterface() {
 	r.HandleFunc("/wh/gitlab", WebhookGitlab)
 	// start internal http server with logging
 	loggedRouter := handlers.LoggingHandler(os.Stdout, r)
-	log.Println("HTTP server started on :3000")
+	log.Println("HTTP server started on :" + config.HTTP_PORT)
 
 	if config.DEV_MODE {
 		log.Println("DEV env detected, CORS wildcard")
 		loggedRouter = cors.AllowAll().Handler(loggedRouter)
 	}
 
-	log.Fatal(http.ListenAndServe(":3000", loggedRouter))
+	log.Fatal(http.ListenAndServe(":"+config.HTTP_PORT, loggedRouter))
 }
 
 func DeviceApiCheckAuth(w http.ResponseWriter, r *http.Request) (ok bool, device model.Device) {
