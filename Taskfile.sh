@@ -29,6 +29,27 @@ function deploy-docker() {
   docker build -t tasktab . && docker save tasktab | bzip2 | pv | ssh $1 'bunzip2 | docker load'
 }
 
+function ci-build-backend() {
+  go test -race $(go list ./... | grep -v /vendor/ | grep -v "/tasktab/agent")
+  CGO_ENABLED=0 go build -o $CI_PROJECT_DIR/tasktab
+  ls -alh $CI_PROJECT_DIR/
+}
+
+function ci-build-frontend() {
+  cd frontend || exit 1
+  apk add yarn
+  yarn install --frozen-lockfile
+  yarn build
+  ls -alh dist
+  mv dist $CI_PROJECT_DIR/new
+}
+
+function ci-build-img() {
+  docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY
+  docker build --tag $CI_REGISTRY_IMAGE:pipeline-$CI_PIPELINE_ID --tag $CI_REGISTRY_IMAGE:latest .
+  docker push $CI_REGISTRY_IMAGE:pipeline-$CI_PIPELINE_ID
+}
+
 function default() {
   help
 }
