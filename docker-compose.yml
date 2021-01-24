@@ -1,7 +1,7 @@
 version: "2"
 services:
   redis:
-    image: redis:5-alpine
+    image: redis:6-alpine
     ports:
       - "6379:6379"
   phpredmin:
@@ -13,7 +13,7 @@ services:
     depends_on:
       - redis
   db:
-    image: mysql:5.7
+    image: mariadb:10.5
     ports:
       - "3306:3306"
     environment:
@@ -22,18 +22,10 @@ services:
       - MYSQL_USER=dev
       - MYSQL_PASSWORD=dev
   pma:
-    image: phpmyadmin/phpmyadmin
+    image: phpmyadmin
     ports:
      - "3307:80"
     environment:
       - PMA_HOST=db
       - PMA_USER=root
       - PMA_PASSWORD=dev
-  rabbitmq:
-    image: rabbitmq:3.7-management
-    ports:
-      - 15672:15672 # Web GUI
-      - 5672:5672 # AMQP
-      - 1883:1883 # MQTT
-    volumes:
-      - "./dev/enabled_plugins:/etc/rabbitmq/enabled_plugins"
