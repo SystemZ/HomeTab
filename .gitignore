@@ -1,3 +1,10 @@
+# binaries
+cmd/hometab/hometab
+# frontend builds
+frontend/dist
+# docker img builds
+builds
+
 new
 
 # IDE
@@ -14,7 +21,7 @@ new
 /.idea/navEditor.xml
 /.idea/assetWizardSettings.xml
 .DS_Store
-/build
+#/build
 /captures
 .externalNativeBuild
 google_play_api_key.json
