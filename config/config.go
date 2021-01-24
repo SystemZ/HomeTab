@@ -37,6 +37,9 @@ func init() {
 	// dev
 	viper.SetDefault("DEV_MODE", false)
 	DEV_MODE = viper.GetBool("DEV_MODE")
+	// general
+	viper.SetDefault("HTTP_PORT", "3000")
+	HTTP_PORT = viper.GetString("HTTP_PORT")
 	// DB stuff
 	viper.SetDefault("DB_HOST", "localhost")
 	DB_HOST = viper.GetString("DB_HOST")
