@@ -59,6 +59,8 @@
                     </v-list-item-action>
                     <v-list-item-content>
                         <v-list-item-title>Pantry</v-list-item-title>
+                    </v-list-item-content>
+                </v-list-item>
                 <v-list-item v-if="$store.state.loggedIn" to="/settings">
                     <v-list-item-action>
                         <v-icon>mdi-tune</v-icon>
