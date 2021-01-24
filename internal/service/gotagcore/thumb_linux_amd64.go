@@ -1,7 +1,7 @@
-package core
+package gotagcore
 
 import (
-	"gitlab.com/systemz/gotag/config"
+	"github.com/systemz/hometab/internal/config"
 	"image"
 	"image/jpeg"
 	"image/png"
@@ -11,7 +11,7 @@ import (
 	"fmt"
 	"io/ioutil"
 
-	"github.com/discordapp/lilliput"
+	"github.com/discord/lilliput"
 	"github.com/nfnt/resize"
 )
 

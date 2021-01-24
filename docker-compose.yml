@@ -24,8 +24,9 @@ services:
   pma:
     image: phpmyadmin
     ports:
-     - "3307:80"
+      - "3307:80"
     environment:
       - PMA_HOST=db
       - PMA_USER=root
       - PMA_PASSWORD=dev
+      - UPLOAD_LIMIT="1G"

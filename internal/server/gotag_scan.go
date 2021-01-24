@@ -1,9 +1,9 @@
-package web
+package server
 
 import (
 	"encoding/json"
-	"gitlab.com/systemz/gotag/core"
-	"gitlab.com/systemz/gotag/model"
+	"github.com/systemz/hometab/internal/model"
+	"github.com/systemz/hometab/internal/service/gotagcore"
 	"log"
 	"net/http"
 )
@@ -37,7 +37,7 @@ func Scan(w http.ResponseWriter, r *http.Request) {
 			if len(toScan.Path) < 1 {
 				continue
 			}
-			core.ScanMono(model.DB, toScan.Path, int(userInfo.Id))
+			gotagcore.ScanMono(model.DB, toScan.Path, int(userInfo.Id))
 		}
 	}()
 }

@@ -8,6 +8,13 @@ Merge of three projects:
 
 WIP: merge code of gotag
 
+## Requirements to run
+
+- x86-64 CPU (AMD/Intel)
+- Linux (Windows support in the future)
+- MariaDB / MySQL
+- Redis
+
 ## TODO
 
 - integrate web templates within binary

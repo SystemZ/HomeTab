@@ -1,7 +1,7 @@
-package core
+package gotagcore
 
 import (
-	"gitlab.com/systemz/gotag/config"
+	"github.com/systemz/hometab/internal/config"
 	"strconv"
 )
 

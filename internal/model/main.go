@@ -5,6 +5,7 @@ import (
 	"github.com/go-redis/redis/v7"
 	"github.com/go-redis/redis_rate/v8"
 	_ "github.com/go-sql-driver/mysql"
+	"github.com/golang-migrate/migrate/v4"
 	"github.com/jinzhu/gorm"
 	_ "github.com/jinzhu/gorm/dialects/mysql"
 	"github.com/sirupsen/logrus"
@@ -32,10 +33,23 @@ func InitMysql() {
 
 	//https://github.com/go-sql-driver/mysql/issues/257
 	db.DB().SetMaxIdleConns(0)
-	//db.LogMode(true)
+	db.LogMode(config.DEV_MODE)
 	logrus.Info("Connection to database seems OK!")
 
 	DB = db
+
+	logrus.Info("Starting DB migrations")
+	m, err := migrate.New(
+		"file:///migrations",
+		fmt.Sprintf(
+			"mysql://%s:%s@tcp(%s:%s)/%s?charset=utf8&parseTime=True",
+			config.DB_USERNAME,
+			config.DB_PASSWORD,
+			config.DB_HOST,
+			config.DB_PORT,
+			config.DB_NAME,
+		))
+	m.Up()
 }
 
 func InitRedis() {

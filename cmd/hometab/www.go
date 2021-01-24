@@ -14,7 +14,7 @@ func init() {
 }
 
 var wwwCmd = &cobra.Command{
-	Use:   "www",
+	Use:   "serve",
 	Short: "HTTP server",
 	Long:  `Serves web interface requests`,
 	Run:   wwwExec,

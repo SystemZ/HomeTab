@@ -1,10 +1,10 @@
-package web
+package server
 
 import (
 	"bytes"
 	"github.com/gorilla/mux"
-	"gitlab.com/systemz/gotag/core"
-	"gitlab.com/systemz/gotag/model"
+	"github.com/systemz/hometab/internal/model"
+	"github.com/systemz/hometab/internal/service/gotagcore"
 	"log"
 	"net/http"
 	"os"
@@ -41,12 +41,12 @@ func Thumb(w http.ResponseWriter, r *http.Request) {
 
 	// create thumb on disk if needed
 	done := make(chan bool)
-	go core.CreateThumb(imgInDb.FilePath, imgInDb.Sha256, mimeInDb.Mime, uint(width), uint(height), done, true)
+	go gotagcore.CreateThumb(imgInDb.FilePath, imgInDb.Sha256, mimeInDb.Mime, uint(width), uint(height), done, true)
 	<-done
 	debug.FreeOSMemory()
 
 	// push thumb to browser, thumb will be always .jpg
-	writeRawFileApi(w, r, core.ThumbPath(imgInDb.Sha256, uint(width), uint(height)), "image/jpeg")
+	writeRawFileApi(w, r, gotagcore.ThumbPath(imgInDb.Sha256, uint(width), uint(height)), "image/jpeg")
 }
 
 func writeRawFileApi(w http.ResponseWriter, r *http.Request, filePath string, mime string) {

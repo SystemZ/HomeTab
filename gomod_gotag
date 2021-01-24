@@ -1,4 +1,4 @@
-module gitlab.com/systemz/gotag
+module github.com/systemz/hometab/gotag
 
 go 1.12
 

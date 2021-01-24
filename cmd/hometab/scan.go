@@ -1,9 +1,9 @@
-package cmd
+package main
 
 import (
 	"github.com/spf13/cobra"
-	"gitlab.com/systemz/gotag/core"
-	"gitlab.com/systemz/gotag/model"
+	"github.com/systemz/hometab/internal/model"
+	"github.com/systemz/hometab/internal/service/gotagcore"
 )
 
 func init() {
@@ -24,6 +24,6 @@ var diskScan = &cobra.Command{
 }
 
 func diskScanExec(cmd *cobra.Command, args []string) {
-	db := model.InitMysql()
-	core.ScanMono(db, args[0], scanUserID)
+	model.InitMysql()
+	gotagcore.ScanMono(model.DB, args[0], scanUserID)
 }

@@ -4,15 +4,20 @@ go 1.15
 
 require (
 	github.com/PuerkitoBio/goquery v1.6.1
+	github.com/carlogit/phash v0.0.0-20150602001824-c146ed9f2a27
+	github.com/discord/lilliput v0.0.0-20210107074859-dbb0328436e8
+	github.com/disintegration/imaging v1.6.2 // indirect
 	github.com/getlantern/systray v1.1.0
 	github.com/go-redis/redis/v7 v7.0.0-beta.3
 	github.com/go-redis/redis_rate/v8 v8.0.0-beta
 	github.com/go-sql-driver/mysql v1.5.0
 	github.com/go-vgo/robotgo v0.92.1
+	github.com/golang-migrate/migrate/v4 v4.14.1
 	github.com/gorilla/feeds v1.1.1
 	github.com/gorilla/handlers v1.5.1
 	github.com/gorilla/mux v1.8.0
 	github.com/jinzhu/gorm v1.9.16
+	github.com/nfnt/resize v0.0.0-20180221191011-83c6a9932646
 	github.com/rs/cors v1.7.0
 	github.com/satori/go.uuid v1.2.0
 	github.com/sirupsen/logrus v1.7.0

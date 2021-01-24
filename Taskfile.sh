@@ -9,7 +9,7 @@ function help() {
 }
 
 function dev-backend() {
-  DEV_MODE=true TEMPLATE_PATH="$(pwd)/web/templates/" go run github.com/systemz/hometab/cmd/hometab www
+  DEV_MODE=true TEMPLATE_PATH="$(pwd)/web/templates/" go run github.com/systemz/hometab/cmd/hometab serve
 }
 
 function dev-frontend() {

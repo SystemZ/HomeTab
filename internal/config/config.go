@@ -22,6 +22,11 @@ var (
 	REGISTER_WHITELIST bool
 	REGISTER_TOKEN     string
 	PUSHY_ME_SECRET    string
+	// gotag part
+	CACHE_DIR      string
+	LIVE_VID_THUMB bool
+	//
+	GIT_COMMIT string
 )
 
 func init() {
@@ -67,4 +72,10 @@ func init() {
 	// pushy.me
 	viper.SetDefault("PUSHY_ME_SECRET", "changeme")
 	PUSHY_ME_SECRET = viper.GetString("PUSHY_ME_SECRET")
+
+	// gotag part
+	viper.SetDefault("CACHE_DIR", "")
+	CACHE_DIR = viper.GetString("CACHE_DIR")
+	viper.SetDefault("LIVE_VID_THUMB", true)
+	LIVE_VID_THUMB = viper.GetBool("LIVE_VID_THUMB")
 }

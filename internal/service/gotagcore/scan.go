@@ -1,4 +1,4 @@
-package core
+package gotagcore
 
 import (
 	"crypto/sha256"
@@ -6,7 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/jinzhu/gorm"
-	"gitlab.com/systemz/gotag/model"
+	"github.com/systemz/hometab/internal/model"
 	"io"
 	"log"
 	"net/http"

@@ -49,10 +49,6 @@ function build {
     rm -r frontend/dist
 }
 
-function deploy {
-    sudo docker save gotag:latest | bzip2 | pv | ssh root@192.168.2.2 'bunzip2 | docker load'
-}
-
 function build_old {
     [ -z "$1" ] && echo "Provide commit or version string" >&2 && exit 1
     mkdir -p builds
@@ -72,10 +68,6 @@ function build_old {
 
 function up {
     sudo docker-compose up
-}
-
-function dump-schema {
-    sudo docker-compose exec db /bin/sh -c "/usr/bin/mysqldump -udev -pdev --no-data dev" | grep -v "Using a password on the command line interface can be insecure" | sed 's/ AUTO_INCREMENT=[0-9]*//g' > migrations/0.sql
 }
 
 function build-linux-amd64 {
@@ -104,7 +96,7 @@ function prod {
 }
 
 function default {
-    serve
+    help
 }
 
 TIMEFORMAT="Task completed in %3lR"

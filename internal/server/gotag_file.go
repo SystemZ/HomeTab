@@ -1,16 +1,12 @@
-package web
+package server
 
 import (
 	"encoding/json"
 	"github.com/gorilla/mux"
-	"gitlab.com/systemz/gotag/model"
+	"github.com/systemz/hometab/internal/model"
 	"net/http"
 	"strconv"
 )
-
-type PaginateQueryRequest struct {
-	Query string `json:"q"`
-}
 
 type PaginateFileResponse struct {
 	Pagination struct {
