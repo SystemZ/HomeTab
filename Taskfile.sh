@@ -32,6 +32,8 @@ function deploy-docker() {
   cd ../
   CGO_ENABLED=0 go build -o tasktab
   docker build -t tasktab . && docker save tasktab | bzip2 | pv | ssh $1 'bunzip2 | docker load'
+  # TODO figure out fully automatic and comfortable UnRAID deployment
+  # /usr/local/emhttp/plugins/dynamix.docker.manager/scripts/docker run -d --name='tasktab' --net='bridge' -e TZ="Europe/Warsaw" -e HOST_OS="Unraid" -p '1337:80/tcp' 'tasktab'
 }
 
 function ci-build-backend() {
