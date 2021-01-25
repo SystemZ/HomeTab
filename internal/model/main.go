@@ -2,25 +2,52 @@ package model
 
 import (
 	"fmt"
+	"time"
+
 	"github.com/go-redis/redis/v7"
 	"github.com/go-redis/redis_rate/v8"
 	_ "github.com/go-sql-driver/mysql"
-	"github.com/golang-migrate/migrate/v4"
+	_ "github.com/golang-migrate/migrate/v4/database/mysql"
 	"github.com/jinzhu/gorm"
 	_ "github.com/jinzhu/gorm/dialects/mysql"
 	"github.com/sirupsen/logrus"
+
+	"github.com/rubenv/sql-migrate"
+
 	"github.com/systemz/hometab/internal/config"
-	"time"
+	"github.com/systemz/hometab/internal/resources"
 )
 
 var (
 	DB          *gorm.DB
 	Redis       *redis.Client
 	AuthLimiter *redis_rate.Limiter
+	sqlUri      string
 )
 
 func InitMysql() {
-	db, err := gorm.Open("mysql", fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?charset=utf8&parseTime=True", config.DB_USERNAME, config.DB_PASSWORD, config.DB_HOST, config.DB_PORT, config.DB_NAME))
+	sqlUri = fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?charset=utf8&parseTime=True", config.DB_USERNAME, config.DB_PASSWORD, config.DB_HOST, config.DB_PORT, config.DB_NAME)
+	ConnectToMysql()
+	MigrateMysql()
+}
+
+func MigrateMysql() {
+	logrus.Info("Starting DB migrations...")
+	migrations := &migrate.AssetMigrationSource{
+		Asset:    resources.Asset,
+		AssetDir: resources.AssetDir,
+		Dir:      "internal/model/migrations",
+	}
+	n, err := migrate.Exec(DB.DB(), "mysql", migrations, migrate.Up)
+	if err != nil {
+		logrus.Error(err)
+		// Handle errors!
+	}
+	logrus.Infof("Applied %d migrations", n)
+}
+
+func ConnectToMysql() {
+	db, err := gorm.Open("mysql", sqlUri)
 	if err != nil {
 		logrus.Error(err.Error())
 		panic("Failed to connect to database")
@@ -37,19 +64,6 @@ func InitMysql() {
 	logrus.Info("Connection to database seems OK!")
 
 	DB = db
-
-	logrus.Info("Starting DB migrations")
-	m, err := migrate.New(
-		"file:///migrations",
-		fmt.Sprintf(
-			"mysql://%s:%s@tcp(%s:%s)/%s?charset=utf8&parseTime=True",
-			config.DB_USERNAME,
-			config.DB_PASSWORD,
-			config.DB_HOST,
-			config.DB_PORT,
-			config.DB_NAME,
-		))
-	m.Up()
 }
 
 func InitRedis() {

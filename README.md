@@ -15,6 +15,17 @@ WIP: merge code of gotag
 - MariaDB / MySQL
 - Redis
 
+## How to run
+
+```bash
+# backend
+./Taskfile.sh install-tools
+./Taskfile.sh dev-backend
+./Taskfile.sh dev-seed
+# frontend
+./Taskfile.sh dev-frontend
+```
+
 ## TODO
 
 - integrate web templates within binary

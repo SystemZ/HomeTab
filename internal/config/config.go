@@ -1,14 +1,16 @@
 package config
 
 import (
-	"github.com/spf13/viper"
 	"log"
 	"os"
+
+	"github.com/spf13/viper"
 )
 
 var (
 	DEV_MODE           bool
 	HTTP_PORT          string
+	ASSETS_PATH        string
 	TEMPLATE_PATH      string
 	DB_HOST            string
 	DB_PORT            string
@@ -44,6 +46,8 @@ func init() {
 	HTTP_PORT = viper.GetString("HTTP_PORT")
 	viper.SetDefault("TEMPLATE_PATH", "./web/templates/")
 	TEMPLATE_PATH = viper.GetString("TEMPLATE_PATH")
+	viper.SetDefault("ASSETS_PATH", "./")
+	ASSETS_PATH = viper.GetString("ASSETS_PATH")
 
 	// DB stuff
 	viper.SetDefault("DB_HOST", "localhost")

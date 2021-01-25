@@ -8,6 +8,7 @@ require (
 	github.com/discord/lilliput v0.0.0-20210107074859-dbb0328436e8
 	github.com/disintegration/imaging v1.6.2 // indirect
 	github.com/getlantern/systray v1.1.0
+	github.com/go-bindata/go-bindata v3.1.2+incompatible
 	github.com/go-redis/redis/v7 v7.0.0-beta.3
 	github.com/go-redis/redis_rate/v8 v8.0.0-beta
 	github.com/go-sql-driver/mysql v1.5.0
@@ -19,6 +20,7 @@ require (
 	github.com/jinzhu/gorm v1.9.16
 	github.com/nfnt/resize v0.0.0-20180221191011-83c6a9932646
 	github.com/rs/cors v1.7.0
+	github.com/rubenv/sql-migrate v0.0.0-20200616145509-8d140a17f351
 	github.com/satori/go.uuid v1.2.0
 	github.com/sirupsen/logrus v1.7.0
 	github.com/spf13/cobra v1.1.1
@@ -27,4 +29,5 @@ require (
 	gitlab.com/golang-commonmark/markdown v0.0.0-20191127184510-91b5b3c99c19
 	golang.org/x/crypto v0.0.0-20201221181555-eec23a3978ad
 	golang.org/x/net v0.0.0-20210119194325-5f4716e94777
+	golang.org/x/tools v0.1.0
 )

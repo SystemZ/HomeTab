@@ -8,8 +8,22 @@ function help() {
   compgen -A function | cat -n
 }
 
+function install-tools() {
+  go get -u github.com/go-bindata/go-bindata/...
+}
+
+function generate-resources() {
+  # generate files to include in binary
+  ## migrations
+  go-bindata -pkg resources -o internal/resources/resources.go internal/model/migrations/
+  # for recursive use dir/...
+  #go-bindata data/...
+}
+
 function dev-backend() {
-  DEV_MODE=true TEMPLATE_PATH="$(pwd)/web/templates/" go run github.com/systemz/hometab/cmd/hometab serve
+  generate-resources
+  # build and run binary
+  DEV_MODE=true TEMPLATE_PATH="$(pwd)/web/templates/" ASSETS_PATH="$(pwd)/" go run github.com/systemz/hometab/cmd/hometab serve
 }
 
 function dev-frontend() {
@@ -31,11 +45,12 @@ function dev-dump-schema() {
 # build
 
 function build-backend() {
+  generate-resources
   # shellcheck disable=SC2046
   go test -race -cover -mod=readonly $(go list ./... | grep -v hometab-agent) || exit 1
   (
     cd cmd/hometab
-    CGO_ENABLED=0 go build || exit 1
+    CGO_ENABLED=1 go build || exit 1
   )
 }
 

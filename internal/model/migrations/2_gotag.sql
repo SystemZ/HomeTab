@@ -1,3 +1,4 @@
+-- +migrate Up
 -- MariaDB dump 10.17  Distrib 10.5.1-MariaDB, for debian-linux-gnu (x86_64)
 --
 -- Host: localhost    Database: dev
@@ -84,23 +85,6 @@ CREATE TABLE `files`
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Table structure for table `gomigrate`
---
-
-DROP TABLE IF EXISTS `gomigrate`;
-/*!40101 SET @saved_cs_client = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `gomigrate`
-(
-    `id`           int(11)    NOT NULL AUTO_INCREMENT,
-    `migration_id` bigint(20) NOT NULL,
-    PRIMARY KEY (`id`),
-    UNIQUE KEY `migration_id` (`migration_id`)
-) ENGINE = InnoDB
-  DEFAULT CHARSET = latin1;
-/*!40101 SET character_set_client = @saved_cs_client */;
-
---
 -- Table structure for table `logs`
 --
 
@@ -180,3 +164,8 @@ CREATE
             BIT_COUNT(A1 ^ B1) +
             BIT_COUNT(A2 ^ B2) +
             BIT_COUNT(A3 ^ B3);
+
+
+-- +migrate Down
+-- SQL section 'Down' is executed when this migration is rolled back
+DROP TABLE people;

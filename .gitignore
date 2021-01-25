@@ -5,6 +5,9 @@ frontend/dist
 # docker img builds
 builds
 
+# generated code
+internal/resources
+
 new
 
 # IDE

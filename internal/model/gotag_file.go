@@ -70,14 +70,14 @@ func FileListPaginate(userId int, limit int, nextId int, prevId int, qTerm strin
 	// count how many results we will have for pagination
 	// FIXME allow search by tag and filename at the same time
 	scoutQuery := `
-		SELECT COUNT(*) 
-		FROM files 
-		JOIN file_users ON files.id = file_users.file_id 
-		WHERE file_users.user_id = ? 
+		SELECT COUNT(*)
+		FROM files
+		JOIN file_users ON files.id = file_users.file_id
+		WHERE file_users.user_id = ?
 		AND file_name LIKE ?`
 	if tagSearch && qTerm == "none" {
 		scoutQuery = `
-			SELECT COUNT(*) 
+			SELECT COUNT(*)
 			FROM files
     		WHERE (SELECT COUNT(id) FROM file_tags WHERE file_tags.user_id = ? AND file_tags.file_id = files.id AND file_tags.deleted_at IS NULL) < 1
 			AND files.file_name LIKE ?`
@@ -249,7 +249,7 @@ func SimilarFiles(sha256 string, userId int, limit int) (result []File) {
 
 	// file with hash not found
 	if imgInDb.Id < 1 {
-		log.Printf("file with hash %v not found")
+		log.Printf("file with hash %v not found", sha256)
 		return
 	}
 
