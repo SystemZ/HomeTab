@@ -4,6 +4,8 @@ import './registerServiceWorker'
 import router from './router'
 import store from './store'
 import vuetify from './plugins/vuetify';
+//import 'roboto-fontface/css/roboto/roboto-fontface.css'
+//import '@mdi/font/css/materialdesignicons.css'
 
 Vue.config.productionTip = false
 Vue.filter('prettyTimeDate', (str: string) => {
@@ -25,7 +27,7 @@ Vue.filter('prettyTimeDate', (str: string) => {
   }
   // show proper date
   return withZero(t.getHours()) + ':' + withZero(t.getMinutes()) +
-      ' ' + withZero(t.getDate()) + '/' + withZero(t.getMonth() + 1) + '/' + t.getFullYear();
+    ' ' + withZero(t.getDate()) + '/' + withZero(t.getMonth() + 1) + '/' + t.getFullYear();
 });
 const mixin = {
   computed: {
@@ -50,6 +52,20 @@ const mixin = {
     },
     btnDark(): boolean {
       return true
+    },
+  },
+  methods: {
+    urlToThumb(file: string, width: string): string {
+      // @ts-ignore
+      if (file.mime === 'image/gif') {
+        // @ts-ignore
+        return this.apiUrl + '/img/full/' + file.sha256
+      }
+      // @ts-ignore
+      return this.apiUrl + '/img/thumbs/' + width + '/' + width + '/' + file.sha256
+    },
+    isVideo(mime: string) {
+      return mime === 'video/webm' || mime === 'video/mp4';
     },
   }
 }
