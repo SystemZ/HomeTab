@@ -1,19 +1,13 @@
 name: Build Android .apk
-
-#on:
-#  push:
-#    tags:
-#      - '*'
-
-on:
-  push:
-    branches:
-      - master
+on: [pull_request, push]
 
 # https://github.com/marketplace/actions/build-android-release-apk-when-create-new-tag
 jobs:
   Gradle:
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: android
     steps:
       - name: checkout code
         uses: actions/checkout@v2
