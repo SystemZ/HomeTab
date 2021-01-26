@@ -31,8 +31,8 @@ jobs:
           -Pandroid.injected.signing.key.password=$ANDROID_KEY_PASSWORD
         env:
           ANDROID_JKS_PASSWORD: ${{ secrets.ANDROID_JKS_PASSWORD }}
-          ANDROID_KEY_ALIAS: ${{ secrets.$ANDROID_KEY_ALIAS }}
-          ANDROID_KEY_PASSWORD: ${{ secrets.$ANDROID_KEY_PASSWORD }}
+          ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
       - name: Save .apk
         uses: actions/upload-artifact@v2
         with:
