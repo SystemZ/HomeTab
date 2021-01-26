@@ -111,7 +111,7 @@ function ci-build-frontend() {
 
 function ci-build-backend() {
     install-tools
-    build-backed
+    build-backend
 }
 
 function ci-build-img() {
