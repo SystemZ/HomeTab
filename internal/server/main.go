@@ -114,7 +114,6 @@ func StartWebInterface() {
 	//
 
 	// JSON API for JS frontend
-	r.HandleFunc("/api/v1/login", LoginGotag).Methods("POST")
 	r.HandleFunc("/api/v1/scan", Scan).Methods("POST")
 	r.HandleFunc("/api/v1/files", FilePaginate).Methods("POST")
 	r.HandleFunc("/api/v1/file/{id}", OneFile).Methods("GET")
