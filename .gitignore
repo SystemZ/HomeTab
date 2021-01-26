@@ -13,6 +13,9 @@ cache
 
 new
 
+# tmp keystore during CI build
+android/keystore
+
 # IDE
 .idea
 

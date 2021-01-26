@@ -2,6 +2,7 @@ name: Build Android .apk
 on: [ pull_request, push ]
 
 # https://github.com/marketplace/actions/build-android-release-apk-when-create-new-tag
+# generate keystore https://stackoverflow.com/a/28099739/1351857
 # https://github.community/t/use-working-directory-for-entire-job/16747
 jobs:
   Gradle:
@@ -16,11 +17,24 @@ jobs:
       - name: Make Gradle executable
         working-directory: android
         run: chmod +x ./gradlew
+      - name: Get keystore
+        working-directory: android
+        run: echo -n "$ANDROID_JKS_B64" | base64 -d > keystore
+        env:
+          ANDROID_JKS_B64: ${{ secrets.ANDROID_JKS_B64 }}
       - name: Build Release APK
         working-directory: android
         run: ./gradlew assembleRelease
+          -Pandroid.injected.signing.store.file=$(pwd)/keystore
+          -Pandroid.injected.signing.store.password=$ANDROID_JKS_PASSWORD
+          -Pandroid.injected.signing.key.alias=$ANDROID_KEY_ALIAS
+          -Pandroid.injected.signing.key.password=$ANDROID_KEY_PASSWORD
+        env:
+          ANDROID_JKS_PASSWORD: ${{ secrets.ANDROID_JKS_PASSWORD }}
+          ANDROID_KEY_ALIAS: ${{ secrets.$ANDROID_KEY_ALIAS }}
+          ANDROID_KEY_PASSWORD: ${{ secrets.$ANDROID_KEY_PASSWORD }}
       - name: Save .apk
         uses: actions/upload-artifact@v2
         with:
-          name: app-release.apk
+          name: android-app
           path: android/app/build/outputs/apk/release/
