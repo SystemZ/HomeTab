@@ -1,0 +1,22 @@
+name: Build debug Android .apk
+on: [ pull_request, push ]
+
+# https://github.com/marketplace/actions/build-android-release-apk-when-create-new-tag
+jobs:
+  Gradle:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Code checkout
+        uses: actions/checkout@v2
+      - name: JDK setup
+        uses: actions/setup-java@v1
+        with:
+          java-version: 11
+      - name: Build debug .apk
+        working-directory: android
+        run: ./gradlew assembleDebug
+      - name: Save .apk
+        uses: actions/upload-artifact@v2
+        with:
+          name: android-app-debug
+          path: android/app/build/outputs/apk/debug/app-debug.apk

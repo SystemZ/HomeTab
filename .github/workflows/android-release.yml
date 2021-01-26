@@ -1,5 +1,8 @@
-name: Build Android .apk
-on: [ pull_request, push ]
+name: Build release Android .apk
+on:
+  push:
+    branches:
+      - master
 
 # https://github.com/marketplace/actions/build-android-release-apk-when-create-new-tag
 # generate keystore https://stackoverflow.com/a/28099739/1351857
@@ -8,15 +11,12 @@ jobs:
   Gradle:
     runs-on: ubuntu-latest
     steps:
-      - name: checkout code
+      - name: Code checkout
         uses: actions/checkout@v2
-      - name: setup jdk
+      - name: JDK setup
         uses: actions/setup-java@v1
         with:
           java-version: 11
-      - name: Make Gradle executable
-        working-directory: android
-        run: chmod +x ./gradlew
       - name: Get keystore
         working-directory: android
         run: echo -n "$ANDROID_JKS_B64" | base64 -d > keystore
@@ -37,4 +37,4 @@ jobs:
         uses: actions/upload-artifact@v2
         with:
           name: android-app
-          path: android/app/build/outputs/apk/release/
+          path: android/app/build/outputs/apk/release/app-release.apk
