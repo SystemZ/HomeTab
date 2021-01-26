@@ -1,4 +1,4 @@
-package pl.systemz.tasktab;
+package pl.systemz.hometab;
 
 import android.Manifest;
 import android.app.ActivityManager;

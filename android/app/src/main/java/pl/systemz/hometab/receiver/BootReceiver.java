@@ -1,11 +1,11 @@
-package pl.systemz.tasktab.receiver;
+package pl.systemz.hometab.receiver;
 
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.util.Log;
 
-import pl.systemz.tasktab.StalkService;
+import pl.systemz.hometab.StalkService;
 
 
 public class BootReceiver extends BroadcastReceiver {

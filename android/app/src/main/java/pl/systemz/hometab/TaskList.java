@@ -1,4 +1,4 @@
-package pl.systemz.tasktab;
+package pl.systemz.hometab;
 
 import android.os.Bundle;
 import android.util.Log;
@@ -14,7 +14,7 @@ import androidx.appcompat.widget.SearchView;
 import androidx.core.app.NavUtils;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
-import pl.systemz.tasktab.api.Client;
+import pl.systemz.hometab.api.Client;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;

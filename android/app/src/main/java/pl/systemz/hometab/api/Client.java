@@ -1,4 +1,4 @@
-package pl.systemz.tasktab.api;
+package pl.systemz.hometab.api;
 
 import android.content.Context;
 import android.content.SharedPreferences;
@@ -24,7 +24,7 @@ public class Client {
     Context context;
 
     private static Client instance = null;
-    private TaskTabClient ttClient;
+    private HomeTabClient ttClient;
 
     /*
     public static class Contributor {
@@ -62,7 +62,7 @@ public class Client {
         }
     }
 
-    public interface TaskTabClient {
+    public interface HomeTabClient {
         /*
         @GET("/repos/{owner}/{repo}/contributors")
         Call<List<Contributor>> contributors(
@@ -109,10 +109,11 @@ public class Client {
     }
 
     private Client(Context context) {
-        String apiUrl = "https://tasktab.lvlup.pro/api/v1/";
-        if (isEmulator()) {
-            apiUrl = "http://192.168.2.88:3000/api/v1/";
-        }
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
+        final String apiUrl = prefs.getString("api_url", prefs.getString("pref_api_url_default",""));
+//        if (isEmulator()) {
+//            apiUrl = "http://127.0.0.1:3000/api/v1/";
+//        }
         this.context = context;
         buildRetrofit(apiUrl);
     }
@@ -145,10 +146,10 @@ public class Client {
                 .addConverterFactory(GsonConverterFactory.create())
                 .build();
 
-        this.ttClient = retrofit.create(TaskTabClient.class);
+        this.ttClient = retrofit.create(HomeTabClient.class);
     }
 
-    public TaskTabClient getTtClient() {
+    public HomeTabClient getTtClient() {
         return this.ttClient;
     }
 }

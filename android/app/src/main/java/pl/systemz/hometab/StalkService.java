@@ -1,4 +1,4 @@
-package pl.systemz.tasktab;
+package pl.systemz.hometab;
 
 import android.app.AlarmManager;
 import android.app.PendingIntent;
@@ -10,8 +10,8 @@ import android.widget.Toast;
 
 import me.pushy.sdk.Pushy;
 import me.pushy.sdk.util.exceptions.PushyException;
-import pl.systemz.tasktab.api.Client;
-import pl.systemz.tasktab.receiver.Antenna;
+import pl.systemz.hometab.api.Client;
+import pl.systemz.hometab.receiver.Antenna;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;

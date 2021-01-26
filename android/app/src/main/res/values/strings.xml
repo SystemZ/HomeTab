@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">Tasktab</string>
+    <string name="app_name">HomeTab</string>
     <string name="navigation_drawer_open">Open navigation drawer</string>
     <string name="navigation_drawer_close">Close navigation drawer</string>
     <string name="nav_header_title">TaskTab</string>
@@ -23,6 +23,8 @@
     <string name="pref_title_display_name">Display name</string>
     <string name="pref_default_display_name">John Smith</string>
     <string name="pref_token_display_name">Auth token</string>
+    <string name="pref_api_url">Server URL</string>
+    <string name="pref_api_url_default">http://127.0.0.1:3000/api/v1/</string>
 
     <string name="pref_title_add_friends_to_messages">Add friends to messages</string>
     <string-array name="pref_example_list_titles">

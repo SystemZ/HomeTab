@@ -1,4 +1,4 @@
-package pl.systemz.tasktab;
+package pl.systemz.hometab;
 
 import org.junit.Test;
 

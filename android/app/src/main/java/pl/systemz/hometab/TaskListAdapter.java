@@ -1,4 +1,4 @@
-package pl.systemz.tasktab;
+package pl.systemz.hometab;
 
 import android.content.Intent;
 import android.text.TextUtils;
@@ -15,7 +15,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import androidx.recyclerview.widget.RecyclerView;
-import pl.systemz.tasktab.api.Client;
+import pl.systemz.hometab.api.Client;
 
 public class TaskListAdapter extends RecyclerView.Adapter<TaskListAdapter.ViewHolder> implements Filterable {
     private List<Client.Timer> values;

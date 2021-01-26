@@ -1,4 +1,4 @@
-package pl.systemz.tasktab.receiver;
+package pl.systemz.hometab.receiver;
 
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
@@ -13,13 +13,13 @@ import android.util.Log;
 
 import androidx.core.app.NotificationCompat;
 import androidx.core.app.NotificationManagerCompat;
-import pl.systemz.tasktab.R;
-import pl.systemz.tasktab.Task;
+import pl.systemz.hometab.R;
+import pl.systemz.hometab.Task;
 
 import static java.lang.System.currentTimeMillis;
 
 public class PushReceiver extends BroadcastReceiver {
-    private static final String TAG = "TaskTab";
+    private static final String TAG = "HomeTab";
 
     @Override
     public void onReceive(Context context, Intent intent) {

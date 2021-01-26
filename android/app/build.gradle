@@ -13,7 +13,7 @@ android {
     //
     compileSdkVersion 30
     defaultConfig {
-        applicationId "pl.systemz.tasktab"
+        applicationId "pl.systemz.hometab"
         minSdkVersion 29
         targetSdkVersion 30
         versionCode Integer.valueOf(System.env.VERSION_CODE ?: 1)

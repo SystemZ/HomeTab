@@ -1,4 +1,4 @@
-package pl.systemz.tasktab;
+package pl.systemz.hometab;
 
 import android.app.PendingIntent;
 import android.content.Intent;
@@ -9,8 +9,8 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
-import pl.systemz.tasktab.api.Client;
-import pl.systemz.tasktab.receiver.NotificationReceiver;
+import pl.systemz.hometab.api.Client;
+import pl.systemz.hometab.receiver.NotificationReceiver;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
