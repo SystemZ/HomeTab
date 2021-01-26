@@ -36,5 +36,5 @@ jobs:
       - name: Save .apk
         uses: actions/upload-artifact@v2
         with:
-          name: android-app
+          name: android-app-release.zip
           path: android/app/build/outputs/apk/release/app-release.apk

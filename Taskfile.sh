@@ -109,6 +109,11 @@ function ci-build-frontend() {
   mv dist $CI_PROJECT_DIR/new
 }
 
+function ci-build-backend() {
+    install-tools
+    build-backed
+}
+
 function ci-build-img() {
   docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY
   docker build --tag $CI_REGISTRY_IMAGE:pipeline-$CI_PIPELINE_ID --tag $CI_REGISTRY_IMAGE:latest .
