@@ -69,7 +69,7 @@ jobs:
           file: ./build/Dockerfile
           context: .
           push: true
-          tags: systemz/hometab:app-git-${{GITHUB_SHA}}
+          tags: "systemz/hometab:app-git-$GITHUB_SHA"
         #env:
         #  GITHUB_SHA: ${{ GITHUB_SHA }}
       - name: Image digest
