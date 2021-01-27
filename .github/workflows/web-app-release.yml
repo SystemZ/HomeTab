@@ -69,6 +69,6 @@ jobs:
           file: ./build/Dockerfile
           context: builds
           push: true
-          tags: systemz/hometab:app-git-${{ github.sha }}
+          tags: quay.io/systemz/hometab:app-git-${{ github.sha }}
       - name: Image digest
         run: echo ${{ steps.docker_build.outputs.digest }}
