@@ -141,6 +141,7 @@ func SendPushyMe(msg Notification, device model.Device) (err error) {
 	r.Header.Set("Content-Type", "application/json")
 	res, err := c.Do(r)
 	if err != nil {
+		log.Printf("fail when sending request to api.pushy.me: %v", err)
 		return err
 	}
 	defer res.Body.Close()
