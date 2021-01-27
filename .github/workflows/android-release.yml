@@ -9,7 +9,7 @@ on:
 # https://github.community/t/use-working-directory-for-entire-job/16747
 jobs:
   Gradle:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
     steps:
       - name: Code checkout
         uses: actions/checkout@v2
@@ -36,5 +36,5 @@ jobs:
       - name: Save .apk
         uses: actions/upload-artifact@v2
         with:
-          name: android-app-release.zip
+          name: android-app-release
           path: android/app/build/outputs/apk/release/app-release.apk

@@ -98,11 +98,14 @@ function deploy-docker() {
 
 function ci-build-frontend() {
   cd frontend || exit 1
+  # alpine
   apk add yarn
+  # directly from npm
+  npm install -g yarn
   yarn install --frozen-lockfile
   yarn build
   ls -alh dist
-  mv dist $CI_PROJECT_DIR/new
+  #mv dist $CI_PROJECT_DIR/new
 }
 
 function ci-build-backend() {

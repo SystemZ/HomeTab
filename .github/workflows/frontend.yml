@@ -1,0 +1,21 @@
+name: Node.js CI
+on: [ pull_request, push ]
+jobs:
+  build:
+    runs-on: ubuntu-20.04
+    steps:
+      - uses: actions/checkout@v2
+      - name: Install Node.js 14.x LTS
+        uses: actions/setup-node@v1
+        with:
+          # https://nodejs.org/en/about/releases/
+          node-version: 14.x
+      - name: Show npm info
+        run: npm ci
+      - name: Build frontend
+        run: bash Taskfile.sh ci-build-frontend
+      - name: Upload artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: frontend
+          path: frontend/dist
