@@ -2,8 +2,8 @@
     <string name="app_name">HomeTab</string>
     <string name="navigation_drawer_open">Open navigation drawer</string>
     <string name="navigation_drawer_close">Close navigation drawer</string>
-    <string name="nav_header_title">TaskTab</string>
-    <string name="nav_header_subtitle">Your TODO - simplified</string>
+    <string name="nav_header_title">HomeTab</string>
+    <string name="nav_header_subtitle">Your life assistant</string>
     <string name="nav_header_desc">Navigation header</string>
     <string name="action_settings">Settings</string>
     <string name="title_activity_task_details">TaskDetails</string>
@@ -84,4 +84,6 @@
     <string name="pref_ringtone_silent">Silent</string>
 
     <string name="pref_title_vibrate">Vibrate</string>
+  <string name="counters">Counters</string>
+  <string name="home_bottom_welcome">Select counter list to begin</string>
 </resources>

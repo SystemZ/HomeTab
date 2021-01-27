@@ -19,5 +19,9 @@
 # If you keep the line number information, uncomment this to
 # hide the original source file name.
 #-renamesourcefileattribute SourceFile
--keepclassmembernames class io.netty.** { *; }
--keepclassmembernames class org.jctools.** { *; }
+#-keepclassmembernames class io.netty.** { *; }
+#-keepclassmembernames class org.jctools.** { *; }
+-dontwarn me.pushy.**
+-keep class me.pushy.** { *; }
+-keep class androidx.core.app.** { *; }
+-keep class android.support.v4.app.** { *; }

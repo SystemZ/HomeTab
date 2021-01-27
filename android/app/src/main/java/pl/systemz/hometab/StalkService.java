@@ -31,7 +31,7 @@ public class StalkService extends Service {
     public void onCreate() {
         // The service is being created
         Log.d(TAG, "onCreate()");
-        Toast.makeText(this, "TaskStalk service started", Toast.LENGTH_LONG).show();
+        Toast.makeText(this, "HomeTab service started", Toast.LENGTH_LONG).show();
 
         //Intent intents = new Intent(getBaseContext(),MainActivity.class);
         //intents.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);

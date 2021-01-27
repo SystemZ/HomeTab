@@ -74,7 +74,7 @@ public class TaskList extends AppCompatActivity {
                 // remove loading task
                 input.remove(0);
                 //FIXME
-                Client.Timer failure = new Client.Timer(0, "Loading tasks failed :(", new ArrayList<String>(), 0, false);
+                Client.Timer failure = new Client.Timer(0, "Loading counters failed :(", new ArrayList<String>(), 0, false);
                 input.add(failure);
                 // define an adapter
                 mAdapter = new TaskListAdapter(input);
