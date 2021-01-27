@@ -33,7 +33,7 @@ const mixin = {
   computed: {
     apiUrl(): string {
       if (process.env.NODE_ENV === 'production') {
-        return 'https://tasktab.lvlup.pro';
+        return '';
       } else {
         return 'http://127.0.0.1:3000';
       }
