@@ -47,6 +47,8 @@ jobs:
         with:
           name: backend
           path: builds/hometab
+      - name: Make backend binary executable
+        run: chmod +x builds/hometab
       - name: Download frontend artifact
         uses: actions/download-artifact@v2
         with:
