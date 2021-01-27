@@ -1,5 +1,8 @@
-name: Build HomeTab backend and frontend
-on: [ pull_request, push ]
+name: Release build
+on:
+  push:
+    branches:
+      - master
 jobs:
   backend:
     runs-on: ubuntu-20.04
@@ -66,6 +69,8 @@ jobs:
           file: ./build/Dockerfile
           context: .
           push: true
-          tags: systemz/hometab:app-git-$GITHUB_SHA
+          tags: systemz/hometab:app-git-${{GITHUB_SHA}}
+        #env:
+        #  GITHUB_SHA: ${{ GITHUB_SHA }}
       - name: Image digest
         run: echo ${{ steps.docker_build.outputs.digest }}
