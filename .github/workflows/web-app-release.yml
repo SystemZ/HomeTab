@@ -47,8 +47,6 @@ jobs:
         with:
           name: backend
           path: builds/hometab
-      - name: Make backend binary executable
-        run: chmod +x builds/hometab
       - name: Download frontend artifact
         uses: actions/download-artifact@v2
         with:
@@ -71,6 +69,6 @@ jobs:
           file: ./build/Dockerfile
           context: builds
           push: true
-          tags: quay.io/systemz/hometab:app-git-${{ github.sha }}
+          tags: quay.io/systemz/hometab:latest,quay.io/systemz/hometab:app-git-${{ github.sha }}
       - name: Image digest
         run: echo ${{ steps.docker_build.outputs.digest }}
