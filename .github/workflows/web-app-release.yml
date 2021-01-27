@@ -1,4 +1,4 @@
-name: Release build
+name: Webapp release build
 on:
   push:
     branches:
@@ -67,7 +67,7 @@ jobs:
         uses: docker/build-push-action@v2
         with:
           file: ./build/Dockerfile
-          context: .
+          context: builds
           push: true
           tags: systemz/hometab:app-git-${{ github.sha }}
       - name: Image digest

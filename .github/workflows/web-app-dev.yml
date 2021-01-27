@@ -1,4 +1,4 @@
-name: Dev build
+name: Webapp dev build
 on:
   push:
     branches-ignore:

@@ -1,5 +1,8 @@
-name: Build debug Android .apk
-on: [ pull_request, push ]
+name: Android app debug build
+on:
+  push:
+    branches-ignore:
+      - 'master'
 
 # https://github.com/marketplace/actions/build-android-release-apk-when-create-new-tag
 jobs:

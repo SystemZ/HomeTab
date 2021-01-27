@@ -1,4 +1,4 @@
-name: Build release Android .apk
+name: Android app release build
 on:
   push:
     branches:
