@@ -10,9 +10,6 @@ jobs:
         with:
           # https://nodejs.org/en/about/releases/
           node-version: 14.x
-      - name: Show npm info
-        run: npm ci
-        working-directory: frontend
       - name: Build frontend
         run: bash Taskfile.sh ci-build-frontend
       - name: Upload artifact
