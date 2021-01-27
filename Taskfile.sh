@@ -85,15 +85,11 @@ function build-img-clear() {
 
 # deploy
 
+# can be used mainly for LAN deployments
+# no docker registry required
 function deploy-docker() {
   [ -z "$1" ] && echo "Host not provided" >&2 && exit 1
-  rm -rf new
-  cd frontend || exit
-  yarn build
-  mv dist ../new
-  cd ../
-  CGO_ENABLED=0 go build -o tasktab
-  docker build -t $IMG_NAME . && docker save tasktab | bzip2 | pv | ssh $1 'bunzip2 | docker load'
+  docker save $IMG_NAME | bzip2 | pv | ssh $1 'bunzip2 | docker load'
   # TODO figure out fully automatic and comfortable UnRAID deployment
   # /usr/local/emhttp/plugins/dynamix.docker.manager/scripts/docker run -d --name='tasktab' --net='bridge' -e TZ="Europe/Warsaw" -e HOST_OS="Unraid" -p '1337:80/tcp' 'tasktab'
 }
