@@ -1,11 +1,12 @@
 package model
 
 import (
-	"github.com/go-sql-driver/mysql"
 	"log"
 	"sort"
 	"strconv"
 	"time"
+
+	"github.com/go-sql-driver/mysql"
 )
 
 type Counter struct {
@@ -101,6 +102,43 @@ type CounterList struct {
 	Seconds30dFormatted string `json:"secondsD30F"`
 	SecondsAllFormatted string `json:"secondsAllF"`
 	Running             uint   `json:"running"`
+}
+
+func CountersLatestListAndroid(userId uint) (err error, result []CounterList) {
+	query := `
+SELECT
+	counter_id,
+    counters.name,
+    (SELECT GROUP_CONCAT(counter_tags.name SEPARATOR ',') FROM counter_tags WHERE counter_tags.counter_id = counters.id) AS tags,
+    counters.created_at,
+  	counters.updated_at,
+    TIMESTAMPDIFF(SECOND, counter_sessions.started_at, IFNULL(counter_sessions.ended_at,  CONVERT_TZ(NOW(),'SYSTEM','UTC') )) AS session_s
+FROM counter_sessions
+JOIN counters ON counter_sessions.counter_id = counters.id
+WHERE user_id = ?
+ORDER BY counter_sessions.created_at DESC
+LIMIT 50
+`
+	stmt, err := DB.DB().Prepare(query)
+	if err != nil {
+		return
+	}
+	defer stmt.Close()
+	rows, err := stmt.Query(userId)
+	if err != nil {
+		return
+	}
+	defer rows.Close()
+	for rows.Next() {
+		var list CounterList
+		err = rows.Scan(&list.Id, &list.Name, &list.Tags, &list.CreatedAt, &list.UpdatedAt, &list.SecondsAll)
+		if err != nil {
+			return
+		}
+
+		result = append(result, list)
+	}
+	return err, result
 }
 
 func CountersLongList(userId uint) (result []CounterList) {
@@ -406,13 +444,13 @@ type CounterSessionList struct {
 
 func CounterLogList(userId uint, limit int) (result []CounterSessionList) {
 	query := `
-SELECT 
+SELECT
   counter_sessions.counter_id,
   counter_sessions.id,
   counter_sessions.user_id,
-  counters.name, 
+  counters.name,
   (SELECT GROUP_CONCAT(counter_tags.name SEPARATOR ',') FROM counter_tags WHERE counter_tags.counter_id = counters.id) AS tags,
-  counter_sessions.started_at, 
+  counter_sessions.started_at,
   counter_sessions.ended_at,
   TIMESTAMPDIFF(SECOND, counter_sessions.started_at,IFNULL(counter_sessions.ended_at, NOW())) AS duration
 FROM counter_sessions
@@ -451,13 +489,13 @@ LIMIT ?
 
 func CounterLog(counterId int, userId uint, limit int) (result []CounterSessionList) {
 	query := `
-SELECT 
+SELECT
   counter_sessions.counter_id,
   counter_sessions.id,
   counter_sessions.user_id,
-  counters.name, 
+  counters.name,
   (SELECT GROUP_CONCAT(counter_tags.name SEPARATOR ',') FROM counter_tags WHERE counter_tags.counter_id = counters.id) AS tags,
-  counter_sessions.started_at, 
+  counter_sessions.started_at,
   counter_sessions.ended_at,
   TIMESTAMPDIFF(SECOND, counter_sessions.started_at,IFNULL(counter_sessions.ended_at, NOW())) AS duration
 FROM counter_sessions

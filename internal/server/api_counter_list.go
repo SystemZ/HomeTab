@@ -2,10 +2,13 @@ package server
 
 import (
 	"encoding/json"
-	"github.com/systemz/hometab/internal/model"
 	"net/http"
 	"strconv"
 	"time"
+
+	"github.com/sirupsen/logrus"
+
+	"github.com/systemz/hometab/internal/model"
 )
 
 type CounterApi struct {
@@ -45,7 +48,10 @@ func ApiCounterList(w http.ResponseWriter, r *http.Request) {
 
 	// gather data, convert from DB model to API model
 	var counters []CounterApi
-	dbCounters := model.CountersLongList(userId)
+	err, dbCounters := model.CountersLatestListAndroid(userId)
+	if err != nil {
+		logrus.Error(err)
+	}
 	for _, counter := range dbCounters {
 		counters = append(counters, CounterApi{
 			Id:         counter.Id,
@@ -55,6 +61,7 @@ func ApiCounterList(w http.ResponseWriter, r *http.Request) {
 			InProgress: counter.Running == 1,
 		})
 	}
+	logrus.Debugf("%+v", counters)
 
 	// prepare JSON
 	counterList, err := json.MarshalIndent(counters, "", "  ")
