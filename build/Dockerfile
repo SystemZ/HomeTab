@@ -12,6 +12,6 @@ RUN apt-get update \
  && rm -rf /var/lib/{apt,dpkg,cache,log}/ \
  && apt-get clean autoclean
 ADD hometab /
-ADD new /new
+ADD frontend /new
 ADD templates /templates
 ENTRYPOINT ["/hometab"]

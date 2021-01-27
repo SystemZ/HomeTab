@@ -72,7 +72,7 @@ function build-img() {
   cp cmd/hometab/hometab "$BUILD_TMP_DIR/hometab" || exit 1
   cp -r web/templates "$BUILD_TMP_DIR/templates" || exit 1
   # frontend
-  cp -r frontend/dist "$BUILD_TMP_DIR/new" || exit 1
+  cp -r frontend/dist "$BUILD_TMP_DIR/frontend" || exit 1
   # docker
   cp build/Dockerfile "$BUILD_TMP_DIR/Dockerfile" || exit 1
   # finally... build this image image already!
