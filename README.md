@@ -31,6 +31,7 @@ If configured properly you should be able to reach web interface
 
 ```bash
 # backend
+docker-compose up -d
 ./Taskfile.sh install-tools
 ./Taskfile.sh dev-backend
 ./Taskfile.sh dev-seed

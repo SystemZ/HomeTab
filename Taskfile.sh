@@ -34,8 +34,7 @@ function dev-frontend() {
 }
 
 function dev-seed() {
-  # TODO import DB schema
-  go run . user-create --username dev --password dev --email example@example.com
+  go run github.com/systemz/hometab/cmd/hometab user-create --username dev --password dev --email example@example.com
 }
 
 function dev-dump-schema() {
