@@ -4,6 +4,7 @@ import './registerServiceWorker'
 import router from './router'
 import store from './store'
 import vuetify from './plugins/vuetify';
+import retryTimes = jest.retryTimes;
 //import 'roboto-fontface/css/roboto/roboto-fontface.css'
 //import '@mdi/font/css/materialdesignicons.css'
 
@@ -41,6 +42,8 @@ const mixin = {
     lsToken(): string {
       return 'authToken';
     },
+    // color templates
+    // button colors
     btnPrimary(): string {
       return '#5C9DA0';
     },
@@ -50,8 +53,55 @@ const mixin = {
     btnAccent(): string {
       return '#DE9B61';
     },
-    btnDark(): boolean {
+    //checkbox colors
+    checkPrimary(): string {
+      return '#DE9B61';
+    },
+    // chip colors
+    chipPrimary(): string {
+      return '#009688';
+    },
+    // is this element dark?
+    componentDark(): boolean {
       return true
+    },
+    // input colors
+      inputPrimary(): string {
+      return '#F06292';
+    },
+    // navbar colors
+      navbarPrimary(): string {
+      return '#4A148C';
+      },
+    // TODO pagination colors - tables
+    // https://stackoverflow.com/questions/58936262/how-to-change-default-styling-of-v-data-table-footer
+    // pagination colors
+    pagePrimary(): string {
+      return '#827717';
+    },
+    // picker colors
+      pickerPrimary(): string {
+      return '#673AB7';
+    },
+    // progress bar colors
+      progressPrimary(): string {
+      return '#FFB74D';
+    },
+    // tags color
+    tagPrimary(): string {
+      return '#FF5722';
+    },
+    // toolbar colors
+      toolbarPrimary(): string {
+      return '#673AB7';
+      },
+    // snackbar colors
+      snackbarPrimary(): string {
+      return '#FF80AB';
+    },
+    // switch colors
+      switchPrimary(): string {
+      return '#827717';
     },
   },
   methods: {

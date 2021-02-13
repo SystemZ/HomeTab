@@ -17,8 +17,8 @@
         </v-alert>
         <v-card class="elevation-12 mt-5 mb-5" color="gray darken-3">
           <v-toolbar
-            color="green darken-1"
-            dark
+            :color="toolbarPrimary"
+            :dark="componentDark"
             flat
           >
             <v-toolbar-title>
@@ -33,6 +33,7 @@
                 prepend-icon="mdi-account"
                 type="text"
                 v-model="username"
+                :color="inputPrimary"
               />
 
               <v-text-field
@@ -42,12 +43,13 @@
                 prepend-icon="mdi-lock"
                 type="password"
                 v-model="password"
+                :color="inputPrimary"
               />
             </v-form>
           </v-card-text>
           <v-card-actions>
             <v-spacer/>
-            <v-btn :dark="btnDark" :color="btnPrimary" @click.native="login">
+            <v-btn :dark="componentDark" :color="btnPrimary" @click.native="login">
               <span>Log in</span>
             </v-btn>
           </v-card-actions>

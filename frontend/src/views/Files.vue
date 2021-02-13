@@ -13,6 +13,7 @@
               v-model="itemsPerPage"
               label="Per page"
               required
+              :color="inputPrimary"
             >
             </v-text-field>
           </v-col>
@@ -20,6 +21,7 @@
             <v-text-field
               v-model="afterId"
               label="ID >"
+              :color="inputPrimary"
             >
             </v-text-field>
           </v-col>
@@ -39,6 +41,7 @@
               v-model="page"
               total-visible="5"
               @input="getFiles"
+              :color="pagePrimary"
             >
             </v-pagination>
           </v-col>
@@ -117,6 +120,7 @@
               v-model="page"
               total-visible="5"
               @input="getFiles"
+              :color="pagePrimary"
             >
             </v-pagination>
           </v-col>

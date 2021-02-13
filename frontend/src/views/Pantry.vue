@@ -25,7 +25,7 @@
                                             label="Name"
                                             required
                                             v-model="item.name"
-                                            :color="btnPrimary"
+                                            :color="inputPrimary"
                                     ></v-text-field>
                                 </v-col>
                                 <v-col cols="12">
@@ -34,7 +34,7 @@
                                             label="Brand"
                                             required
                                             v-model="item.brand"
-                                            :color="btnPrimary"
+                                            :color="inputPrimary"
                                     >
                                     </v-autocomplete>
                                 </v-col>
@@ -43,7 +43,7 @@
                                             label="Bar code"
                                             required
                                             v-model="item.code"
-                                            :color="btnPrimary"
+                                            :color="inputPrimary"
                                     ></v-text-field>
                                 </v-col>
                                 <v-col cols="12" sm="6">
@@ -52,7 +52,7 @@
                                             label="Localization"
                                             required
                                             v-model="item.place"
-                                            :color="btnPrimary"
+                                            :color="inputPrimary"
                                     ></v-select>
                                 </v-col>
                                 <v-col cols="12" sm="6">
@@ -60,7 +60,7 @@
                                             :items="['Drinks', 'Spices', 'Cereals', 'Veggies & Fruit']"
                                             label="Type of food"
                                             v-model="item.type"
-                                            :color="btnPrimary"
+                                            :color="inputPrimary"
                                     ></v-autocomplete>
                                 </v-col>
                             </v-row>

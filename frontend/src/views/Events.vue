@@ -5,8 +5,8 @@
                 class="mx-auto"
         >
             <v-toolbar
-                    color="green"
-                    dark
+                    :color="toolbarPrimary"
+                    :dark="componentDark"
             >
                 <v-toolbar-title>Last 7 days</v-toolbar-title>
             </v-toolbar>

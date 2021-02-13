@@ -4,9 +4,16 @@
       <v-container>
         <v-row>
           <v-col cols="12" md="6">
-            <v-text-field label="Dir to scan" v-model="dirToScan">
+            <v-text-field label="Dir to scan" v-model="dirToScan" :color="inputPrimary">
             </v-text-field>
-            <v-btn :disabled="scanning" @click="doScan">Scan</v-btn>
+            <v-btn
+              :disabled="scanning"
+              @click="doScan"
+              :color="btnPrimary"
+              :dark="componentDark"
+            >
+              Scan
+            </v-btn>
           </v-col>
         </v-row>
       </v-container>

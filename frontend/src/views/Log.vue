@@ -5,8 +5,8 @@
                 max-width="600"
         >
             <v-toolbar
-                    color="green"
-                    dark
+                    :color="toolbarPrimary"
+                    :dark="componentDark"
             >
                 <v-toolbar-title>Last 100 sessions</v-toolbar-title>
             </v-toolbar>
@@ -20,8 +20,8 @@
                             <v-list-item-title>
                                 <span class="subtitle-1">{{counter.title}} </span>
                                 <v-chip
-                                        :color="btnPrimary"
-                                        dark
+                                        :color="chipPrimary"
+                                        :dark="componentDark"
                                         pill
                                         small>
                                     {{counter.tag}}

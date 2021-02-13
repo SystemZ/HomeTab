@@ -37,12 +37,12 @@
 
                     <v-progress-circular v-if="newCounterInProgress" indeterminate color="green"
                                          class="ml-5 ml-5"></v-progress-circular>
-                    <v-btn v-else :dark="btnDark" :color="btnPrimary" @click="addCounter">Add</v-btn>
+                    <v-btn v-else :dark="componentDark" :color="btnPrimary" @click="addCounter">Add</v-btn>
                 </v-card-actions>
             </v-card>
         </v-dialog>
 
-        <v-btn class="ma-5" :dark="btnDark" :color="btnPrimary" @click="newCounterDialogShow = true">
+        <v-btn class="ma-5" :dark="componentDark" :color="btnPrimary" @click="newCounterDialogShow = true">
             Add new counter
         </v-btn>
 
@@ -51,7 +51,7 @@
                 All counters
                 <v-spacer></v-spacer>
                 <v-row>
-                    <v-switch v-model="searchPro" label="Pro" :color="btnPrimary" class="mr-5"></v-switch>
+                    <v-switch v-model="searchPro" label="Pro" :color="switchPrimary" class="mr-5"></v-switch>
                     <v-text-field
                             v-model="search"
                             append-icon="mdi-magnify"
@@ -59,6 +59,7 @@
                             single-line
                             hide-details
                             @keydown="doSearch"
+                            :color="inputPrimary"
                     >
                     </v-text-field>
                 </v-row>
@@ -82,7 +83,7 @@
                     <v-progress-linear
                             indeterminate
                             :height="2"
-                            color="green"
+                            :color="progressPrimary"
                     ></v-progress-linear>
                 </template>
             </v-data-table>
@@ -90,7 +91,7 @@
 
         <v-snackbar v-model="snackbarShow">
             {{ snackbarText }}
-            <v-btn color="pink" text @click="snackbarShow = false">
+            <v-btn :color="snackbarPrimary" text @click="snackbarShow = false">
                 Close
             </v-btn>
         </v-snackbar>
