@@ -3,7 +3,7 @@
         <v-snackbar top v-model="noteSaved" :timeout="1500">
             Note saved!
             <v-btn
-                    :color="btnAccent"
+                    :color="snackbarPrimary"
                     text
                     @click="noteSaved = false"
             >
@@ -13,7 +13,7 @@
         <v-snackbar top v-model="noteSaveError" :timeout="0">
             Note save error!
             <v-btn
-                    :color="btnSecondary"
+                    :color="snackbarPrimary"
                     @click="noteSaveError = false"
             >
                 Close
@@ -39,7 +39,7 @@
                         Cancel
                     </v-btn>
                     <v-btn
-                            :dark="btnDark"
+                            :dark="componentDark"
                             :color="btnSecondary"
                             :disabled="noteLoading"
                             @click="deleteNote"
@@ -62,17 +62,17 @@
             <span v-else>{{note.tags}}</span>
         </div>
         <div class="caption">Created: {{note.createdAt | prettyTimeDate }}</div>
-        <v-btn :dark="btnDark" :color="btnPrimary" class="mt-3 mb-5 mr-4" :disabled="noteLoading"
+        <v-btn :dark="componentDark" :color="btnPrimary" class="mt-3 mb-5 mr-4" :disabled="noteLoading"
                @click="noteEditing ? noteEditing = false : noteEditing = true">
             <v-icon>mdi-pencil</v-icon>
             Edit
         </v-btn>
-        <v-btn :dark="btnDark" :color="btnPrimary" class="mt-3 mb-5 mr-4" :disabled="noteLoading"
+        <v-btn :dark="componentDark" :color="btnPrimary" class="mt-3 mb-5 mr-4" :disabled="noteLoading"
                @click.native="saveNote">
             <v-icon>mdi-content-save-outline</v-icon>
             Save
         </v-btn>
-        <v-btn :dark="btnDark" color="red darken-2" class="mt-3 mb-5" :disabled="noteLoading"
+        <v-btn :dark="componentDark" :color="btnSecondary" class="mt-3 mb-5" :disabled="noteLoading"
                @click.native="deleteNoteDialog = true">
             <v-icon>mdi-delete</v-icon>
             Delete

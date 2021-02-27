@@ -6,7 +6,7 @@
   >
     <v-list dense>
       <v-subheader>All tags</v-subheader>
-      <v-list-item-group color="primary">
+      <v-list-item-group :color="tagPrimary">
         <v-list-item
           @click="selectTag('all')"
         >

@@ -8,10 +8,11 @@
                             label="Title"
                             v-model="newNoteTitle"
                             @keydown.enter.native="addNote"
+                            :color="inputPrimary"
                     ></v-text-field>
                 </v-col>
                 <v-col cols="12" md="2">
-                    <v-btn class="mt-3" :dark="btnDark" :color="btnPrimary" @click.native="addNote">
+                    <v-btn class="mt-3" :dark="componentDark" :color="btnPrimary" @click.native="addNote">
                         Add new
                     </v-btn>
                 </v-col>
@@ -28,6 +29,7 @@
                         label="Search"
                         single-line
                         hide-details
+                        :color="inputPrimary"
                 >
                 </v-text-field>
             </v-card-title>
@@ -45,7 +47,7 @@
                     <v-progress-linear
                             indeterminate
                             :height="2"
-                            color="green"
+                            :color="progressPrimary"
                     ></v-progress-linear>
                 </template>
             </v-data-table>
