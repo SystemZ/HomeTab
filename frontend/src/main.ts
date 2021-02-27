@@ -45,21 +45,18 @@ const mixin = {
     // color templates
     // button colors
     btnPrimary(): string {
-      return '#5C9DA0';
+      return 'deep-purple darken-3';
     },
     btnSecondary(): string {
-      return '#DE6461';
-    },
-    btnAccent(): string {
-      return '#DE9B61';
+      return 'deep-orange darken-4';
     },
     //checkbox colors
     checkPrimary(): string {
-      return '#DE9B61';
+      return 'deep-purple lighten-3';
     },
     // chip colors
     chipPrimary(): string {
-      return '#009688';
+      return 'deep-purple lighten-3';
     },
     // is this element dark?
     componentDark(): boolean {
@@ -67,41 +64,41 @@ const mixin = {
     },
     // input colors
       inputPrimary(): string {
-      return '#F06292';
+      return 'deep-purple lighten-3';
     },
     // navbar colors
       navbarPrimary(): string {
-      return '#4A148C';
+      return 'deep-purple';
       },
     // TODO pagination colors - tables
     // https://stackoverflow.com/questions/58936262/how-to-change-default-styling-of-v-data-table-footer
     // pagination colors
     pagePrimary(): string {
-      return '#827717';
+      return 'deep-purple darken-3';
     },
     // picker colors
       pickerPrimary(): string {
-      return '#673AB7';
+      return 'deep-purple darken-3';
     },
     // progress bar colors
       progressPrimary(): string {
-      return '#FFB74D';
+      return 'orange';
     },
     // tags color
     tagPrimary(): string {
-      return '#FF5722';
+      return 'deep-purple';
     },
     // toolbar colors
       toolbarPrimary(): string {
-      return '#673AB7';
+      return 'deep-purple';
       },
     // snackbar colors
       snackbarPrimary(): string {
-      return '#FF80AB';
+      return 'deep-purple darken-3';
     },
     // switch colors
       switchPrimary(): string {
-      return '#827717';
+      return 'deep-purple darken-3';
     },
   },
   methods: {

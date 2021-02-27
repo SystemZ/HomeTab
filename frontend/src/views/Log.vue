@@ -21,7 +21,6 @@
                                 <span class="subtitle-1">{{counter.title}} </span>
                                 <v-chip
                                         :color="chipPrimary"
-                                        :dark="componentDark"
                                         pill
                                         small>
                                     {{counter.tag}}
