@@ -72,7 +72,7 @@
             <v-icon>mdi-content-save-outline</v-icon>
             Save
         </v-btn>
-        <v-btn :dark="componentDark" color="red darken-2" class="mt-3 mb-5" :disabled="noteLoading"
+        <v-btn :dark="componentDark" :color="btnSecondary" class="mt-3 mb-5" :disabled="noteLoading"
                @click.native="deleteNoteDialog = true">
             <v-icon>mdi-delete</v-icon>
             Delete

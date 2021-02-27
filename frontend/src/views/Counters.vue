@@ -16,6 +16,7 @@
                                 <v-text-field :disabled="newCounterInProgress"
                                               v-model="newCounterName"
                                               label="Name*"
+                                              :color="inputPrimary"
                                               required></v-text-field>
                             </v-col>
                         </v-row>
@@ -25,6 +26,7 @@
                                         :disabled="newCounterInProgress"
                                         v-model="newCounterTag"
                                         label="Tag*"
+                                        :color="inputPrimary"
                                         required></v-text-field>
                             </v-col>
                         </v-row>
