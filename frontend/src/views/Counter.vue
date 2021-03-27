@@ -9,7 +9,7 @@
                             v-if="counter.running"
                             class="mt-3"
                             x-large
-                            :dark="btnDark"
+                            :dark="componentDark"
                             :color="btnSecondary"
                             @click="toggleCounter(false)"
                             :loading="counterLoading"
@@ -20,7 +20,7 @@
                             v-else
                             class="mt-3"
                             x-large
-                            :dark="btnDark"
+                            :dark="componentDark"
                             :color="btnPrimary"
                             @click="toggleCounter(true)"
                             :loading="counterLoading"
@@ -71,7 +71,7 @@
                     <template v-slot:header>
                         <v-toolbar
                                 class="mb-2"
-                                color="green"
+                                :color="toolbarPrimary"
                                 dark
                                 flat
                         >

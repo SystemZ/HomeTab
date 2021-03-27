@@ -115,8 +115,8 @@
 
     <v-app-bar
       app
-      color="purple darken-3"
-      dark
+      :color="navbarPrimary"
+      :dark="componentDark"
     >
       <v-app-bar-nav-icon @click.stop="leftDrawer = !leftDrawer"/>
       <v-toolbar-title>HomeTab</v-toolbar-title>

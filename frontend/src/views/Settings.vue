@@ -17,6 +17,7 @@
                                         label="Device name"
                                         required
                                         v-model="newDevice"
+                                        :color="inputPrimary"
                                 >
                                 </v-text-field>
                             </v-col>
@@ -34,7 +35,7 @@
                         Cancel
                     </v-btn>
                     <v-btn
-                            :dark="btnDark"
+                            :dark="componentDark"
                             :color="btnPrimary"
                             @click="saveDevice"
                     >
@@ -60,6 +61,7 @@
                                         label="Project name"
                                         required
                                         v-model="newProject"
+                                        :color="inputPrimary"
                                 >
                                 </v-text-field>
                             </v-col>
@@ -77,7 +79,7 @@
                         Cancel
                     </v-btn>
                     <v-btn
-                            :dark="btnDark"
+                            :dark="componentDark"
                             :color="btnPrimary"
                             @click="saveProject"
                     >
@@ -94,8 +96,8 @@
                         class="mx-auto"
                 >
                     <v-toolbar
-                            color="#5C9DA0"
-                            dark
+                            :color="toolbarPrimary"
+                            :dark="componentDark"
                     >
                         <v-toolbar-title>Account details</v-toolbar-title>
                     </v-toolbar>
@@ -124,8 +126,8 @@
                         class="mx-auto"
                 >
                     <v-toolbar
-                            color="#5C9DA0"
-                            dark
+                            :color="toolbarPrimary"
+                            :dark="componentDark"
                     >
                         <v-toolbar-title>Devices details</v-toolbar-title>
                         <v-spacer></v-spacer>
@@ -160,8 +162,8 @@
                         class="mx-auto"
                 >
                     <v-toolbar
-                            color="#5C9DA0"
-                            dark
+                            :color="toolbarPrimary"
+                            :dark="componentDark"
                     >
                         <v-toolbar-title>All projects</v-toolbar-title>
                         <v-spacer></v-spacer>

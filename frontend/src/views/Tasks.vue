@@ -20,7 +20,7 @@
                         Cancel
                     </v-btn>
                     <v-btn
-                            :dark="btnDark"
+                            :dark="componentDark"
                             :color="btnSecondary"
                             :disabled="tasksDeleting"
                             @click="deleteTasks"
@@ -46,14 +46,14 @@
                             <v-date-picker
                                     v-model="taskSnoozeDateInDialog"
                                     class="mt-4"
-                                    color="green"
+                                    :color="pickerPrimary"
                             ></v-date-picker>
                         </v-col>
                         <v-col>
                             <v-time-picker
                                     v-model="taskSnoozeTimeInDialog"
                                     format="24hr"
-                                    color="green"
+                                    :color="pickerPrimary"
                             ></v-time-picker>
                         </v-col>
                     </v-row>
@@ -68,7 +68,7 @@
                         Cancel
                     </v-btn>
                     <v-btn
-                            :dark="btnDark"
+                            :dark="componentDark"
                             :color="btnPrimary"
                             @click="snoozeTasks"
                     >
@@ -88,6 +88,7 @@
                                 <v-text-field
                                         label="Task title"
                                         v-model="taskTitleInDialog"
+                                        :color="inputPrimary"
                                 >
                                 </v-text-field>
                             </v-col>
@@ -98,12 +99,14 @@
                                         :items="repeatUnits"
                                         v-model="taskRepeatUnitInDialog"
                                         label="Repeat unit"
+                                        :color="inputPrimary"
                                 ></v-autocomplete>
                             </v-col>
                             <v-col v-if="taskRepeatUnitInDialog !== ''" cols="12" md="4" sm="6">
                                 <v-text-field
                                         v-model="taskRepeatEveryInDialog"
                                         label="Repeat every X after done"
+                                        :color="inputPrimary"
                                 ></v-text-field>
                             </v-col>
                         </v-row>
@@ -115,6 +118,7 @@
                                         item-value="id"
                                         :items="userList"
                                         label="Assigned to"
+                                        :color="inputPrimary"
                                 ></v-select>
                             </v-col>
                             <!--
@@ -145,7 +149,7 @@
                         Cancel
                     </v-btn>
                     <v-btn
-                            :dark="btnDark"
+                            :dark="componentDark"
                             :color="btnPrimary"
                             :disabled="taskSaving"
                             @click="saveTask"
@@ -164,6 +168,7 @@
                         clearable
                         v-model="newTaskTitle"
                         @keydown.enter.native="addTask"
+                        :color="inputPrimary"
                 >
                 </v-text-field>
                 <v-row>
@@ -172,7 +177,7 @@
                         :disabled="projectIdSelected === 0" -->
                         <v-btn
                                 block
-                                :dark="btnDark"
+                                :dark="componentDark"
                                 :color="btnPrimary"
                                 @click.native="addTask"
                         >
@@ -183,7 +188,7 @@
                     <v-col cols="12" md="6" xs="12">
                         <v-btn
                                 block
-                                :dark="btnDark"
+                                :dark="componentDark"
                                 :color="btnPrimary"
                                 @click="refreshTasks"
                         >
@@ -201,8 +206,8 @@
                         class="mx-auto"
                 >
                     <v-toolbar
-                            color="green"
-                            dark
+                            :color="toolbarPrimary"
+                            :dark="componentDark"
                     >
                         <v-select
                                 class="pt-8"
@@ -226,7 +231,7 @@
                             <v-icon>mdi-delete</v-icon>
                         </v-btn>
                     </v-toolbar>
-                    <v-progress-linear v-if="tasksLoading || projectLoading" indeterminate/>
+                    <v-progress-linear :color="progressPrimary" v-if="tasksLoading || projectLoading" indeterminate/>
                     <v-list
                             subheader
                     >
@@ -238,7 +243,7 @@
                                 <v-list-item-action>
                                     <v-checkbox
                                             v-model="task.selected"
-                                            :color="task.selected && 'green darken-2' || 'grey'"
+                                            :color="checkPrimary"
                                     >
                                         <template v-slot:label>
                                             <div
