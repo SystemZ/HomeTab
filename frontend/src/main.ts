@@ -84,6 +84,10 @@ const mixin = {
       progressPrimary(): string {
       return 'orange';
     },
+    // tab colors
+    tabPrimary(): string {
+      return 'deep-purple';
+    },
     // tags color
     tagPrimary(): string {
       return 'deep-purple';
