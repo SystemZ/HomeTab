@@ -169,22 +169,19 @@
                   >
                     Add device
                   </v-btn>
-                  <v-simple-table>
-                    <template v-slot:default>
-                      <thead>
-                      <tr>
-                        <th class="text-left">Name</th>
-                        <th class="text-left">Token</th>
-                      </tr>
-                      </thead>
-                      <tbody>
-                      <tr v-for="device in devices" :key="device.id">
-                        <td>{{ device.name }}</td>
-                        <td>{{ device.token }}</td>
-                      </tr>
-                      </tbody>
+                  <v-data-table
+                    :headers="deviceHeaders"
+                    :items="devices"
+                    :loading="tableLoading"
+                  >
+                    <template v-slot:progress>
+                      <v-progress-linear
+                        indeterminate
+                        :height="2"
+                        :color="progressPrimary"
+                      ></v-progress-linear>
                     </template>
-                  </v-simple-table>
+                  </v-data-table>
                 </v-card-text>
               </v-card>
             </v-tab-item>
@@ -239,10 +236,10 @@ export default {
   name: 'settings',
   data () {
     return {
-      addDevice: false,
-      newDevice: '',
-      addProject: false,
-      newProject: '',
+      // addDevice: false,
+      // newDevice: '',
+      // addProject: false,
+      // newProject: '',
       tableLoading: true,
       accounts: [],
       accountHeaders: [
@@ -256,16 +253,19 @@ export default {
         // {text: 'Created at', value: 'createdAt'},
         // {text: 'Updated at', value: 'updatedAt'},
       ],
-      devices: [{
-        id: '1',
-        name: 'Galaxy',
-        token: 'long-string-consisting-of-numbers-and-letters',
-      },
+      devices: [],
+      deviceHeaders: [
         {
-          id: '2',
-          name: 'NotGalaxy',
-          token: 'long-string-consisting-of-numbers-and-letters-v2',
-        }],
+          text: 'ID',
+          align: 'left',
+          sortable: true,
+          value: 'id',
+        },
+        {text: 'Name', value: 'name'},
+        {text: 'Username', value: 'username'},
+        // FIXME device token is not available by API, but is present in DB
+        // {text: 'Token', value: 'token'},
+      ],
       projects: [{
         id: '5',
         title: 'New Project',
@@ -280,6 +280,7 @@ export default {
   },
   mounted () {
     this.getAccounts()
+    this.getDevices()
   },
   methods: {
     showDeviceDialog () {
@@ -311,6 +312,21 @@ export default {
         .then((res) => {
           this.tableLoading = false
           this.accounts = res.data
+        })
+        .catch((err) => {
+          if (err.response.status === 401) {
+            this.$root.$emit('sessionExpired')
+          } else {
+            console.log('something wrong')
+          }
+        })
+    },
+    getDevices () {
+      this.tableLoading = true
+      axios.get(this.apiUrl + '/api/v1/device', this.authConfig())
+        .then((res) => {
+          this.tableLoading = false
+          this.devices = res.data
         })
         .catch((err) => {
           if (err.response.status === 401) {
