@@ -110,7 +110,7 @@
               <v-icon left>
                 mdi-account
               </v-icon>
-              Account
+              Accounts
             </v-tab>
             <v-tab>
               <v-icon left>
@@ -128,9 +128,29 @@
             <v-tab-item>
               <v-card flat>
                 <v-card-text>
-                  <p>ID: {{ account.id }}</p>
-                  <p>Created at: {{ account.createdAt }}</p>
-                  <p>Updated at: {{ account.lastUpdateAt }}</p>
+                  <!-- if disabled then element cannot be dark -->
+                  <!-- :dark="componentDark" -->
+                  <v-btn
+                    block
+                    class="mb-4"
+                    disabled
+                    :color="btnPrimary"
+                  >
+                    Create new account
+                  </v-btn>
+                  <v-data-table
+                    :headers="accountHeaders"
+                    :items="accounts"
+                    :loading="tableLoading"
+                  >
+                    <template v-slot:progress>
+                      <v-progress-linear
+                        indeterminate
+                        :height="2"
+                        :color="progressPrimary"
+                      ></v-progress-linear>
+                    </template>
+                  </v-data-table>
                 </v-card-text>
               </v-card>
             </v-tab-item>
@@ -138,10 +158,12 @@
             <v-tab-item>
               <v-card flat>
                 <v-card-text>
+                  <!-- if disabled then element cannot be dark -->
+                  <!-- :dark="componentDark" -->
                   <v-btn
                     block
                     class="mb-4"
-                    :dark="componentDark"
+                    disabled
                     :color="btnPrimary"
                     @click="showDeviceDialog"
                   >
@@ -170,10 +192,12 @@
             <v-tab-item>
               <v-card flat>
                 <v-card-text>
+                  <!-- if disabled then element cannot be dark -->
+                  <!-- :dark="componentDark" -->
                   <v-btn
                     block
                     class="mb-4"
-                    :dark="componentDark"
+                    disabled
                     :color="btnPrimary"
                     @click="showProjectDialog"
                   >
@@ -209,6 +233,8 @@
 
 <script>
 
+import axios from 'axios'
+
 export default {
   name: 'settings',
   data () {
@@ -217,11 +243,19 @@ export default {
       newDevice: '',
       addProject: false,
       newProject: '',
-      account: {
-        id: '2',
-        createdAt: '15:30 04/04/2020',
-        lastUpdateAt: '15:31 04/04/2020',
-      },
+      tableLoading: true,
+      accounts: [],
+      accountHeaders: [
+        {
+          text: 'ID',
+          align: 'left',
+          sortable: true,
+          value: 'id',
+        },
+        {text: 'Username', value: 'username'},
+        // {text: 'Created at', value: 'createdAt'},
+        // {text: 'Updated at', value: 'updatedAt'},
+      ],
       devices: [{
         id: '1',
         name: 'Galaxy',
@@ -245,6 +279,7 @@ export default {
     }
   },
   mounted () {
+    this.getAccounts()
   },
   methods: {
     showDeviceDialog () {
@@ -270,7 +305,21 @@ export default {
     authConfig () {
       return {headers: {Authorization: 'Bearer ' + localStorage.getItem(this.lsToken)}}
     },
-
+    getAccounts () {
+      this.tableLoading = true
+      axios.get(this.apiUrl + '/api/v1/user', this.authConfig())
+        .then((res) => {
+          this.tableLoading = false
+          this.accounts = res.data
+        })
+        .catch((err) => {
+          if (err.response.status === 401) {
+            this.$root.$emit('sessionExpired')
+          } else {
+            console.log('something wrong')
+          }
+        })
+    },
   }
 }
 </script>
