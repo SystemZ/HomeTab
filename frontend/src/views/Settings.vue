@@ -1,6 +1,6 @@
 <template>
   <v-container fluid>
-    <v-dialog
+    <!-- <v-dialog
       v-model="addDevice"
       width="500"
       :fullscreen="$vuetify.breakpoint.xsOnly"
@@ -87,7 +87,7 @@
           </v-btn>
         </v-card-actions>
       </v-card>
-    </v-dialog>
+    </v-dialog> -->
 
     <v-row>
       <v-col>
@@ -160,12 +160,12 @@
                 <v-card-text>
                   <!-- if disabled then element cannot be dark -->
                   <!-- :dark="componentDark" -->
+                  <!-- @click="showDeviceDialog" -->
                   <v-btn
                     block
                     class="mb-4"
                     disabled
                     :color="btnPrimary"
-                    @click="showDeviceDialog"
                   >
                     Add device
                   </v-btn>
@@ -191,12 +191,12 @@
                 <v-card-text>
                   <!-- if disabled then element cannot be dark -->
                   <!-- :dark="componentDark" -->
+                  <!-- @click="showProjectDialog" -->
                   <v-btn
                     block
                     class="mb-4"
                     disabled
                     :color="btnPrimary"
-                    @click="showProjectDialog"
                   >
                     Add project
                   </v-btn>
@@ -283,26 +283,26 @@ export default {
     this.getDevices()
   },
   methods: {
-    showDeviceDialog () {
-      this.addDevice = true
-    },
-    showProjectDialog () {
-      this.addProject = true
-    },
-    saveDevice () {
-      if (this.newDevice !== '') {
-        this.devices.push({'name': this.newDevice})
-        this.newDevice = ''
-      }
-      this.addDevice = false
-    },
-    saveProject () {
-      if (this.newProject !== '') {
-        this.projects.push({'title': this.newProject})
-        this.newProject = ''
-      }
-      this.addProject = false
-    },
+    // showDeviceDialog () {
+    //   this.addDevice = true
+    // },
+    // showProjectDialog () {
+    //   this.addProject = true
+    // },
+    // saveDevice () {
+    //   if (this.newDevice !== '') {
+    //     this.devices.push({'name': this.newDevice})
+    //     this.newDevice = ''
+    //   }
+    //   this.addDevice = false
+    // },
+    // saveProject () {
+    //   if (this.newProject !== '') {
+    //     this.projects.push({'title': this.newProject})
+    //     this.newProject = ''
+    //   }
+    //   this.addProject = false
+    // },
     authConfig () {
       return {headers: {Authorization: 'Bearer ' + localStorage.getItem(this.lsToken)}}
     },
