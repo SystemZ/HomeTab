@@ -1,6 +1,6 @@
 <template>
   <v-container fluid>
-    <v-dialog
+    <!-- <v-dialog
       v-model="addDevice"
       width="500"
       :fullscreen="$vuetify.breakpoint.xsOnly"
@@ -87,7 +87,7 @@
           </v-btn>
         </v-card-actions>
       </v-card>
-    </v-dialog>
+    </v-dialog> -->
 
     <v-row>
       <v-col>
@@ -160,12 +160,12 @@
                 <v-card-text>
                   <!-- if disabled then element cannot be dark -->
                   <!-- :dark="componentDark" -->
+                  <!-- @click="showDeviceDialog" -->
                   <v-btn
                     block
                     class="mb-4"
                     disabled
                     :color="btnPrimary"
-                    @click="showDeviceDialog"
                   >
                     Add device
                   </v-btn>
@@ -191,31 +191,28 @@
                 <v-card-text>
                   <!-- if disabled then element cannot be dark -->
                   <!-- :dark="componentDark" -->
+                  <!-- @click="showProjectDialog" -->
                   <v-btn
                     block
                     class="mb-4"
                     disabled
                     :color="btnPrimary"
-                    @click="showProjectDialog"
                   >
                     Add project
                   </v-btn>
-                  <v-simple-table>
-                    <template v-slot:default>
-                      <thead>
-                      <tr>
-                        <th class="text-left">Name</th>
-                        <th class="text-left">Created by</th>
-                      </tr>
-                      </thead>
-                      <tbody>
-                      <tr v-for="project in projects" :key="project.id">
-                        <td>{{ project.title }}</td>
-                        <td>{{ project.user }}</td>
-                      </tr>
-                      </tbody>
+                  <v-data-table
+                    :headers="projectHeaders"
+                    :items="projects"
+                    :loading="tableLoading"
+                  >
+                    <template v-slot:progress>
+                      <v-progress-linear
+                        indeterminate
+                        :height="2"
+                        :color="progressPrimary"
+                      ></v-progress-linear>
                     </template>
-                  </v-simple-table>
+                  </v-data-table>
                 </v-card-text>
               </v-card>
             </v-tab-item>
@@ -266,43 +263,44 @@ export default {
         // FIXME device token is not available by API, but is present in DB
         // {text: 'Token', value: 'token'},
       ],
-      projects: [{
-        id: '5',
-        title: 'New Project',
-        user: 'kitty',
-      },
+      projects: [{}],
+      projectHeaders: [
         {
-          id: '7',
-          title: 'New Project 2',
-          user: 'notkitty',
-        }],
+          text: 'ID',
+          align: 'left',
+          sortable: true,
+          value: 'id',
+        },
+        {text: 'Project name', value: 'name'},
+      ],
     }
   },
   mounted () {
     this.getAccounts()
     this.getDevices()
+    this.getProjects()
   },
   methods: {
-    showDeviceDialog () {
-      this.addDevice = true
-    },
-    showProjectDialog () {
-      this.addProject = true
-    },
-    saveDevice () {
-      if (this.newDevice !== '') {
-        this.devices.push({'name': this.newDevice})
-        this.newDevice = ''
-      }
-      this.addDevice = false
-    },
-    saveProject () {
-      if (this.newProject !== '') {
-        this.projects.push({'title': this.newProject})
-        this.newProject = ''
-      }
-      this.addProject = false
-    },
+    // showDeviceDialog () {
+    //   this.addDevice = true
+    // },
+    // showProjectDialog () {
+    //   this.addProject = true
+    // },
+    // saveDevice () {
+    //   if (this.newDevice !== '') {
+    //     this.devices.push({'name': this.newDevice})
+    //     this.newDevice = ''
+    //   }
+    //   this.addDevice = false
+    // },
+    // saveProject () {
+    //   if (this.newProject !== '') {
+    //     this.projects.push({'title': this.newProject})
+    //     this.newProject = ''
+    //   }
+    //   this.addProject = false
+    // },
     authConfig () {
       return {headers: {Authorization: 'Bearer ' + localStorage.getItem(this.lsToken)}}
     },
@@ -327,6 +325,27 @@ export default {
         .then((res) => {
           this.tableLoading = false
           this.devices = res.data
+        })
+        .catch((err) => {
+          if (err.response.status === 401) {
+            this.$root.$emit('sessionExpired')
+          } else {
+            console.log('something wrong')
+          }
+        })
+    },
+    getProjects () {
+      this.tableLoading = true
+      axios.get(this.apiUrl + '/api/v1/project', this.authConfig())
+        .then((res) => {
+          this.tableLoading = false
+          let projectList = []
+          res.data.forEach((project) => {
+            if (project.id > 0) {
+              projectList.push(project)
+            }
+          })
+          this.projects = projectList
         })
         .catch((err) => {
           if (err.response.status === 401) {
