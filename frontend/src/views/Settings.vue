@@ -200,22 +200,19 @@
                   >
                     Add project
                   </v-btn>
-                  <v-simple-table>
-                    <template v-slot:default>
-                      <thead>
-                      <tr>
-                        <th class="text-left">Name</th>
-                        <th class="text-left">Created by</th>
-                      </tr>
-                      </thead>
-                      <tbody>
-                      <tr v-for="project in projects" :key="project.id">
-                        <td>{{ project.title }}</td>
-                        <td>{{ project.user }}</td>
-                      </tr>
-                      </tbody>
+                  <v-data-table
+                    :headers="projectHeaders"
+                    :items="projects"
+                    :loading="tableLoading"
+                  >
+                    <template v-slot:progress>
+                      <v-progress-linear
+                        indeterminate
+                        :height="2"
+                        :color="progressPrimary"
+                      ></v-progress-linear>
                     </template>
-                  </v-simple-table>
+                  </v-data-table>
                 </v-card-text>
               </v-card>
             </v-tab-item>
@@ -266,21 +263,22 @@ export default {
         // FIXME device token is not available by API, but is present in DB
         // {text: 'Token', value: 'token'},
       ],
-      projects: [{
-        id: '5',
-        title: 'New Project',
-        user: 'kitty',
-      },
+      projects: [{}],
+      projectHeaders: [
         {
-          id: '7',
-          title: 'New Project 2',
-          user: 'notkitty',
-        }],
+          text: 'ID',
+          align: 'left',
+          sortable: true,
+          value: 'id',
+        },
+        {text: 'Project name', value: 'name'},
+      ],
     }
   },
   mounted () {
     this.getAccounts()
     this.getDevices()
+    this.getProjects()
   },
   methods: {
     // showDeviceDialog () {
@@ -327,6 +325,27 @@ export default {
         .then((res) => {
           this.tableLoading = false
           this.devices = res.data
+        })
+        .catch((err) => {
+          if (err.response.status === 401) {
+            this.$root.$emit('sessionExpired')
+          } else {
+            console.log('something wrong')
+          }
+        })
+    },
+    getProjects () {
+      this.tableLoading = true
+      axios.get(this.apiUrl + '/api/v1/project', this.authConfig())
+        .then((res) => {
+          this.tableLoading = false
+          let projectList = []
+          res.data.forEach((project) => {
+            if (project.id > 0) {
+              projectList.push(project)
+            }
+          })
+          this.projects = projectList
         })
         .catch((err) => {
           if (err.response.status === 401) {
