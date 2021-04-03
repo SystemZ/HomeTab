@@ -148,18 +148,28 @@ export default Vue.extend({
   components: {TagList},
   data: () => ({
     leftDrawer: true,
-    rightDrawer: true,
+    rightDrawer: false,
   }),
   created() {
     this.$root.$on('sessionExpired', this.logout)
+    this.$root.$on('openRightDrawer', this.openRightDrawer)
+    this.$root.$on('closeRightDrawer', this.closeRightDrawer)
   },
   destroyed() {
     this.$root.$off('sessionExpired', this.logout)
+    this.$root.$off('openRightDrawer', this.openRightDrawer)
+    this.$root.$off('closeRightDrawer', this.closeRightDrawer)
   },
   mounted() {
     this.checkToken()
   },
   methods: {
+    openRightDrawer() {
+      this.rightDrawer = true
+    },
+    closeRightDrawer() {
+      this.rightDrawer = false
+    },
     checkToken() {
       if (localStorage.getItem("authToken") === null) {
         return
