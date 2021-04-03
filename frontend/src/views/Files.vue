@@ -159,12 +159,14 @@ export default {
   },
   mounted () {
     this.getFiles()
+    this.$root.$emit('openRightDrawer')
   },
   created () {
     this.$root.$on('tagSelected', this.selectTag)
   },
   destroyed () {
     this.$root.$off('tagSelected', this.selectTag)
+    this.$root.$emit('closeRightDrawer')
   },
   methods: {
     authConfig () {
