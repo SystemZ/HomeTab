@@ -1,5 +1,84 @@
 <template>
   <v-container fluid>
+    <v-dialog
+      v-model="showNewAccountDialog"
+      width="600"
+      :fullscreen="$vuetify.breakpoint.xsOnly"
+    >
+      <v-card>
+        <v-card-title>
+          Create new account
+        </v-card-title>
+        <v-card-text>
+          <v-container>
+            <v-row>
+              <v-col cols="12">
+                <v-text-field
+                  required
+                  clearable
+                  counter
+                  maxlength="24"
+                  label="Username"
+                  prepend-icon="mdi-account"
+                  type="text"
+                  v-model="username"
+                  :color="inputPrimary"
+                >
+                </v-text-field>
+              </v-col>
+            </v-row>
+            <v-row>
+              <v-col cols="12">
+                <v-text-field
+                  required
+                  clearable
+                  counter
+                  maxlength="32"
+                  label="Password"
+                  prepend-icon="mdi-lock"
+                  type="password"
+                  v-model="password"
+                  :color="inputPrimary"
+                >
+                </v-text-field>
+              </v-col>
+            </v-row>
+            <v-row>
+              <v-col cols="12">
+                <v-text-field
+                  required
+                  clearable
+                  label="Email"
+                  name="email"
+                  prepend-icon="mdi-email"
+                  v-model="email"
+                  :color="inputPrimary"
+                >
+                </v-text-field>
+              </v-col>
+            </v-row>
+          </v-container>
+        </v-card-text>
+        <v-divider></v-divider>
+        <v-card-actions>
+          <v-spacer></v-spacer>
+          <v-btn
+            :color="btnSecondary"
+            text
+            @click="showNewAccountDialog = false"
+          >
+            Cancel
+          </v-btn>
+          <v-btn
+            :dark="componentDark"
+            :color="btnPrimary"
+            @click.native="addAccount"
+          >
+            Add
+          </v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
     <!-- <v-dialog
       v-model="addDevice"
       width="500"
@@ -128,13 +207,12 @@
             <v-tab-item>
               <v-card flat>
                 <v-card-text>
-                  <!-- if disabled then element cannot be dark -->
-                  <!-- :dark="componentDark" -->
                   <v-btn
                     block
                     class="mb-4"
-                    disabled
+                    :dark="componentDark"
                     :color="btnPrimary"
+                    @click="showNewAccountDialog = true"
                   >
                     Create new account
                   </v-btn>
@@ -233,6 +311,10 @@ export default {
   name: 'settings',
   data () {
     return {
+      showNewAccountDialog: false,
+      username: '',
+      password: '',
+      email: '',
       // addDevice: false,
       // newDevice: '',
       // addProject: false,
@@ -304,6 +386,7 @@ export default {
     authConfig () {
       return {headers: {Authorization: 'Bearer ' + localStorage.getItem(this.lsToken)}}
     },
+    // get data
     getAccounts () {
       this.tableLoading = true
       axios.get(this.apiUrl + '/api/v1/user', this.authConfig())
@@ -346,6 +429,31 @@ export default {
             }
           })
           this.projects = projectList
+        })
+        .catch((err) => {
+          if (err.response.status === 401) {
+            this.$root.$emit('sessionExpired')
+          } else {
+            console.log('something wrong')
+          }
+        })
+    },
+    // post data
+    addAccount () {
+      axios.post(this.apiUrl + '/api/v1/user', {
+        'username': this.username,
+        'password': this.password,
+        'email': this.email
+      }, this.authConfig())
+        .then((res) => {
+          //clear form
+          this.username = ''
+          this.password = ''
+          this.email = ''
+          //close dialog
+          this.showNewAccountDialog = false
+          //get account list
+          this.getAccounts()
         })
         .catch((err) => {
           if (err.response.status === 401) {
