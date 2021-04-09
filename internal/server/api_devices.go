@@ -2,8 +2,9 @@ package server
 
 import (
 	"encoding/json"
-	"github.com/systemz/hometab/internal/model"
 	"net/http"
+
+	"github.com/systemz/hometab/internal/model"
 )
 
 func ApiDeviceList(w http.ResponseWriter, r *http.Request) {
@@ -59,4 +60,35 @@ func ApiPushRegister(w http.ResponseWriter, r *http.Request) {
 
 	// all ok, return list
 	w.WriteHeader(http.StatusOK)
+}
+
+type ApiNewDeviceRequest struct {
+	Name string `json:"name"`
+}
+
+func ApiNewDevice(w http.ResponseWriter, r *http.Request) {
+	// check auth
+	ok, userInfo := CheckApiAuth(w, r)
+	if !ok {
+		w.WriteHeader(http.StatusUnauthorized)
+		return
+	}
+
+	// FIXME validate
+	decoder := json.NewDecoder(r.Body)
+	var newDevice ApiNewDeviceRequest
+	decoder.Decode(&newDevice)
+
+	// reject if device name is too short
+	if len(newDevice.Name) < 1 {
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
+	// create device
+	model.CreateDevice(newDevice.Name, userInfo.Id)
+
+	// all ok, return device
+	w.WriteHeader(http.StatusOK)
+	w.Write([]byte{})
 }
