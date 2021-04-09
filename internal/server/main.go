@@ -74,6 +74,7 @@ func StartWebInterface() {
 	r.HandleFunc("/api/v1/user", ApiUserList).Methods("GET")
 	r.HandleFunc("/api/v1/user", ApiNewUser).Methods("POST")
 	r.HandleFunc("/api/v1/project", ApiProjectList).Methods("GET")
+	r.HandleFunc("/api/v1/project", ApiNewProject).Methods("POST")
 	r.HandleFunc("/api/v1/project/{id}/task", ApiTaskList).Methods("GET")
 	r.HandleFunc("/api/v1/project/{id}/task", ApiTaskCreate).Methods("POST")
 	r.HandleFunc("/api/v1/project/{id}/task", ApiTaskEdit).Methods("PUT")
