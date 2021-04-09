@@ -79,9 +79,9 @@
         </v-card-actions>
       </v-card>
     </v-dialog>
-    <!-- <v-dialog
-      v-model="addDevice"
-      width="500"
+    <v-dialog
+      v-model="showNewDeviceDialog"
+      width="600"
       :fullscreen="$vuetify.breakpoint.xsOnly"
     >
       <v-card>
@@ -91,14 +91,21 @@
         <v-card-text>
           <v-container>
             <v-row>
-              <v-col cols="12" sm="6" md="4">
-                <v-text-field
-                  label="Device name"
+              <v-col cols="12">
+                <v-textarea
+                  auto-grow
+                  rows="1"
                   required
-                  v-model="newDevice"
+                  clearable
+                  counter
+                  maxlength="32"
+                  label="Device name"
+                  prepend-icon="mdi-cellphone"
+                  type="text"
+                  v-model="deviceName"
                   :color="inputPrimary"
                 >
-                </v-text-field>
+                </v-textarea>
               </v-col>
             </v-row>
           </v-container>
@@ -109,20 +116,20 @@
           <v-btn
             :color="btnSecondary"
             text
-            @click="addDevice = false"
+            @click="showNewDeviceDialog = false"
           >
             Cancel
           </v-btn>
           <v-btn
             :dark="componentDark"
             :color="btnPrimary"
-            @click="saveDevice"
+            @click="addDevice"
           >
             Add
           </v-btn>
         </v-card-actions>
       </v-card>
-    </v-dialog> -->
+    </v-dialog>
     <v-dialog
       v-model="showNewProjectDialog"
       width="600"
@@ -243,16 +250,15 @@
             <v-tab-item>
               <v-card flat>
                 <v-card-text>
-                  <!-- if disabled then element cannot be dark -->
-                  <!-- :dark="componentDark" -->
-                  <!-- @click="showDeviceDialog" -->
+                  <!--  -->
                   <v-btn
                     block
                     class="mb-4"
-                    disabled
+                    :dark="componentDark"
                     :color="btnPrimary"
+                    @click="showNewDeviceDialog = true"
                   >
-                    Add device
+                    Add new device
                   </v-btn>
                   <v-data-table
                     :headers="deviceHeaders"
@@ -321,8 +327,8 @@ export default {
       username: '',
       password: '',
       email: '',
-      // addDevice: false,
-      // newDevice: '',
+      showNewDeviceDialog: false,
+      deviceName: '',
       showNewProjectDialog: false,
       projectName: '',
       // getting table info
@@ -370,16 +376,6 @@ export default {
     this.getProjects()
   },
   methods: {
-    // showDeviceDialog () {
-    //   this.addDevice = true
-    // },
-    // saveDevice () {
-    //   if (this.newDevice !== '') {
-    //     this.devices.push({'name': this.newDevice})
-    //     this.newDevice = ''
-    //   }
-    //   this.addDevice = false
-    // },
     authConfig () {
       return {headers: {Authorization: 'Bearer ' + localStorage.getItem(this.lsToken)}}
     },
@@ -451,6 +447,26 @@ export default {
           this.showNewAccountDialog = false
           //get account list
           this.getAccounts()
+        })
+        .catch((err) => {
+          if (err.response.status === 401) {
+            this.$root.$emit('sessionExpired')
+          } else {
+            console.log('something wrong')
+          }
+        })
+    },
+    addDevice () {
+      axios.post(this.apiUrl + '/api/v1/device', {
+        'name': this.deviceName
+      }, this.authConfig())
+        .then((res) => {
+          //clear form
+          this.deviceName = ''
+          //close dialog
+          this.showNewDeviceDialog = false
+          //get device list
+          this.getDevices()
         })
         .catch((err) => {
           if (err.response.status === 401) {
