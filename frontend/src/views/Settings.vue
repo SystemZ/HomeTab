@@ -122,27 +122,34 @@
           </v-btn>
         </v-card-actions>
       </v-card>
-    </v-dialog>
+    </v-dialog> -->
     <v-dialog
-      v-model="addProject"
-      width="500"
+      v-model="showNewProjectDialog"
+      width="600"
       :fullscreen="$vuetify.breakpoint.xsOnly"
     >
       <v-card>
         <v-card-title>
-          Begin new project
+          Start new project
         </v-card-title>
         <v-card-text>
           <v-container>
             <v-row>
-              <v-col cols="12" sm="6" md="4">
-                <v-text-field
-                  label="Project name"
+              <v-col cols="12">
+                <v-textarea
+                  auto-grow
+                  rows="1"
                   required
-                  v-model="newProject"
+                  clearable
+                  counter
+                  maxlength="64"
+                  label="Project name"
+                  prepend-icon="mdi-folder-open"
+                  type="text"
+                  v-model="projectName"
                   :color="inputPrimary"
                 >
-                </v-text-field>
+                </v-textarea>
               </v-col>
             </v-row>
           </v-container>
@@ -153,20 +160,20 @@
           <v-btn
             :color="btnSecondary"
             text
-            @click="addProject = false"
+            @click="showNewProjectDialog = false"
           >
             Cancel
           </v-btn>
           <v-btn
             :dark="componentDark"
             :color="btnPrimary"
-            @click="saveProject"
+            @click="addProject"
           >
             Save
           </v-btn>
         </v-card-actions>
       </v-card>
-    </v-dialog> -->
+    </v-dialog>
 
     <v-row>
       <v-col>
@@ -267,16 +274,14 @@
             <v-tab-item>
               <v-card flat>
                 <v-card-text>
-                  <!-- if disabled then element cannot be dark -->
-                  <!-- :dark="componentDark" -->
-                  <!-- @click="showProjectDialog" -->
                   <v-btn
                     block
                     class="mb-4"
-                    disabled
+                    :dark="componentDark"
                     :color="btnPrimary"
+                    @click="showNewProjectDialog = true"
                   >
-                    Add project
+                    Create new project
                   </v-btn>
                   <v-data-table
                     :headers="projectHeaders"
@@ -311,14 +316,16 @@ export default {
   name: 'settings',
   data () {
     return {
+      // pushing new info
       showNewAccountDialog: false,
       username: '',
       password: '',
       email: '',
       // addDevice: false,
       // newDevice: '',
-      // addProject: false,
-      // newProject: '',
+      showNewProjectDialog: false,
+      projectName: '',
+      // getting table info
       tableLoading: true,
       accounts: [],
       accountHeaders: [
@@ -366,22 +373,12 @@ export default {
     // showDeviceDialog () {
     //   this.addDevice = true
     // },
-    // showProjectDialog () {
-    //   this.addProject = true
-    // },
     // saveDevice () {
     //   if (this.newDevice !== '') {
     //     this.devices.push({'name': this.newDevice})
     //     this.newDevice = ''
     //   }
     //   this.addDevice = false
-    // },
-    // saveProject () {
-    //   if (this.newProject !== '') {
-    //     this.projects.push({'title': this.newProject})
-    //     this.newProject = ''
-    //   }
-    //   this.addProject = false
     // },
     authConfig () {
       return {headers: {Authorization: 'Bearer ' + localStorage.getItem(this.lsToken)}}
@@ -454,6 +451,26 @@ export default {
           this.showNewAccountDialog = false
           //get account list
           this.getAccounts()
+        })
+        .catch((err) => {
+          if (err.response.status === 401) {
+            this.$root.$emit('sessionExpired')
+          } else {
+            console.log('something wrong')
+          }
+        })
+    },
+    addProject () {
+      axios.post(this.apiUrl + '/api/v1/project', {
+        'name': this.projectName
+      }, this.authConfig())
+        .then((res) => {
+          //clear form
+          this.projectName = ''
+          //close dialog
+          this.showNewProjectDialog = false
+          //get project list
+          this.getProjects()
         })
         .catch((err) => {
           if (err.response.status === 401) {
