@@ -23,6 +23,8 @@ var (
 	REGISTER_WHITELIST bool
 	REGISTER_TOKEN     string
 	PUSHY_ME_SECRET    string
+	PUSHOVER_API_TOKEN string
+	PUSHOVER_USER_KEY  string
 	// gotag part
 	CACHE_DIR      string
 	LIVE_VID_THUMB bool
@@ -73,6 +75,12 @@ func init() {
 	// pushy.me
 	viper.SetDefault("PUSHY_ME_SECRET", "changeme")
 	PUSHY_ME_SECRET = viper.GetString("PUSHY_ME_SECRET")
+
+	//pushover
+	viper.SetDefault("PUSHOVER_API_TOKEN", "changeme")
+	PUSHOVER_API_TOKEN = viper.GetString("PUSHOVER_API_TOKEN")
+	viper.SetDefault("PUSHOVER_USER_KEY", "changeme")
+	PUSHOVER_USER_KEY = viper.GetString("PUSHOVER_USER_KEY")
 
 	// gotag part
 	viper.SetDefault("CACHE_DIR", "")
